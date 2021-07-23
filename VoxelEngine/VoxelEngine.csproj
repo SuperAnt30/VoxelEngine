@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5052A966-1CAF-446C-B587-3E0BB54782A8}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>VoxelEngine</RootNamespace>
+    <AssemblyName>VoxelEngine</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SharpGL, Version=3.1.1.0, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpGL.3.1.1\lib\net45\SharpGL.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpGL.SceneGraph, Version=3.1.1.0, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpGL.SceneGraph.3.1.1\lib\net45\SharpGL.SceneGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpGL.WinForms, Version=3.1.1.0, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpGL.WinForms.3.1.1\lib\net45\SharpGL.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Actions\Keyboard.cs" />
+    <Compile Include="Actions\Mouse.cs" />
+    <Compile Include="Actions\PlayerCamera.cs" />
+    <Compile Include="Util\BlockPos.cs" />
+    <Compile Include="Util\EnumFacing.cs" />
+    <Compile Include="Util\EnumSkyBlock.cs" />
+    <Compile Include="Util\Mth.cs" />
+    <Compile Include="Graphics\Shaders\ShaderSkyBox.cs" />
+    <Compile Include="Util\WinApi.cs" />
+    <Compile Include="VEC.cs" />
+    <Compile Include="Glm\GlmGeometric.cs" />
+    <Compile Include="Glm\GlmMatrix.cs" />
+    <Compile Include="Glm\GlmTrigonometric.cs" />
+    <Compile Include="Glm\GlmMatrixTransform.cs" />
+    <Compile Include="Glm\mat2.cs" />
+    <Compile Include="Glm\mat3.cs" />
+    <Compile Include="Glm\mat4.cs" />
+    <Compile Include="Glm\vec2i.cs" />
+    <Compile Include="Glm\vec2.cs" />
+    <Compile Include="Glm\vec3i.cs" />
+    <Compile Include="Glm\vec3.cs" />
+    <Compile Include="Glm\vec4.cs" />
+    <Compile Include="Util\Pole.cs" />
+    <Compile Include="Graphics\Shaders\ShaderLine.cs" />
+    <Compile Include="Graphics\TextureAnimation.cs" />
+    <Compile Include="Threads\ThreadChunk.cs" />
+    <Compile Include="World\Block\Block.cs" />
+    <Compile Include="World\Block\BlockAir.cs" />
+    <Compile Include="World\Block\BlockBrol.cs" />
+    <Compile Include="World\Block\BlockRender.cs" />
+    <Compile Include="World\Block\BlockTick.cs" />
+    <Compile Include="World\Block\BlockTileBrown.cs" />
+    <Compile Include="World\Block\BlockTileDark.cs" />
+    <Compile Include="World\Block\BlockTileGray.cs" />
+    <Compile Include="World\Block\BlockSand.cs" />
+    <Compile Include="World\Block\BlockPlanks.cs" />
+    <Compile Include="World\Block\BlockGlass.cs" />
+    <Compile Include="World\Block\BlockDirt.cs" />
+    <Compile Include="World\Block\BlockWaterFlowing.cs" />
+    <Compile Include="World\Block\BlockWater.cs" />
+    <Compile Include="World\Block\BlockCactus.cs" />
+    <Compile Include="World\Block\BlockGrass.cs" />
+    <Compile Include="World\Block\Blocks.cs" />
+    <Compile Include="World\Block\BlockStone.cs" />
+    <Compile Include="World\Block\EnumBlock.cs" />
+    <Compile Include="World\Block\Model\Box.cs" />
+    <Compile Include="World\Block\Model\Face.cs" />
+    <Compile Include="World\Chunk\ChunkMeshs.cs" />
+    <Compile Include="World\Storage\ChunkStorage.cs" />
+    <Compile Include="World\HitBoxPlayer.cs" />
+    <Compile Include="World\LineMesh.cs" />
+    <Compile Include="World\GuiCursor.cs" />
+    <Compile Include="World\Chunk\ChunkEvent.cs" />
+    <Compile Include="Graphics\Render.cs" />
+    <Compile Include="Graphics\Shaders\ShaderVoxel.cs" />
+    <Compile Include="Threads\ThreadTick.cs" />
+    <Compile Include="Threads\ThreadObject.cs" />
+    <Compile Include="Threads\ThreadWorld.cs" />
+    <Compile Include="World\Chunk\ChunkMesh.cs" />
+    <Compile Include="World\LineRender.cs" />
+    <Compile Include="World\SkyBoxMesh.cs" />
+    <Compile Include="World\Voxel\VoxelEvent.cs" />
+    <Compile Include="World\WorldFile.cs" />
+    <Compile Include="World\WorldLineMesh.cs" />
+    <Compile Include="World\WorldMesh.cs" />
+    <Compile Include="World\WorldMeshArray.cs" />
+    <Compile Include="World\Block\BlockFaceUV.cs" />
+    <Compile Include="World\Chunk\ChunkRender.cs" />
+    <Compile Include="Graphics\Camera.cs" />
+    <Compile Include="CounterTick.cs" />
+    <Compile Include="Debag.cs" />
+    <Compile Include="FormGame.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormGame.designer.cs">
+      <DependentUpon>FormGame.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Graphics\Fonts\FontAdvance.cs" />
+    <Compile Include="Graphics\Fonts\Symbol.cs" />
+    <Compile Include="Graphics\Fonts\TextRender.cs" />
+    <Compile Include="Graphics\OpenGLF.cs" />
+    <Compile Include="Graphics\Shaders\ShaderFont.cs" />
+    <Compile Include="Graphics\Shaders\Shaders.cs" />
+    <Compile Include="Graphics\Shaders\ShaderVE.cs" />
+    <Compile Include="Graphics\Texture.cs" />
+    <Compile Include="Graphics\Mesh.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VE.cs" />
+    <Compile Include="World\Voxel\Voxel.cs" />
+    <Compile Include="World\Perlin.cs" />
+    <Compile Include="World\Chunk\ChunkLoading.cs" />
+    <Compile Include="World\Voxel\VoxelData.cs" />
+    <Compile Include="World\WorldMeshDictionary.cs" />
+    <Compile Include="World\WorldRender.cs" />
+    <Compile Include="World\RegionFile.cs" />
+    <EmbeddedResource Include="FormGame.resx">
+      <DependentUpon>FormGame.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Gui\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5.2 %28x86 и x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
