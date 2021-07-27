@@ -118,6 +118,7 @@
     <Compile Include="World\Block\Model\Box.cs" />
     <Compile Include="World\Block\Model\Face.cs" />
     <Compile Include="World\Chunk\ChunkMeshs.cs" />
+    <Compile Include="World\GuiWater.cs" />
     <Compile Include="World\Storage\ChunkStorage.cs" />
     <Compile Include="World\HitBoxPlayer.cs" />
     <Compile Include="World\LineMesh.cs" />

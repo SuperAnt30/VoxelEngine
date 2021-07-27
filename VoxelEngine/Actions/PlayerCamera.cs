@@ -47,7 +47,11 @@ namespace VoxelEngine
         /// Активно ли ускорение бега
         /// </summary>
         public bool IsSpeed { get; protected set; } = false;
-
+    
+        /// <summary>
+        /// Находиться ли игрок в воде
+        /// </summary>
+        public bool IsWater { get; protected set; } = false;
 
         public void StepLeft()
         {
@@ -352,6 +356,9 @@ namespace VoxelEngine
         /// </summary>
         public void Tick()
         {
+            // Опрделяем в воде ли я
+            IsWater = Mouse.GetInstance().World.GetBlock(new vec3i(OpenGLF.GetInstance().Cam.Position)).IsWater;
+
             // Определяем амплитуду прыжка
             if (_tickjamp > 0)
             {

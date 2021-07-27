@@ -75,6 +75,11 @@ namespace VoxelEngine
         /// Объект курсора
         /// </summary>
         public GuiCursor guiCursor = new GuiCursor();
+        /// <summary>
+        /// Объект под водой
+        /// </summary>
+        public GuiWater guiWater = new GuiWater();
+
 
         /// <summary>
         /// Таймер для фиксации времени
@@ -142,6 +147,7 @@ namespace VoxelEngine
         {
             Cam.SetResized(size.Width, size.Height);
             guiCursor.Render(size);
+            guiWater.Render(size);
         }
 
         
@@ -233,11 +239,21 @@ namespace VoxelEngine
             WorldLineM.Draw();
             Sh.ShLine.Unbind(gl);
 
+
+            if (IsLine)
+            {
+                gl.Enable(OpenGL.GL_CULL_FACE);
+                gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_FILL);
+            }
+
+
             // DEBUG
             Sh.ShFont.Bind(gl);
             Sh.ShFont.SetUniformMatrix4(gl, "projview", Cam.Ortho2D);
 
+
             texture.BindTexture("gui");
+            if (Keyboard.GetInstance().PlCamera.IsWater) guiWater.Draw();
             guiCursor.Draw();
 
             texture.BindTexture(VE.TEXTURE_FONT_KEY);

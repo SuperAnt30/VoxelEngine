@@ -129,19 +129,19 @@ namespace VoxelEngine
             {
                 vec3i vr = new vec3i(v2.x == 1 ? vu.x : vd.x, y, v2.y == 1 ? vu.z : vd.z);
 
-                if (Mouse.GetInstance().World.GetBlock(vr).Id != 0)
+                if (Mouse.GetInstance().World.GetBlock(vr).IsCollision)
                 {
                     // Если блок есть
 
                     // Проверяем через блок по X
                     vec3i vrd = vr;
                     vrd.x += v2.x == 1 ? -2 : 2;
-                    int idX = Mouse.GetInstance().World.GetBlock(vrd).Id != 0 ? 2 : 0;
+                    int idX = Mouse.GetInstance().World.GetBlock(vrd).IsCollision ? 2 : 0;
 
                     // Проверяем через блок по Z
                     vrd = vr;
                     vrd.z += v2.y == 1 ? -2 : 2;
-                    int idZ = Mouse.GetInstance().World.GetBlock(vrd).Id != 0 ? 3 : 0;
+                    int idZ = Mouse.GetInstance().World.GetBlock(vrd).IsCollision ? 3 : 0;
 
                     // Если не одинокий блок
                     if (idX + idZ > 0)
@@ -159,14 +159,14 @@ namespace VoxelEngine
                     vec3i vu2 = new vec3i(_SumVec3Vec2(posOld, VecUp));
 
                     vr = new vec3i(v2.x == 1 ? vu2.x : vd2.x, y, v2.y == 1 ? vu.z : vd.z);
-                    if (Mouse.GetInstance().World.GetBlock(vr).Id != 0)
+                    if (Mouse.GetInstance().World.GetBlock(vr).IsCollision)
                     {
                         // Игнорим координату Z
                         if (y == vd.y) one = true;
                         else return 2;
                     }
                     vr = new vec3i(v2.x == 1 ? vu.x : vd.x, y, v2.y == 1 ? vu2.z : vd2.z);
-                    if (Mouse.GetInstance().World.GetBlock(vr).Id != 0)
+                    if (Mouse.GetInstance().World.GetBlock(vr).IsCollision)
                     {
                         // Игнорим координату X
                         if (y == vd.y) one = true;
@@ -193,7 +193,7 @@ namespace VoxelEngine
                 for (int x = vd.x; x <= vu.x; x++)
                 {
                     vec3i vr = new vec3i(x, y, v2.y == 1 ? vu.z : vd.z);
-                    if (Mouse.GetInstance().World.GetBlock(vr).Id != 0)
+                    if (Mouse.GetInstance().World.GetBlock(vr).IsCollision)
                     {
                         if (y == vd.y) one = true;
                         else return 2;
@@ -207,7 +207,7 @@ namespace VoxelEngine
                 for (int x = vd.x; x <= vu.x; x++)
                 {
                     vec3i vr = new vec3i(x, vu.y + 1, v2.y == 1 ? vu.z : vd.z);
-                    if (Mouse.GetInstance().World.GetBlock(vr).Id != 0)
+                    if (Mouse.GetInstance().World.GetBlock(vr).IsCollision)
                     {
                         return 2;
                     }
@@ -233,7 +233,7 @@ namespace VoxelEngine
                 for (int z = vd.z; z <= vu.z; z++)
                 {
                     vec3i vr = new vec3i(v2.x == 1 ? vu.x : vd.x, y, z);
-                    if (Mouse.GetInstance().World.GetBlock(vr).Id != 0)
+                    if (Mouse.GetInstance().World.GetBlock(vr).IsCollision)
                     {
                         if (y == vd.y) one = true;
                         else return 2;
@@ -247,7 +247,7 @@ namespace VoxelEngine
                 for (int z = vd.z; z <= vu.z; z++)
                 {
                     vec3i vr = new vec3i(v2.x == 1 ? vu.x : vd.x, vu.y + 1, z);
-                    if (Mouse.GetInstance().World.GetBlock(vr).Id != 0)
+                    if (Mouse.GetInstance().World.GetBlock(vr).IsCollision)
                     {
                         return 2;
                     }
@@ -304,7 +304,7 @@ namespace VoxelEngine
             {
                 for (int z = d.z; z <= d2.z; z++)
                 {
-                    if (Mouse.GetInstance().World.GetBlock(new vec3i(x, d.y, z)).Id != 0)
+                    if (Mouse.GetInstance().World.GetBlock(new vec3i(x, d.y, z)).IsCollision)
                         return true;
                 }
             }
@@ -333,7 +333,8 @@ namespace VoxelEngine
             {
                 for (int z = d.z; z <= d2.z; z++)
                 {
-                    if (Mouse.GetInstance().World.GetBlock(new vec3i(x, d.y, z)).Id != 0)
+                    //if (Mouse.GetInstance().World.GetBlock(new vec3i(x, d.y, z)).Id != 0)
+                    if (Mouse.GetInstance().World.GetBlock(new vec3i(x, d.y, z)).IsCollision)
                         return true;
                 }
             }
@@ -354,7 +355,7 @@ namespace VoxelEngine
                 {
                     for (int z = vd.z; z <= vu.z; z++)
                     {
-                        if (Mouse.GetInstance().World.GetBlock(new vec3i(x, y, z)).Id != 0)
+                        if (Mouse.GetInstance().World.GetBlock(new vec3i(x, y, z)).IsCollision)
                             return true;
                     }
                 }

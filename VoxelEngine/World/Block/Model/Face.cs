@@ -19,6 +19,10 @@ namespace VoxelEngine.Model
         /// Применение цвета
         /// </summary>
         public bool IsColor { get; protected set; } = true;
+        /// <summary>
+        /// С обеих сторон
+        /// </summary>
+        public bool IsTwoSides { get; protected set; } = false;
 
         public Face(Pole pole, int numberTexture)
         {
@@ -26,12 +30,18 @@ namespace VoxelEngine.Model
             NumberTexture = numberTexture;
             IsColor = false;
         }
-
         public Face(Pole pole, int numberTexture, bool isColor)
         {
             Side = pole;
             NumberTexture = numberTexture;
             IsColor = isColor;
+        }
+        public Face(Pole pole, int numberTexture, bool isColor, bool isTwoSides)
+        {
+            Side = pole;
+            NumberTexture = numberTexture;
+            IsColor = isColor;
+            IsTwoSides = isTwoSides;
         }
 
     }

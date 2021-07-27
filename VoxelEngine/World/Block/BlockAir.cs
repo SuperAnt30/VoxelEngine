@@ -11,6 +11,8 @@ namespace VoxelEngine
         {
             //LightOpacity = 15;
             Boxes = new Box[] { new Box(33) };
+
+            IsCollision = false;
         }
     }
 }

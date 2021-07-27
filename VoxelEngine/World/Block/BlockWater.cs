@@ -18,7 +18,7 @@ namespace VoxelEngine
                     To = new vec3(1f, 1f - VE.UV_SIZE, 1f),
                     Faces = new Face[]
                     {
-                        new Face(Pole.Up, 15, true),
+                        new Face(Pole.Up, 15, true, true),
                         new Face(Pole.Down, 15, true),
                     }
                 },
@@ -38,6 +38,8 @@ namespace VoxelEngine
             //LightOpacity = 14;
             IsAlphe = true;
             Color = new vec4(0.24f, 0.45f, 0.88f, 1f);
+            IsCollision = false;
+            IsWater = true;
         }
 
         /// <summary>

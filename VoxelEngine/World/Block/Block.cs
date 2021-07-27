@@ -37,6 +37,16 @@ namespace VoxelEngine
         public byte Id { get; protected set; } = 0;
 
         /// <summary>
+        /// Есть ли столкновение
+        /// </summary>
+        public bool IsCollision { get; protected set; } = true;
+
+        /// <summary>
+        /// Вода ли это
+        /// </summary>
+        public bool IsWater { get; protected set; } = false;
+
+        /// <summary>
         /// Получить тип блока
         /// </summary>
         public EnumBlock EBlock { get { return (EnumBlock)Id; } }

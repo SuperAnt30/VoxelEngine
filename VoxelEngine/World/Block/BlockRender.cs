@@ -261,7 +261,22 @@ namespace VoxelEngine
                 new vec2(u1 + VE.UV_SIZE, v2),
                 col, lg, leg
             );
-            return blockUV.Side(_side);
+            if (_face.IsTwoSides)
+            {
+                List<float> ar = new List<float>(blockUV.Side(_side));
+                blockUV = new BlockFaceUV(
+                    new vec3(Blk.Position.X + _box.From.x, Blk.Position.Y + _box.To.y, Blk.Position.Z + _box.From.z),
+                    new vec3(Blk.Position.X + _box.To.x, Blk.Position.Y + _box.To.y, Blk.Position.Z + _box.To.z),
+                    new vec2(u1, v2 + VE.UV_SIZE),
+                    new vec2(u1 + VE.UV_SIZE, v2),
+                    col, lg, leg
+                );
+                ar.AddRange(blockUV.Side(Pole.Down));
+                return ar.ToArray();
+            } else
+            {
+                return blockUV.Side(_side);
+            }
         }
 
         /// <summary>
