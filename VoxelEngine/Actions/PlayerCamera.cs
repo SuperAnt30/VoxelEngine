@@ -408,7 +408,8 @@ namespace VoxelEngine
                     {
                         cam.Sneaking();
                         hitBox = cam.GetHitBox();
-                        bool isAutoJump = hitBox.CollisionBodyXZ(move);
+                        hitBox.CollisionBodyXZ(move);
+                        cam.Worth();
                     }
                     else
                     {
