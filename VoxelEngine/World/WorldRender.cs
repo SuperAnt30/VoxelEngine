@@ -689,6 +689,10 @@ namespace VoxelEngine
         /// <returns></returns>
         public Voxel GetVoxel(vec3i pos)
         {
+            if (pos.y < 0 || pos.y > 255)
+            {
+                return new Voxel();
+            }
             ChunkRender chunk = GetChunk(pos.x >> 4, pos.z >> 4);
             if (chunk == null) return new Voxel();
             return chunk.GetVoxel(pos.x & 15, pos.y, pos.z & 15);

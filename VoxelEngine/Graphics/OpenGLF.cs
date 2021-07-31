@@ -157,7 +157,7 @@ namespace VoxelEngine
             stopwatch.Restart();
 
             Debag.GetInstance().CountMesh = 0;
-            Keyboard.GetInstance().PlCamera.Draw();
+            Keyboard.GetInstance().PlCamera.Update();
 
             if (IsLine)
             {
@@ -253,7 +253,7 @@ namespace VoxelEngine
 
 
             texture.BindTexture("gui");
-            if (Keyboard.GetInstance().PlCamera.IsWater) guiWater.Draw();
+            if (Keyboard.GetInstance().PlCamera.IsEyesWater) guiWater.Draw();
             guiCursor.Draw();
 
             texture.BindTexture(VE.TEXTURE_FONT_KEY);

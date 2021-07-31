@@ -378,7 +378,7 @@ namespace VoxelEngine
             OpenGLF openGLF = OpenGLF.GetInstance();
             //Voxel vox = threadWorld.World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
             Block block = threadWorld.World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            Debag.GetInstance().BB = norm.ToString();
+            //Debag.GetInstance().BB = norm.ToString();
             if (block.Id > 0)
             {
                 float size = 1.01f;

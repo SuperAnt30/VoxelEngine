@@ -387,10 +387,10 @@ namespace VoxelEngine
         /// <summary>
         /// Получить хитбокс игрока масштаб блока 1 метр
         /// </summary>
-        public HitBoxPlayer GetHitBoxMeter()
-        {
-               return new HitBoxPlayer(Position, new vec2(.3f, .2f), new vec2(-.3f, -1.5f));
-        }
+        //public HitBoxPlayer GetHitBoxMeter()
+        //{
+        //       return new HitBoxPlayer(Position, new vec2(.3f, .2f), new vec2(-.3f, -1.5f));
+        //}
 
 
 

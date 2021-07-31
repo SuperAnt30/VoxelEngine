@@ -63,7 +63,10 @@ namespace VoxelEngine
                     break;
                 case Keys.F8:
                     Debag.GetInstance().IsDrawCollisium = !Debag.GetInstance().IsDrawCollisium;
-                    
+                    if (!Debag.GetInstance().IsDrawCollisium)
+                    {
+                        OpenGLF.GetInstance().WorldLineM.Remove("HitBoxPlayer");
+                    }
                     break;
                 case Keys.Tab:
                     Mouse.GetInstance().Move();
@@ -203,7 +206,7 @@ namespace VoxelEngine
                     OnMoveChanged();
                     break;
                 case Keys.D:
-                    PlCamera.BeginRight();
+                    PlCamera.StepRight();
                     OnMoveChanged();
                     break;
                 case Keys.W:

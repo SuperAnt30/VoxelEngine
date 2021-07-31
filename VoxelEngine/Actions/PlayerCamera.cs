@@ -1,4 +1,6 @@
-﻿using VoxelEngine.Glm;
+﻿using System.Diagnostics;
+using VoxelEngine.Glm;
+using VoxelEngine.Util;
 
 namespace VoxelEngine
 {
@@ -8,163 +10,202 @@ namespace VoxelEngine
     public class PlayerCamera
     {
         /// <summary>
-        /// перемещение лево право м/с
+        /// Вектор перемещения
         /// </summary>
-        protected float _horizontal = 0;
+        protected vec3 _move = new vec3(0);
         /// <summary>
-        /// перемещение вперёд назад м/с
+        /// перемещение лево право -1 || 0 || 1
         /// </summary>
-        protected float _vertical = 0;
+        protected Key _horizontal = 0;
         /// <summary>
-        /// перемещение для креатива вверх вниз м/с
+        /// перемещение вперёд назад -1 || 0 || 1
         /// </summary>
-        protected float _jamp = 0;
-
-
+        protected Key _vertical = 0;
         /// <summary>
-        /// прыжок ли сейчас для выживания
+        /// Перемещение вверх или вниз, вроде -1 || 0 || 1
         /// </summary>
-        protected bool _isJamp = false;
-
+        protected Key _height = 0;
         /// <summary>
-        /// фиксируем тикущее время
+        /// На земле ли мы
         /// </summary>
-        protected long _time = System.DateTime.Now.Ticks;
-
-        /// <summary>
-        /// За сколько тиков должны закончить прыжок
-        /// </summary>
-        protected int _tickjamp = 0;
-
+        protected bool _onGround = false;
         /// <summary>
         /// Игрок присел?
         /// </summary>
         protected int _isSneaking = 0;
-
-       // protected float _speedStep = VE.SPEED_STEP;
+        /// <summary>
+        /// Объект для точного замера времени
+        /// </summary>
+        protected Stopwatch stopwatch = new Stopwatch();
+        protected Camera cam;
 
         /// <summary>
         /// Активно ли ускорение бега
         /// </summary>
         public bool IsSpeed { get; protected set; } = false;
-    
         /// <summary>
-        /// Находиться ли игрок в воде
+        /// Находиться ли глаза игрока в воде
         /// </summary>
-        public bool IsWater { get; protected set; } = false;
+        public bool IsEyesWater { get; protected set; } = false;
+        /// <summary>
+        /// Находиться ли тело игрока в воде
+        /// </summary>
+        public bool IsBodyWater { get; protected set; } = false;
+        /// <summary>
+        /// Находиться ли ноги игрок в воде (-1 блок над глазами)
+        /// </summary>
+        public bool IsLegsWater { get; protected set; } = false;
+        /// <summary>
+        /// Строка для дебага
+        /// </summary>
+        public string StrDebug { get; protected set; } = "";
 
+        public PlayerCamera()
+        {
+            stopwatch.Start();
+            cam = OpenGLF.GetInstance().Cam;
+        }
+
+        #region KeyDown
+
+        /// <summary>
+        /// Включить или выключить ускорение
+        /// </summary>
+        public void Speed()
+        {
+            if (_isSneaking == 0)
+            {
+                if (_vertical <= 0) IsSpeed = false;
+                else IsSpeed = !IsSpeed;
+            }
+        }
+
+        /// <summary>
+        /// Шаг влево
+        /// </summary>
         public void StepLeft()
         {
-            _TimeNow();
-            _horizontal = _isSneaking != 0 ? -VE.SPEED_SNEAKING : -VE.SPEED_STEP;
+            if (_horizontal != Key.Minus)
+            {
+                _horizontal = Key.Minus;
+                _Refrash();
+            }
         }
-        public void BeginRight()
+        /// <summary>
+        /// Шаг вправо
+        /// </summary>
+        public void StepRight()
         {
-            _TimeNow();
-            _horizontal = _isSneaking != 0 ? VE.SPEED_SNEAKING : VE.SPEED_STEP;
-        }
-
-        public void StepJamp()
-        {
-            if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
+            if (_horizontal != Key.Plus)
             {
-                if (!_isJamp)
-                {
-                    _TimeNow();
-                    // за сколько тиков достигнет пика
-                    _tickjamp = 4;
-                    // высота прыжка
-                    _jamp = VE.SPEED_JAMP;
-                    _isJamp = true;
-                }
-            }
-            else
-            {
-                _TimeNow();
-                _jamp = VE.SPEED_FLY_VERTICAL;
+                _horizontal = Key.Plus;
+                _Refrash();
             }
         }
-        public void StepDown()
-        {
-            if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
-            {
-                // присесть
-                OpenGLF.GetInstance().Cam.Sneaking();
-                _isSneaking = 1;
-                if (_vertical != 0) _vertical = VE.SPEED_SNEAKING;
-            }
-            else
-            {
-                // лететь вниз
-                _TimeNow();
-                _jamp = -VE.SPEED_FLY_VERTICAL;
-            }
-        }
+        /// <summary>
+        /// Шаг вперёд
+        /// </summary>
         public void StepForward()
         {
-            IsSpeed = false; // сбрасываем ускорение
-            _TimeNow();
-            //vertical = 11f;
-            _vertical = VE.SPEED_STEP;
-            _vertical = VEC.GetInstance().Moving == VEC.VEMoving.Survival 
-                ? (_isSneaking != 0 ? VE.SPEED_SNEAKING : VE.SPEED_STEP) 
-                : VE.SPEED_FLY;
+            if (_vertical != Key.Plus)
+            {
+                _vertical = Key.Plus;
+                _Refrash();
+            }
+            // сбрасываем ускорение
+            IsSpeed = false;
         }
+        /// <summary>
+        /// Шаг назад
+        /// </summary>
         public void StepBack()
         {
-            _TimeNow();
-            _vertical = _isSneaking != 0 ? -VE.SPEED_SNEAKING : -VE.SPEED_STEP;
+            if (_vertical != Key.Minus)
+            {
+                _vertical = Key.Minus;
+                _Refrash();
+            }
         }
+
+        /// <summary>
+        /// Перемещение вверх или прыжок
+        /// </summary>
+        public void StepJamp()
+        {
+            if (_height != Key.Plus)
+            {
+                _height = Key.Plus;
+                _Refrash();
+            }
+        }
+
+        /// <summary>
+        /// Перемещение вниз или присесть
+        /// </summary>
+        public void StepDown()
+        {
+            if (_height != Key.Minus)
+            {
+                _height = Key.Minus;
+                _Refrash();
+            }
+        }
+        #endregion
+
+        #region KeyUp
+
         /// <summary>
         /// Отпускаем клавишу A || D
         /// </summary>
         public void KeyUpHorizontal()
         {
-            _horizontal = 0;
+            if (_horizontal != Key.None)
+            {
+                _horizontal = Key.None;
+                _Refrash();
+            }
         }
         /// <summary>
         /// Отпускаем клавишу W || S
         /// </summary>
         public void KeyUpVertical()
         {
-            _vertical = 0;
+            if (_vertical != Key.None)
+            {
+                _vertical = Key.None;
+                _Refrash();
+            }
         }
         /// <summary>
         /// Отпускаем клавишу прыгать / вверх
         /// </summary>
         public void KeyUpJamp()
         {
-            if (VEC.GetInstance().Moving != VEC.VEMoving.Survival)
+            if (_height != Key.None)
             {
-                _jamp = 0;
+                _height = Key.None;
+                _Refrash();
             }
         }
 
-        protected void _Up()
-        {
-            // Встаём
-            OpenGLF.GetInstance().Cam.Worth();
-            _TimeNow();
-            // за сколько тиков достигнет пика
-            _tickjamp = 4;
-            // высота прыжка
-            _jamp = 4f;// VE.SPEED_JAMP;
-            _isSneaking = 0;
-            if (_vertical > 0) _vertical = IsSpeed ? VE.SPEED_RUN : VE.SPEED_STEP;
-            else if (_vertical < 0) _vertical = IsSpeed ? -VE.SPEED_RUN : -VE.SPEED_STEP;
-        }
         /// <summary>
         /// Опускаем клавишу сидеть / вниз
         /// </summary>
         public void KeyUpSneaking()
         {
+            if (_height != Key.None)
+            {
+                _height = Key.None;
+                _Refrash();
+            }
+
             if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
             {
                 // Встать
-
-                // Проверка на возможность
+                // Проверка на возможность встать
                 HitBoxPlayer hitBox = OpenGLF.GetInstance().Cam.GetHitBox();
-                if (hitBox.IsCollisionUp(hitBox.Position, 0.51f))
+                _isSneaking = 2;
+                if (hitBox.IsCollisionUp())
                 {
                     // Встать не можем
                     _isSneaking = 2;
@@ -172,209 +213,267 @@ namespace VoxelEngine
                 else
                 {
                     // Встаём
-                    _Up();
+                    _Uping();
                 }
-            } else
-            {
-                _jamp = 0;
             }
         }
 
-        protected void _TimeNow()
-        {
-            if (_horizontal == 0 && _vertical == 0 && _jamp == 0)
-                _time = System.DateTime.Now.Ticks;
-        }
+        #endregion
 
-        
         /// <summary>
-        /// Включить или выключить ускорение
+        /// Обновить координаты перемещения
+        /// определение скоростей тут, частично кроме вертикали
         /// </summary>
-        public void Speed()
+        protected void _Refrash()
         {
-            IsSpeed = !IsSpeed;
-
-            // if (vertical > 0) vertical = isSpeed ? 22f: 11f;
-            if (_vertical > 0)
+            float h, v, j;
+            if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
             {
-                if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
+                if (_height == Key.Minus)
                 {
-                    if (_isSneaking == 0)
+                    // Присел
+                    OpenGLF.GetInstance().Cam.Sneaking();
+                    _isSneaking = 1;
+                }
+                h = IsLegsWater ? VE.SPEED_STEP : _isSneaking != 0 ? VE.SPEED_SNEAKING : VE.SPEED_STEP;
+                v = h;
+                j = _move.y;
+                if (_vertical > 0 && IsSpeed)
+                {
+                    v = VE.SPEED_RUN;
+                }
+                if (IsLegsWater && !IsEyesWater)
+                {
+                    if (_height == Key.Plus && IsBodyWater)
                     {
-                        //_speedStep = IsSpeed ? VE.SPEED_RUN : VE.SPEED_STEP;
-                        _vertical = IsSpeed ? VE.SPEED_RUN : VE.SPEED_STEP;
-                    } else
-                    {
-                        _vertical = VE.SPEED_SNEAKING;
+                        _onGround = false;
+                        j = VE.SPEED_JAMP * .24f;
                     }
+
+                    // Если в воде то замедляем в 2 раза
+                    h *= .5f;
+                    v *= .5f;
+                }
+                else if (IsEyesWater)
+                {
+                    // плывём вверх или низ под водой
+                    if (_height != 0) j = (float)_height * 4f;
+
+                    // Если в воде то замедляем в 2,5 раза
+                    h *= .4f;
+                    v *= .4f;
                 }
                 else
                 {
-                    _vertical = IsSpeed ? VE.SPEED_FLY_FAST : VE.SPEED_FLY;
+                    // прыжок
+                    if (_height == Key.Plus && _onGround)
+                    {
+                        _onGround = false;
+                        j = VE.SPEED_JAMP;
+                    }
                 }
+            } else
+            {
+                h = VE.SPEED_STEP;
+                v = _vertical > 0
+                    ? IsSpeed
+                        ? VE.SPEED_FLY_FAST : VE.SPEED_FLY
+                    : VE.SPEED_STEP;
+                j = VE.SPEED_FLY_VERTICAL * (float)_height;
             }
-            else IsSpeed = false;
-        }
 
+            float v2 = (float)_vertical * v;
+            float h2 = (float)_horizontal * h;
+
+            StrDebug =string.Format("j: {0:0.00}\r\nv: {1:0.00}\r\nh: {2:0.00} {3}{4}{5}{6}",
+                j, v2, h2, _onGround ? "__" : "",
+                IsEyesWater ? "[E]" : "", IsBodyWater ? "[B]" : "", IsLegsWater ? "[L]" : "");
+
+            _move.y = j;
+            _move.x = glm.sin(cam.Yaw + 1.570796f) * h2;
+            _move.z = glm.cos(cam.Yaw + 1.570796f) * h2;
+            _move.x -= glm.sin(cam.Yaw) * v2;
+            _move.z -= glm.cos(cam.Yaw) * v2;
+        }
         
-
         /// <summary>
-        /// Скорости перемещения для дебага
+        /// Параметр этапа встать, если true мы пытаемся встать
         /// </summary>
-        /// <returns></returns>
-        public string jvh()
+        protected bool _isUping = false;
+        /// <summary>
+        /// Начинаем вставать
+        /// </summary>
+        protected void _Uping()
         {
-            return string.Format("j: {0:0.00}\r\nv: {1:0.00}\r\nh: {2:0.00}", _jamp, _horizontal, _vertical);
+            if (_move.y == 0 && _onGround)
+            {
+                _move.y = VE.SPEED_AUTOJAMP;
+                _isUping = true;
+            }
+        }
+        /// <summary>
+        /// Встали
+        /// </summary>
+        protected void _Uped()
+        {
+            _isUping = false;
+            // Встаём
+            OpenGLF.GetInstance().Cam.Worth();
+            _isSneaking = 0;
         }
 
         /// <summary>
-        /// Прорисовка, или точнее перемещение камеры
+        /// Обновление каждый такт
         /// </summary>
-        public void Draw()
+        protected void _Update()
         {
-            Camera cam = OpenGLF.GetInstance().Cam;
-            if (VEC.GetInstance().Moving == VEC.VEMoving.Survival && _jamp == 0)
+            if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
             {
-                // Если мы не прыгаем, и под нагами нет блока, мы начинаем падать вниз
-                if (!OpenGLF.GetInstance().Cam.GetHitBox().IsCollisionDown())
-                {
-                    // запуск падения
-                    _TimeNow();
-                    _jamp = -VE.SPEED_DOWN;
-                    // запрет, чтоб при падении не смог прыгнуть
-                    _isJamp = true;
-                }
-            }
-            if (VEC.GetInstance().Moving != VEC.VEMoving.FreeFlight && _isSneaking == 2)
-            {
-                // Положение сидя
                 HitBoxPlayer hitBox = cam.GetHitBox();
-                if (_jamp == 0 && !hitBox.IsCollisionUp(hitBox.Position, 0.51f))
+
+                //=== Проверка падения
+
+                // Если не на земле
+                if (!_onGround)
                 {
-                    // Встаём если нет прыжка и над головой нет блоков
-                    _Up();
+                    if (IsEyesWater && _move.y <= 0)
+                    {
+                        _move.y = -1f;
+                    }
+                    if (IsLegsWater)
+                    {
+                        _move.y -= VE.SPEED_DOWN * 0.1f;
+                    }
+                    else _move.y -= VE.SPEED_DOWN;
+                }
+                else
+                {
+                    // Если мы не прыгаем, и под нагами нет блока, мы начинаем падать вниз
+                    if (!hitBox.IsCollisionDown(hitBox.Position)) _onGround = false;
+                }
+
+                //=== Проверка упирания вверх
+
+                // Положение сидя
+                if (_move.y == 0 && _isSneaking == 2 && !hitBox.IsCollisionUp())
+                {
+                    // Начинаем прыжок для вставания, если нет прыжка и над головой нет блоков
+                    _Uping();
+                }
+                if (_move.y <= 0 && _isUping)
+                {
+                    _Uped();
                 }
             }
-
-            // Если есть любое смещение
-            if (_horizontal != 0 || _vertical != 0 || _jamp != 0)
+            
+            if (VEC.GetInstance().Moving != VEC.VEMoving.FreeFlight)
             {
-                
-                // Определяем направление движения
-                
-                vec3 front = glm.normalize(new vec3(cam.Front.x, 0, cam.Front.z)); // фронт без Y, чтоб не терять скорость
-                vec3 desiredMove = front * _vertical + cam.Right * _horizontal; // определение направления
-                desiredMove.y = _jamp; // вверх вниз
-                vec3 moveDir = new vec3(desiredMove.x, desiredMove.y, desiredMove.z); // фиксируем
+                HitBoxPlayer hitBox = cam.GetHitBox();
 
-                // тикущее время
-                long currentFrame = System.DateTime.Now.Ticks;
-                // сколько секунд прошло от прошлого тика
-                float time = (float)(currentFrame - _time) / 10000000f;
-                // перезаписываем время для кэша
-                _time = currentFrame;
-                
-                
-                if (VEC.GetInstance().Moving != VEC.VEMoving.FreeFlight)
+                //=== Проваливания в блок
+
+                if (hitBox.IsCollisionBody(new vec3()))
                 {
-                    // Проверка коллизии
-
-                    HitBoxPlayer hitBox = cam.GetHitBox();
-                    // вектор передвижения камеры с учётом прошедшего времени
-                    hitBox.SetPos(OpenGLF.GetInstance().Cam.Position + moveDir * time);
-                    vec2i vecYaw = hitBox.GetCollisionVecMove(moveDir);
-
-                    // Если упираемся в стенку, убираем движения в ту сторону
-                    if (vecYaw.x == 0) moveDir.x = 0;
-                    if (vecYaw.y == 0) moveDir.z = 0;
-
-                    // дополнительная проверка будущего положения
-                    if (vecYaw.x != 2 && vecYaw.y != 2 
-                        && hitBox.IsCollisionBody(OpenGLF.GetInstance().Cam.Position + moveDir * time))
+                    if (!hitBox.IsCollisionBody(new vec3(0, 1f, 0)))
                     {
-                        // Если в теле есть блок, то перемещение невозможно
-                        moveDir.x = 0;
-                        moveDir.z = 0;
+                        cam.Position = new vec3(cam.Position.x, Mth.Floor(cam.Position.y + 1f), cam.Position.z);
                     }
-                    
-
-                    // Условия для авто прыжка на 1 блок
-                    if ((moveDir.x != 0 || moveDir.z != 0) && (vecYaw.x == 2 || vecYaw.y == 2))
-                    {
-                        if (!_isJamp)
-                        {
-                            // Авто прыжок
-                            // TODO:: Авто прыжок сделать мягче
-                            //OpenGLF.GetInstance().Cam.Position = OpenGLF.GetInstance().Cam.Position + new vec3(0, 1, 0);
-
-                            _TimeNow();
-                            _tickjamp = 2; // 4
-                            // высота прыжка
-                            _jamp = 8;// 4
-                            _isJamp = true;
-                        }
-                    }
-
-                    //if (_jamp != 0 && hitBox.IsCollisionUp(OpenGLF.GetInstance().Cam.Position + moveDir * time, 0.51f))
-                    //{
-                    //    moveDir.x = 0;
-                    //    moveDir.z = 0;
-                    //}
-
-                    // Коллизия по вертикали
-                    if (moveDir.y != 0)// && vecYaw.y == 0)
-                    {
-                        // дополнительная проверка без перемещения по вертикали
-                        hitBox = cam.GetHitBox();
-                        if (moveDir.y > 0 && hitBox.IsCollisionUp())
-                        {
-                            // упёрлись головой, начинаем падать
-                            moveDir.y = 0;
-                            _jamp = -0.1f;
-                        }
-                        else if (moveDir.y < 0 && hitBox.IsCollisionDown())
-                        {
-                            // проверка на ровное падение, упали
-                            _isJamp = false;
-                            _jamp = 0;
-                            moveDir.y = 0;
-                            // Корректировка по высоте
-                            OpenGLF.GetInstance().Cam.PositionVertical();
-                        }
-                    }
-
-                    
                 }
-
-                // Меняем позицию
-                OpenGLF.GetInstance().Cam.Position = OpenGLF.GetInstance().Cam.Position + moveDir * time;
             }
         }
 
         /// <summary>
-        /// Добавляем в TPS, чтоб корректировать прышки
+        /// Изменения или точнее перемещение камеры
+        /// </summary>
+        public void Update()
+        {
+            float time = stopwatch.ElapsedMilliseconds / 1000f;
+            stopwatch.Restart();
+            if (time > 1.5f) time = 1.5f;
+
+            _Refrash();
+            
+            Camera cam = OpenGLF.GetInstance().Cam;
+            HitBoxPlayer hitBox = cam.GetHitBox();
+            if (Debag.GetInstance().IsDrawCollisium) hitBox.DrawHitBox();
+            vec3 move = _move * time;
+
+            // Перемещения
+            if (VEC.GetInstance().Moving != VEC.VEMoving.FreeFlight)
+            {
+                // Коллизия для векторов поверхности
+                if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
+                {
+                    if (IsLegsWater)
+                    {
+                        cam.Sneaking();
+                        hitBox = cam.GetHitBox();
+                        bool isAutoJump = hitBox.CollisionBodyXZ(move);
+                    }
+                    else
+                    {
+                        bool isAutoJump = hitBox.CollisionBodyXZ(move);
+                        Debag.GetInstance().BB = "";
+                        if (isAutoJump && _onGround)
+                        {
+                            _move.y = VE.SPEED_AUTOJAMP;
+                            move.y = _move.y * time;  // под вопросом
+                        }
+                    }
+                } else
+                {
+                    hitBox.CollisionBodyXZ(move);
+                }
+
+                // Коллизия для вектора вертикали
+                if (hitBox.CollisionBodyY(move))
+                {
+                    _onGround = true;
+                    _move.y = 0;
+                }
+
+            } else
+            {
+                hitBox.SetPos(hitBox.Position + move);
+            }
+            // Меняем позицию
+            cam.Position = hitBox.Position;
+        }
+
+        /// <summary>
+        /// Добавляем в TPS, чтоб корректировать прыжки
         /// </summary>
         public void Tick()
         {
             // Опрделяем в воде ли я
-            IsWater = Mouse.GetInstance().World.GetBlock(new vec3i(OpenGLF.GetInstance().Cam.Position)).IsWater;
+            vec3i pos = new vec3i(OpenGLF.GetInstance().Cam.Position);
+            // глаза
+            IsEyesWater = Mouse.GetInstance().World.GetBlock(pos).IsWater;
+            // тело
+            IsBodyWater = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -1, 0)).IsWater;
+            // ноги
+            IsLegsWater = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -3, 0)).IsWater;
 
-            // Определяем амплитуду прыжка
-            if (_tickjamp > 0)
-            {
-                _tickjamp--;
-                if (_tickjamp == 0)
-                {
-                    _jamp = -4.8f;
-                }
-            }
+            _Update();
+        }
 
-            // увеличиваем скорость падения
-            if (VEC.GetInstance().Moving == VEC.VEMoving.Survival && _jamp < 0)
-            {
-                _jamp = (_jamp - 0.8f) * .98f;
-                //_jamp = (_jamp - 1.4f) * .98f;
-            }
+        /// <summary>
+        /// Нажатие клавиши
+        /// </summary>
+        protected enum Key
+        {
+            /// <summary>
+            /// Значение отрицательное
+            /// </summary>
+            Minus = -1,
+            /// <summary>
+            /// Нет действия
+            /// </summary>
+            None = 0,
+            /// <summary>
+            /// Значение положительное
+            /// </summary>
+            Plus = 1
         }
     }
 }

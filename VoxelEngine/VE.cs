@@ -87,11 +87,16 @@
         /// <summary>
         /// Скорость прыжка за 0,2 секунды
         /// </summary>
-        public const float SPEED_JAMP = 10f;//10 лучше, это чуть больше 2 блоков, если 8 это 2 блока, но бага если нижнего блока нет, подвисает
+        public const float SPEED_JAMP = 20f; //16//10 лучше, это чуть больше 2 блоков, если 8 это 2 блока, но бага если нижнего блока нет, подвисает
+        /// <summary>
+        /// Скорость авто прыжка и когда встаём из положения сидя
+        /// </summary>
+        public const float SPEED_AUTOJAMP = 10f; //9
         /// <summary>
         /// Скорость падения если нет блоков под нагами
+        /// Чем больше тем быстрее падает
         /// </summary>
-        public const float SPEED_DOWN = 12f;
+        public const float SPEED_DOWN = 4f; //48
         /// <summary>
         /// Скорость полёта
         /// </summary>

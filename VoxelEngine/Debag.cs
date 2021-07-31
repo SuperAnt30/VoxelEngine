@@ -305,7 +305,7 @@ namespace VoxelEngine
                     + "Жидкести tick чанк: " + ChunkLiquidTicks + "\r\n"
                     + "Время загрузки первых чанков: " + _stime.TotalSeconds.ToString() + "  загрузки: " + _stimeLoad.TotalSeconds.ToString() + "\r\n"
                     + ToStringMem() + "\r\n"
-                    + Keyboard.GetInstance().PlCamera.jvh() + "\r\n"
+                    + Keyboard.GetInstance().PlCamera.StrDebug + "\r\n"
                     + BB + " " + CountTest + " " + CountTest2 + "\r\n"
                     //+ Keyboard.GetInstance().PlCamera._time + "\r\n\r\n"
                     + "В руке: " + NumberBlock;
