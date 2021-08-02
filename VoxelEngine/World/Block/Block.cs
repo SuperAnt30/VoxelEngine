@@ -96,7 +96,7 @@ namespace VoxelEngine
         /// <summary>
         /// Второй вариант для прорисовки
         /// </summary>
-        public virtual void BoxesTwo() { }
+        //public virtual void BoxesTwo() { }
 
         /// <summary>
         /// Сколько света вычитается для прохождения этого блока

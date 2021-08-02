@@ -389,6 +389,7 @@ namespace VoxelEngine
                 openGLF.WorldLineM.Remove("cursor");
             }
             Debag.GetInstance().RayCastBlock = block;
+            Debag.GetInstance().RayCastBlockUp = threadWorld.World.GetBlock(new BlockPos(block.Position.X, block.Position.Y + 1f, block.Position.Z));
         }
 
         /// <summary>

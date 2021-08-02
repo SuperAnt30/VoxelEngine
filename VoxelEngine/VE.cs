@@ -6,7 +6,7 @@
     public class VE
     {
 
-        public const int CHUNK_VISIBILITY = 10;
+        public const int CHUNK_VISIBILITY = 6;
         //public const int CHUNK_ALL = 221;
 
         //public const int CHUNK_VISIBILITY = 10;
@@ -73,6 +73,15 @@
 
 
         /// <summary>
+        /// На сколько растекается вода (будет на 1 больше)
+        /// </summary>
+        public static byte WATER = 5;
+        /// <summary>
+        /// Уровень вады для высот полигона, = 1 / (WATER)
+        /// </summary>
+        public static float WATER_LEVEL = 0.19f;
+
+        /// <summary>
         /// Скорость шага
         /// </summary>
         public const float SPEED_STEP = 8.6f;//4.3f;
@@ -109,5 +118,14 @@
         /// Скорость полёта вертикали
         /// </summary>
         public const float SPEED_FLY_VERTICAL = 12f;
+        /// <summary>
+        /// Скорость течения
+        /// </summary>
+        public const float SPEED_FLOW = 1f;
+        /// <summary>
+        /// Скорость плавание под водой вверх/вниз
+        /// </summary>
+        public const float SPEED_SWIM = 4f;
+
     }
 }

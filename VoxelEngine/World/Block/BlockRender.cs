@@ -23,6 +23,8 @@ namespace VoxelEngine
         {
             ChunkRend = chunkRender;
             Blk = block;
+            // позиция блока в чанке
+            posChunk = new vec3i(Blk.Position.X & 15, Blk.Position.Y, Blk.Position.Z & 15);
         }
 
         /// <summary>
@@ -45,33 +47,27 @@ namespace VoxelEngine
         protected BlockedResult _br;
 
         /// <summary>
-        /// яркость дневного соседнего блока
-        /// </summary>
-        //protected byte _lightValue;
-
-        /// <summary>
         /// Получть Сетку блока
         /// </summary>
         /// <param name="pos">позиция блока</param>
         /// <returns>сетка</returns>
         public float[] RenderMesh()
         {
-            // позиция блока в чанке
-            posChunk = new vec3i(Blk.Position.X & 15, Blk.Position.Y, Blk.Position.Z & 15);
+            
             List<float> buffer = new List<float>();
 
-            if (Blk.EBlock == EnumBlock.Water 
-                && ChunkRend.GetVoxel(posChunk + EnumFacing.DirectionVec(Pole.Up)).GetId() == (int)EnumBlock.Water)
-                //&& !IsBlockedLight(posChunk + EnumFacing.DirectionVec(Pole.Up)).IsDraw)
-            {
-                Blk.BoxesTwo();
-            }
+            //if (Blk.EBlock == EnumBlock.Water 
+            //    && ChunkRend.GetVoxel(posChunk + EnumFacing.DirectionVec(Pole.Up)).GetId() == (int)EnumBlock.Water)
+            //    //&& !IsBlockedLight(posChunk + EnumFacing.DirectionVec(Pole.Up)).IsDraw)
+            //{
+            //    Blk.BoxesTwo();
+            //}
 
-            
-            if (Blk.EBlock == EnumBlock.WaterFlowing)
-            {
-                Blk.Boxes[0].To = new vec3(1f, 1f - (VE.UV_SIZE * Blk.Properties * 4f), 1f);
-            }
+
+            //if (Blk.EBlock == EnumBlock.WaterFlowing)
+            //{
+            //    Blk.Boxes[0].To = new vec3(1f, 1f - (VE.UV_SIZE * Blk.Properties * 3.6f), 1f);
+            //}
             foreach (Box box in Blk.Boxes)
             {
                 _box = box;
@@ -82,31 +78,30 @@ namespace VoxelEngine
                     {
                         for (int i = 0; i < 6; i++)
                         {
-                            _br = IsBlockedLight(posChunk + EnumFacing.DirectionVec((Pole)i));
-                           // _br.Voxel
-                            if (Blk.AllDrawing || _br.IsDraw)
-                            //if (Blk.AllDrawing || _bl.LightPassing)
-                            {
-                                _side = (Pole)i;
-                                buffer.AddRange(_RenderMeshFaceShadow());
-                            }
+                            RenderMeshSide(buffer, (Pole)i);
                         }
                     }
                     else
                     {
-                        //_bl = ChunkRend.GetBlock(Blk.Position.ToVec3i() + EnumFacing.DirectionVec(face.Side));
-                        _br = IsBlockedLight(posChunk + EnumFacing.DirectionVec(face.Side));
-                        if (Blk.AllDrawing || _br.IsDraw)
-                        //if (Blk.AllDrawing || _bl.LightPassing)
-                        {
-                            _side = face.Side;
-                            buffer.AddRange(_RenderMeshFaceShadow());
-                        }
+                        RenderMeshSide(buffer, face.Side);
                     }
                 }
             }
 
             return buffer.ToArray();
+        }
+
+        /// <summary>
+        /// Получть Сетку стороны блока
+        /// </summary>
+        protected void RenderMeshSide(List<float> buffer, Pole side)
+        {
+            _br = BlockedLight(posChunk + EnumFacing.DirectionVec(side));
+            if (Blk.AllDrawing || _br.IsDraw)
+            {
+                _side = side;
+                buffer.AddRange(_RenderMeshFaceShadow());
+            }
         }
 
         /// <summary>
@@ -228,6 +223,44 @@ namespace VoxelEngine
         }
 
         /// <summary>
+        /// Определение высот воды
+        /// </summary>
+        /// <returns></returns>
+        public vec4 HeightWater()
+        {
+            //return new vec4();
+            Voxel v = GetVoxel(posChunk.x, posChunk.y + 1, posChunk.z);
+            if (v.IsEmpty()) return new vec4(1f);
+            byte id = v.GetId();
+            if (id == 11 || id == 13)
+            {
+                // значит над блоком вода
+                return new vec4(0f);
+            }
+
+            // Если над блоком нет воды, проверяем соседние блоки, для высоты каждого угла
+            int a, b, c, d, e, f, g, h;
+            int j = BlockedWater();
+
+            a = BlockedWater(posChunk.x + 1, posChunk.y, posChunk.z);
+            b = BlockedWater(posChunk.x, posChunk.y, posChunk.z + 1);
+            c = BlockedWater(posChunk.x - 1, posChunk.y, posChunk.z);
+            d = BlockedWater(posChunk.x, posChunk.y, posChunk.z - 1);
+
+            e = BlockedWater(posChunk.x - 1, posChunk.y, posChunk.z - 1);
+            f = BlockedWater(posChunk.x - 1, posChunk.y, posChunk.z + 1);
+            g = BlockedWater(posChunk.x + 1, posChunk.y, posChunk.z + 1);
+            h = BlockedWater(posChunk.x + 1, posChunk.y, posChunk.z - 1);
+
+            return new vec4(
+                (c == -1 || d == -1 || e == -1) ? 0 : j + c + d + e,
+                (b == -1 || c == -1 || f == -1) ? 0 : j + b + c + f,
+                (a == -1 || b == -1 || g == -1) ? 0 : j + a + b + g,
+                (a == -1 || d == -1 || h == -1) ? 0 : j + a + d + h
+            ) / 4f;
+        }
+
+        /// <summary>
         /// Генерация сетки стороны коробки
         /// </summary>
         /// <param name="pos">позиция блока</param>
@@ -254,30 +287,42 @@ namespace VoxelEngine
             //color.w = (((float)_br.LightSky) / 15f);
             //color.w = ((float)_lightValue / 15f);
             //color.w = 1f;
-            BlockFaceUV blockUV = new BlockFaceUV(
-                new vec3(Blk.Position.X + _box.From.x, Blk.Position.Y + _box.From.y, Blk.Position.Z + _box.From.z),
-                new vec3(Blk.Position.X + _box.To.x, Blk.Position.Y + _box.To.y, Blk.Position.Z + _box.To.z),
-                new vec2(u1, v2 + VE.UV_SIZE),
-                new vec2(u1 + VE.UV_SIZE, v2),
-                col, lg, leg
-            );
+            BlockFaceUV blockUV = new BlockFaceUV(col, lg, leg);
+            if (Blk.EBlock == EnumBlock.WaterFlowing && _side != Pole.Down)
+            {
+                vec4 vw = HeightWater() * VE.WATER_LEVEL;
+                BlockFaceLiquid blockFaceLiquid = new BlockFaceLiquid(blockUV, Blk, _box, vw, new vec2(u1, v2));
+                blockFaceLiquid.RenderMeshSide(_side);
+            }
+            else
+            {
+                blockUV.SetVecUV(
+                    new vec3(Blk.Position.X + _box.From.x, Blk.Position.Y + _box.From.y, Blk.Position.Z + _box.From.z),
+                    new vec3(Blk.Position.X + _box.To.x, Blk.Position.Y + _box.To.y, Blk.Position.Z + _box.To.z),
+                    new vec2(u1, v2 + VE.UV_SIZE),
+                    new vec2(u1 + VE.UV_SIZE, v2)
+                );
+            }
             if (_face.IsTwoSides)
             {
+                // Слой воды чтоб увидеть снизу
                 List<float> ar = new List<float>(blockUV.Side(_side));
-                blockUV = new BlockFaceUV(
+                blockUV.SetVecUV(
                     new vec3(Blk.Position.X + _box.From.x, Blk.Position.Y + _box.To.y, Blk.Position.Z + _box.From.z),
                     new vec3(Blk.Position.X + _box.To.x, Blk.Position.Y + _box.To.y, Blk.Position.Z + _box.To.z),
                     new vec2(u1, v2 + VE.UV_SIZE),
-                    new vec2(u1 + VE.UV_SIZE, v2),
-                    col, lg, leg
+                    new vec2(u1 + VE.UV_SIZE, v2)
                 );
                 ar.AddRange(blockUV.Side(Pole.Down));
                 return ar.ToArray();
-            } else
+            }
+            else
             {
                 return blockUV.Side(_side);
             }
         }
+        
+
 
         /// <summary>
         /// Затемнение стороны от стороны блока
@@ -306,7 +351,6 @@ namespace VoxelEngine
             /// Прорисовывать ли сторону
             /// </summary>
             public bool IsDraw;
-//            public Voxel Voxel;
             /// <summary>
             /// Яркость света неба
             /// </summary>
@@ -321,65 +365,39 @@ namespace VoxelEngine
             public byte Light;
 
         }
-        /// <summary>
-        /// Проверка блока по координате для освещения
-        /// </summary>
-        public BlockedResult IsBlockedLight(vec3i pos)
-        {
-            if (pos.y < 0 || pos.y > 255) return new BlockedResult();
+        
 
-            int xc = ChunkRend.X + (pos.x >> 4);
-            int zc = ChunkRend.Z + (pos.z >> 4);
-            int xv = pos.x & 15;
-            int zv = pos.z & 15;
-            Voxel v = new Voxel();
+        /// <summary>
+        /// Поиск вокселя
+        /// </summary>
+        public Voxel GetVoxel(int x, int y, int z)
+        {
+            if (y < 0 || y > 255) return new Voxel();
+
+            int xc = ChunkRend.X + (x >> 4);
+            int zc = ChunkRend.Z + (z >> 4);
+            int xv = x & 15;
+            int zv = z & 15;
+
             if (xc == ChunkRend.X && zc == ChunkRend.Z)
             {
                 // Соседний блок в этом чанке
-                v = ChunkRend.GetVoxel(pos);
-                //Blocks.GetBlockLightOpacity(id)
-                //v = ChunkRend.Voxels[pos.y, pos.x, pos.z];
-                //v = ChunkRend.Voxels[pos.y << 8 | pos.z << 4 | pos.x];
+                return ChunkRend.GetVoxel(x, y, z);
             }
-            else
-            {
-                // Соседний блок в соседнем чанке
-                ChunkRender chunk = null;
-                if (xc == ChunkRend.X - 1) chunk = ChunkRend.ChunkWest();
-                else if (xc == ChunkRend.X + 1) chunk = ChunkRend.ChunkEast();
-                else if (zc == ChunkRend.Z + 1) chunk = ChunkRend.ChunkSouth();
-                else if (zc == ChunkRend.Z - 1) chunk = ChunkRend.ChunkNorth();
-                if (chunk != null) v = chunk.GetVoxel(xv, pos.y, zv);// chunk.Voxels[pos.y, xv, zv];
-                //if (chunk != null) v = chunk.Voxels[pos.y << 8 | zv << 4 | xv];
-            }
-            if (v.IsEmpty()) return new BlockedResult();
+            // Соседний блок в соседнем чанке
+            ChunkRender chunk = null;
+            if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z + 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkSouth();
+            else if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z - 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkNorth();
+            else if (xc == ChunkRend.X + 1 && zc == ChunkRend.Z + 1 && ChunkRend.ChunkEast() != null) chunk = ChunkRend.ChunkEast().ChunkSouth();
+            else if (xc == ChunkRend.X + 1 && zc == ChunkRend.Z - 1 && ChunkRend.ChunkEast() != null) chunk = ChunkRend.ChunkEast().ChunkNorth();
+            else if (xc == ChunkRend.X - 1) chunk = ChunkRend.ChunkWest();
+            else if (xc == ChunkRend.X + 1) chunk = ChunkRend.ChunkEast();
+            else if (zc == ChunkRend.Z + 1) chunk = ChunkRend.ChunkSouth();
+            else if (zc == ChunkRend.Z - 1) chunk = ChunkRend.ChunkNorth();
 
-            byte id = v.GetId();
-            BlockedResult br = new BlockedResult()
-            {
-                //Voxel = v,
-                //IsDraw = v.GetId() == 0 || !v.IsNotTransparent(),
-                //IsDraw = id == 0 || !v.IsNotTransparent(),
-                IsDraw = id == 0 || !Blocks.IsNotTransparent(id),
-                LightSky = v.GetLightFor(EnumSkyBlock.Sky),
-                LightBlock = v.GetLightFor(EnumSkyBlock.Block),
-                Light = v.GetLightsFor()
-            };
-            if (br.IsDraw && id == Blk.Id) br.IsDraw = false;
-            return br;
-            ////if (Is)
+            if (chunk != null) return chunk.GetVoxel(xv, y, zv);
 
-            //return v.IsEmpty()
-            //    ? new BlockedResult()
-            //    : new BlockedResult()
-            //    {
-            //        //Voxel = v,
-            //        //IsDraw = v.GetId() == 0 || !v.IsNotTransparent(),
-            //        IsDraw = v.GetId() == 0 || !v.IsNotTransparent() || v.GetId() != Blk.Id,
-            //        LightSky = v.GetLightFor(EnumSkyBlock.Sky),
-            //        LightBlock = v.GetLightFor(EnumSkyBlock.Block),
-            //        Light = v.GetLightsFor()
-            //    };
+            return new Voxel();
         }
 
         /// <summary>
@@ -387,165 +405,74 @@ namespace VoxelEngine
         /// </summary>
         public bool IsBlockedAO(int x, int y, int z)
         {
-            if (y < 0 || y > 255) return true; // true чтоб не видно было
-
-            int xc = ChunkRend.X + (x >> 4);
-            int zc = ChunkRend.Z + (z >> 4);
-            int xv = x & 15;
-            int zv = z & 15;
-            Voxel v = new Voxel();
-            if (xc == ChunkRend.X && zc == ChunkRend.Z)
-            {
-                // Соседний блок в этом чанке
-                //v = ChunkRend.Voxels[y, x, z];
-                v = ChunkRend.GetVoxel(x, y, z);
-                //v = ChunkRend.Voxels[y << 8 | z << 4 | x];
-            }
-            else
-            {
-                // Соседний блок в соседнем чанке
-                ChunkRender chunk = null;
-                if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z + 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkSouth();
-                else if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z - 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkNorth();
-                else if (xc == ChunkRend.X + 1 && zc == ChunkRend.Z + 1 && ChunkRend.ChunkEast() != null) chunk = ChunkRend.ChunkEast().ChunkSouth();
-                else if (xc == ChunkRend.X + 1 && zc == ChunkRend.Z - 1 && ChunkRend.ChunkEast() != null) chunk = ChunkRend.ChunkEast().ChunkNorth();
-                else if (xc == ChunkRend.X - 1) chunk = ChunkRend.ChunkWest();
-                else if (xc == ChunkRend.X + 1) chunk = ChunkRend.ChunkEast();
-                else if (zc == ChunkRend.Z + 1) chunk = ChunkRend.ChunkSouth();
-                else if (zc == ChunkRend.Z - 1) chunk = ChunkRend.ChunkNorth();
-
-                if (chunk != null) v = chunk.GetVoxel(xv, y, zv); //chunk.Voxels[y, xv, zv];
-                //if (chunk != null) v = chunk.Voxels[y << 8 | zv << 4 | xv];
-            }
-
-            return v.IsEmpty()
-                ? true
-                //: (v.GetId() != 0 && v.IsNotTransparent());
-                : (v.GetId() != 0 && Blocks.IsNotTransparent(v.GetId()));
+            Voxel v = GetVoxel(x, y, z);
+            if (v.IsEmpty()) return true;
+            return v.GetId() != 0 && Blocks.IsNotTransparent(v.GetId());
         }
-        /*
+
         /// <summary>
-        /// Проверка блока по координате
+        /// Проверка блока по параметру
         /// </summary>
-        public bool IsBlockedOld(vec3i pos)
+        public byte BlockedParam(int x, int y, int z)
         {
-            if (pos.y < 0 || pos.y >= VE.CHUNK_HEIGHT) return true; // true чтоб не видно было
-            int xc = ChunkRend.X;
-            int zc = ChunkRend.Z;
-            int xv = pos.x;
-            int zv = pos.z;
-            bool isOtherChunk = false;
-            if (pos.x == -1)
-            {
-                xv = VE.CHUNK_WIDTH - 1;
-                xc--;
-                isOtherChunk = true;
-            }
-            else if (pos.x == VE.CHUNK_WIDTH)
-            {
-                xv = 0;
-                xc++;
-                isOtherChunk = true;
-            }
-            if (pos.z == -1)
-            {
-                zv = VE.CHUNK_WIDTH - 1;
-                zc--;
-                isOtherChunk = true;
-            }
-            else if (pos.z == VE.CHUNK_WIDTH)
-            {
-                zv = 0;
-                zc++;
-                isOtherChunk = true;
-            }
-            //Block blockBeside = null;
-            // short id = 0;
+            Voxel v = GetVoxel(x, y, z);
+            if (v.IsEmpty()) return 0;
+            return v.GetParam4bit();
+        }
 
-            if (isOtherChunk)
+        public int BlockedWater()
+        {
+            return Blk.Properties;
+        }
+
+        public int BlockedWater(int x, int y, int z)
+        {
+            Voxel v = GetVoxel(x, y, z);
+            if (v.IsEmpty()) return VE.WATER;
+            byte id = v.GetId();
+            if (id == 11) return -1;
+            if (id == 13)
             {
-                //return true;
-                // Соседний блок в соседнем чанке
-                ChunkRender chunk = ChunkRend.World.GetChunk(xc, zc);
-                if (chunk != null)
+                byte b = v.GetParam4bit();
+                if (b == 0)
                 {
-                    //short v = chunk.GetVoxel2(xv, pos.y, zv);
-                    //return (byte)(v >> 8) != 0 && (byte)((v & 0xF0) >> 4) == 0;
-                    Voxel v = chunk.Voxels[pos.y, xv, zv];
-                    //if (v.Id == 0) return false;
-                    //if (v.GetLightPassing() == 1) id = v.Id;
-                    //id = v.GetLightPassing() == 1;
-                    return v.GetId() != 0 && v.GetLightPassing() == 0;
-
-
-
-
-                    //Voxel voxel = chunk.GetVoxel(xv, pos.y, zv);
-                    //if (voxel.Id == 0) return false;
-                    ////return !chunk.Voxels[pos.y, xv, zv].LP;
-                    //return true;
-                    //return true;// !chunk.VoxelsLP[pos.y, xv, zv];
-
-                    //return voxel.Id != 0 && voxel.B1 == 0;
-
-                    //return chunk.GetVoxel(xv, y, zv).Id != 0 && chunk.GetVoxel(xv, y, zv).B1 == 0;
-                    //blockBeside = Blocks.GetBlock(chunk.GetVoxel(xv, pos.y, zv), new vec3i(xv, pos.y, zv));
+                    // проверяем вверхний блок
+                    Voxel v2 = GetVoxel(x, y + 1, z);
+                    if (!v2.IsEmpty())
+                    {
+                        byte id2 = v2.GetId();
+                        if (id2 == 11 || id2 == 13) return -1;
+                    }
                 }
+                return b;
             }
-            //else
+            return VE.WATER;
+        }
+
+        /// <summary>
+        /// Проверка блока по координате для освещения
+        /// </summary>
+        public BlockedResult BlockedLight(vec3i pos)
+        {
+            Voxel v = GetVoxel(pos.x, pos.y, pos.z);
+            if (v.IsEmpty()) return new BlockedResult();
+
+            byte id = v.GetId();
+            BlockedResult br = new BlockedResult()
             {
-                // Соседний блок в этом чанке
-
-                //return (byte)(Voxels[(y * VE.CHUNK_WIDTH + zv) * VE.CHUNK_WIDTH + xv] >> 8) != 0
-                //    && (byte)((Voxels[(y * VE.CHUNK_WIDTH + zv) * VE.CHUNK_WIDTH + xv] & 0xF0) >> 4) == 0;
-                // blockBeside = Block;
-                //                return Block.
-
-                //Vox v = ChunkRend.Voxels[pos.y, xv, zv];
-                //return v.Id != 0 && v.GetLightPassing() == 0;
-
-                Voxel v = ChunkRend.Voxels[pos.y, xv, zv];
-                //if (v.Id == 0) return false;
-                //if (v.GetLightPassing() == 1) id = v.Id;
-                return v.GetId() != 0 && v.GetLightPassing() == 0;
-
-                //v.GetId() != 0 && v.GetLightPassing() == 0;
-
-
-                //Voxel voxel = ChunkRend.GetVoxel(xv, pos.y, zv);
-                //if (voxel.Id == 0) return false;
-                ////return !ChunkRend.Voxels[pos.y, xv, zv].LP;
-                //return true;
-                //return !Blocks.GetBlock(voxel).LightPassing;
-                //return voxel.Id != 0 && voxel.B1 == 0;
-
-                //return (byte)(ChunkRend.Voxels[pos.y, xv, zv] >> 8) != 0
-                //    && (byte)((ChunkRend.Voxels[pos.y, xv, zv] & 0xF0) >> 4) == 0;
-
-
-                // TODO:: ускорение, создание объекта block сильно тормазит
-                //return (byte)(Voxels[(y * VE.CHUNK_WIDTH + zv) * VE.CHUNK_WIDTH + xv] >> 8) != 0;
-                //Voxel vox = GetVoxel(xv, y, zv);
-
-                //Voxels[(y * VE.CHUNK_WIDTH + z) * VE.CHUNK_WIDTH + x]
-                //return vox.Id != 0;
-                //// Соседний блок в этом чанке
-                //blockBeside = Blocks.GetBlock(ChunkRend.GetVoxel(xv, pos.y, zv), new vec3i(xv, pos.y, zv));
+                IsDraw = id == 0 || !Blocks.IsNotTransparent(id),
+                LightSky = v.GetLightFor(EnumSkyBlock.Sky),
+                LightBlock = v.GetLightFor(EnumSkyBlock.Block),
+                Light = v.GetLightsFor()
+            };
+            // Для слияния однотипных блоков
+            if (br.IsDraw)
+            {
+                if (id == Blk.Id) br.IsDraw = false;
+                else if (Blk.IsWater && Blocks.IsWater(id)) br.IsDraw = false;
             }
-            //if (blockBeside == null)
-            //return false;
-
-            //if (id != 0)
-            //{
-            //    Block.Id 
-            //}
-
-            //// Если блок прозрачный
-            //if (blockBeside.LightPassing)
-            //{
-            //    return Block.Id == blockBeside.Id; // TODO:: сделать определение по типу блока 
-            //} 
-            //return true;
-        }*/
+            return br;
+        }
+        
     }
 }

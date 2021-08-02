@@ -161,19 +161,35 @@ namespace VoxelEngine
         /// <summary>
         /// Куда смотрит курсор
         /// </summary>
-        //public vec3i RayCast { get; set; }// = new vec3i(0);
         public Block RayCastBlock { get; set; }
+        /// <summary>
+        /// Куда смотрит курсор блок сверху
+        /// </summary>
+        public Block RayCastBlockUp { get; set; }
         /// <summary>
         /// Куда смотрит курсор
         /// </summary>
         public string ToStringRayCast()
         {
-            if (RayCastBlock == null || RayCastBlock.Id < 1) return "Куда смотрит курсор XYZ: -";
-            //Block b = World.GetBlock(RayCast);
-            return string.Format("Куда смотрит курсор XYZ: {0} [{1:0.00}] b: {2}", 
+            string s1 = "Курсор: ";
+            string s2 = "Курсор Y+1: ";
+
+            if (RayCastBlock != null && RayCastBlock.EBlock != EnumBlock.Air)
+            {
+                s1 += string.Format("{0} [{1:0.00}] b: {2}",
                 RayCastBlock.Position, RayCastBlock.Voxel.GetLightFor(EnumSkyBlock.Block),
                 RayCastBlock.Voxel.ToString()
                 );
+            }
+            if (RayCastBlockUp != null && RayCastBlockUp.EBlock != EnumBlock.Air)
+            {
+                s2 += string.Format("{0} [{1:0.00}] b: {2}",
+                RayCastBlockUp.Position, RayCastBlockUp.Voxel.GetLightFor(EnumSkyBlock.Block),
+                RayCastBlockUp.Voxel.ToString()
+                );
+            }
+
+            return s1 + "\r\n" + s2;
         }
 
         public string ToStringCountsMeshs()

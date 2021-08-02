@@ -55,6 +55,7 @@ namespace VoxelEngine
         /// Находиться ли ноги игрок в воде (-1 блок над глазами)
         /// </summary>
         public bool IsLegsWater { get; protected set; } = false;
+
         /// <summary>
         /// Строка для дебага
         /// </summary>
@@ -257,7 +258,7 @@ namespace VoxelEngine
                 else if (IsEyesWater)
                 {
                     // плывём вверх или низ под водой
-                    if (_height != 0) j = (float)_height * 4f;
+                    if (_height != 0) j = (float)_height * VE.SPEED_SWIM;
 
                     // Если в воде то замедляем в 2,5 раза
                     h *= .4f;
@@ -285,15 +286,21 @@ namespace VoxelEngine
             float v2 = (float)_vertical * v;
             float h2 = (float)_horizontal * h;
 
-            StrDebug =string.Format("j: {0:0.00}\r\nv: {1:0.00}\r\nh: {2:0.00} {3}{4}{5}{6}",
+            StrDebug =string.Format("j: {0:0.00}\r\nv: {1:0.00}\r\nh: {2:0.00} {3}{4}{5}{6}{7}",
                 j, v2, h2, _onGround ? "__" : "",
-                IsEyesWater ? "[E]" : "", IsBodyWater ? "[B]" : "", IsLegsWater ? "[L]" : "");
+                IsEyesWater ? "[E]" : "", IsBodyWater ? "[B]" : "", IsLegsWater ? "[L]" : "", flow != Pole.Down ? flow.ToString() : "");
 
             _move.y = j;
             _move.x = glm.sin(cam.Yaw + 1.570796f) * h2;
             _move.z = glm.cos(cam.Yaw + 1.570796f) * h2;
             _move.x -= glm.sin(cam.Yaw) * v2;
             _move.z -= glm.cos(cam.Yaw) * v2;
+
+            // Если есть течение то корректируем от смещения
+            if (flow == Pole.East) _move.x += VE.SPEED_FLOW;
+            else if (flow == Pole.West) _move.x -= VE.SPEED_FLOW;
+            else if (flow == Pole.North) _move.z -= VE.SPEED_FLOW;
+            else if (flow == Pole.South) _move.z += VE.SPEED_FLOW;
         }
         
         /// <summary>
@@ -338,7 +345,7 @@ namespace VoxelEngine
                 {
                     if (IsEyesWater && _move.y <= 0)
                     {
-                        _move.y = -1f;
+                        _move.y = -VE.SPEED_FLOW;
                     }
                     if (IsLegsWater)
                     {
@@ -414,7 +421,7 @@ namespace VoxelEngine
                     else
                     {
                         bool isAutoJump = hitBox.CollisionBodyXZ(move);
-                        Debag.GetInstance().BB = "";
+                        
                         if (isAutoJump && _onGround)
                         {
                             _move.y = VE.SPEED_AUTOJAMP;
@@ -442,6 +449,11 @@ namespace VoxelEngine
         }
 
         /// <summary>
+        /// Направление течения если в воде
+        /// </summary>
+        Pole flow = Pole.Down;
+
+        /// <summary>
         /// Добавляем в TPS, чтоб корректировать прыжки
         /// </summary>
         public void Tick()
@@ -454,6 +466,45 @@ namespace VoxelEngine
             IsBodyWater = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -1, 0)).IsWater;
             // ноги
             IsLegsWater = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -3, 0)).IsWater;
+
+            if (IsLegsWater)
+            {
+                Block block = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -3, 0));
+                if (block.EBlock == EnumBlock.WaterFlowing)
+                {
+                    BlockRender blockRender = new BlockRender(Mouse.GetInstance().World.GetChunk(block.Position), block);
+                    vec4 level = blockRender.HeightWater() * VE.WATER_LEVEL;
+
+                    float w = level.x + level.y;
+                    float s = level.y + level.z;
+                    float e = level.z + level.w;
+                    float n = level.w + level.x;
+
+                    if (w > e && w >= s && w >= n)
+                    {
+                        flow = Pole.West;
+                    }
+                    else if (s >= w && s >= e && s > n)
+                    {
+                        flow = Pole.South;
+                    }
+                    else if (e > w && e >= s && e >= n)
+                    {
+                        flow = Pole.East;
+                    }
+                    else
+                    {
+                        flow = Pole.North;
+                    }
+                } else
+                {
+                    flow = Pole.Down;
+                }
+            }
+            else
+            {
+                flow = Pole.Down;
+            }
 
             _Update();
         }

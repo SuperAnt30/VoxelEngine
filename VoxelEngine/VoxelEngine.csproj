@@ -99,6 +99,7 @@
     <Compile Include="World\Block\Block.cs" />
     <Compile Include="World\Block\BlockAir.cs" />
     <Compile Include="World\Block\BlockBrol.cs" />
+    <Compile Include="World\Block\BlockFaceLiquid.cs" />
     <Compile Include="World\Block\BlockRender.cs" />
     <Compile Include="World\Block\BlockTick.cs" />
     <Compile Include="World\Block\BlockTileBrown.cs" />

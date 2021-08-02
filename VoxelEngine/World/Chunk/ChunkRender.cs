@@ -1527,7 +1527,7 @@ namespace VoxelEngine
         protected void LiquidTickBlock(Block block)
         {
             // максимальный параметр
-            byte pmax = 4;
+            byte pmax = VE.WATER;
 
             if (block.EBlock == EnumBlock.Water)
             {
@@ -1544,7 +1544,7 @@ namespace VoxelEngine
             else if (block.EBlock == EnumBlock.WaterFlowing)
             {
                 // если проточная вода
-
+                // TODO :: 2021.08.01 надо продумать, алгоритм пробегания воды с проверкой и заменить её параметр, пример добавили рядом воду.
                 
                 // если сверху вода
                 Block b = GetBlock(block.Position.Offset(Pole.Up).ToVec3i());
@@ -1595,8 +1595,9 @@ namespace VoxelEngine
                     {
                         AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, 10);
                     }
-                    else if (block.Properties < pmax && b.EBlock != EnumBlock.Water && b.EBlock != EnumBlock.WaterFlowing)
+                    else if (block.Properties < pmax && !b.IsWater)
                     {
+                        // Нижний блок твёрдый, продолжаем растекаться
                         // Проверка сторон
                         for (int i = 2; i < 6; i++) // стороны блока
                         {
@@ -1606,12 +1607,17 @@ namespace VoxelEngine
                                 // Проверяем ниже на предмет не воздуха
                                 Block b3 = GetBlock(b.Position.Offset(Pole.Down).ToVec3i());
                                 if (((b3.EBlock != EnumBlock.Air || block.Properties == 0)
-                                    && b3.EBlock != EnumBlock.Water && b3.EBlock != EnumBlock.WaterFlowing))
+                                    && !b3.IsWater))
                                 {
                                     AddLquidTicksBlock(EnumBlock.WaterFlowing, b2.Position, block.Properties + 1, 10);
                                 }
                             }
                         }
+                    }
+                    else if (block.Properties < pmax && b.IsWater)
+                    {
+                        // Нижний блок вода, проверка растекания
+                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, 10);
                     }
                 }
             }

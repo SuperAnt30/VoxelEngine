@@ -46,6 +46,14 @@ namespace VoxelEngine
         {
             return GetBlockLightOpacity(id) > 13;
         }
+
+        /// <summary>
+        /// Блок воды ли
+        /// </summary>
+        public static bool IsWater(byte id)
+        {
+            return id == (int)EnumBlock.Water || id == (int)EnumBlock.WaterFlowing;
+        }
         /// <summary>
         /// Сколько света вычитается для прохождения этого блока
         /// </summary>

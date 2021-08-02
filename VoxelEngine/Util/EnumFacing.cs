@@ -33,10 +33,10 @@ namespace VoxelEngine.Util
         public static Pole FromAngle(float angle)
         {
             //return GetHorizontal(Mth.Floor(angle / 90.0f + 0.5f) & 3);
-            if (angle >= -45f && angle <= 45f) return Pole.South;
+            if (angle >= -45f && angle <= 45f) return Pole.North;
             else if (angle > 45f && angle < 135f) return Pole.West;
             else if (angle < -45f && angle > -135f) return Pole.East;
-            return Pole.North;
+            return Pole.South;
         }
 
 
