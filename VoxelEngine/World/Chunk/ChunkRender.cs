@@ -65,14 +65,14 @@ namespace VoxelEngine
         /// </summary>
         //public short[,,] Voxels { get; protected set; } = new short[VE.CHUNK_HEIGHT, VE.CHUNK_WIDTH, VE.CHUNK_WIDTH];
         //public short[,,] Voxels2 { get; protected set; } = new short[VE.CHUNK_HEIGHT, VE.CHUNK_WIDTH, VE.CHUNK_WIDTH];
-        public Voxel[,,] Voxels { get; protected set; } = new Voxel[256, 16, 16];
+        //public Voxel[,,] Voxels { get; protected set; } = new Voxel[256, 16, 16];
         //public Voxel[] Voxels { get; protected set; } = new Voxel[VE.CHUNK_VOLUME];
         //public bool[,,] VoxelsLP { get; protected set; } = new bool[VE.CHUNK_HEIGHT, VE.CHUNK_WIDTH, VE.CHUNK_WIDTH];
 
         /// <summary>
         /// Данные чанка
         /// </summary>
-        //public ChunkStorage[] StorageArrays { get; protected set; } = new ChunkStorage[16];
+        public ChunkStorage[] StorageArrays { get; protected set; } = new ChunkStorage[16];
 
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace VoxelEngine
             X = xpos;
             Z = zpos;
 
-            //for (int i = 0; i < StorageArrays.Length; i++) StorageArrays[i] = new ChunkStorage();
+            for (int i = 0; i < StorageArrays.Length; i++) StorageArrays[i] = new ChunkStorage();
             World = world;
         }
 
@@ -134,14 +134,14 @@ namespace VoxelEngine
         /// </summary>
         public Voxel GetVoxel(int x, int y, int z)
         {
-            return Voxels[y, x, z];
+           // return Voxels[y, x, z];
 
-            //if (y >= 0 && y >> 4 < StorageArrays.Length)
-            //{
-            //    ChunkStorage storage = StorageArrays[y >> 4];
-            //    return storage.GetVoxel(x, y & 15, z);
-            //}
-            //return new Voxel();
+            if (y >= 0 && y >> 4 < StorageArrays.Length)
+            {
+                ChunkStorage storage = StorageArrays[y >> 4];
+                return storage.GetVoxel(x, y & 15, z);
+            }
+            return new Voxel();
         }
 
         /// <summary>
@@ -154,34 +154,16 @@ namespace VoxelEngine
             return (EnumBlock)GetVoxel(pos.ToVec3i()).GetId();
         }
 
-        ///// <summary>
-        ///// Задать воксель
-        ///// </summary>
-        //public void SetVoxelId(int x, int y, int z, Block block)
-        //{
-        //    if (y >= 0 && y >> 4 < StorageArrays.Length)
-        //    {
-        //        ChunkStorage storage = StorageArrays[y >> 4];
-        //        storage.SetVoxelId(x, y & 15, z, block);
-        //    }
-        //    isSave = true;
-        //}
-
         /// <summary>
         /// Задать воксель
         /// </summary>
         public void SetVoxelId(int x, int y, int z, byte id)
         {
-            Voxels[y, x, z].SetIdByte(id);
-            
-            //_voxels[y, x, z].SetIdByte(id);
-            //Voxels[y, x, z].SetBlockLightOpacity(Blocks.GetBlockLightOpacity(id));
-            //if (y >= 0 && y >> 4 < StorageArrays.Length)
-            //{
-            //    ChunkStorage storage = StorageArrays[y >> 4];
-            //    storage.SetVoxelId(x, y & 15, z, id);
-            //}
-            //isModified = true;
+            if (y >= 0 && y >> 4 < StorageArrays.Length)
+            {
+                ChunkStorage storage = StorageArrays[y >> 4];
+                storage.SetVoxelId(x, y & 15, z, id);
+            }
         }
 
         /// <summary>
@@ -189,7 +171,12 @@ namespace VoxelEngine
         /// </summary>
         public void SetParam4bit(int x, int y, int z, byte param)
         {
-            Voxels[y, x, z].SetParam4bit(param);
+            if (y >= 0 && y >> 4 < StorageArrays.Length)
+            {
+                ChunkStorage storage = StorageArrays[y >> 4];
+                storage.SetParam4bit(x, y & 15, z, param);
+            }
+            //Voxels[y, x, z].SetParam4bit(param);
         }
 
         /// <summary>
@@ -208,12 +195,12 @@ namespace VoxelEngine
         /// </summary>
         public void SetLightFor(int x, int y, int z, EnumSkyBlock type, byte light)
         {
-            Voxels[y, x, z].SetLightFor(type, light);
-            //if (y >= 0 && y >> 4 < StorageArrays.Length)
-            //{
-            //    ChunkStorage storage = StorageArrays[y >> 4];
-            //    storage.SetLightFor(x, y & 15, z, type, light);
-            //}
+            //Voxels[y, x, z].SetLightFor(type, light);
+            if (y >= 0 && y >> 4 < StorageArrays.Length)
+            {
+                ChunkStorage storage = StorageArrays[y >> 4];
+                storage.SetLightFor(x, y & 15, z, type, light);
+            }
             isModified = true;
         }
 
@@ -222,12 +209,12 @@ namespace VoxelEngine
         /// </summary>
         public void SetLightsFor(int x, int y, int z, byte light)
         {
-            Voxels[y, x, z].SetLightsFor(light);
-            //if (y >= 0 && y >> 4 < StorageArrays.Length)
-            //{
-            //    ChunkStorage storage = StorageArrays[y >> 4];
-            //    storage.SetLightsFor(x, y & 15, z, light);
-            //}
+            //Voxels[y, x, z].SetLightsFor(light);
+            if (y >= 0 && y >> 4 < StorageArrays.Length)
+            {
+                ChunkStorage storage = StorageArrays[y >> 4];
+                storage.SetLightsFor(x, y & 15, z, light);
+            }
             isModified = true;
         }
 
@@ -236,29 +223,14 @@ namespace VoxelEngine
         /// </summary>
         public byte GetLightFor(int x, int y, int z, EnumSkyBlock type)
         {
-            return Voxels[y, x, z].GetLightFor(type);
-            //if (y >= 0 && y >> 4 < StorageArrays.Length)
-            //{
-            //    ChunkStorage storage = StorageArrays[y >> 4];
-            //    return storage.GetLightFor(x, y & 15, z, type);
-            //}
-            //return (byte)type;
+            //return Voxels[y, x, z].GetLightFor(type);
+            if (y >= 0 && y >> 4 < StorageArrays.Length)
+            {
+                ChunkStorage storage = StorageArrays[y >> 4];
+                return storage.GetLightFor(x, y & 15, z, type);
+            }
+            return (byte)type;
         }
-
-        /// <summary>
-        /// Задать воксель
-        /// </summary>
-        //public void SetVoxel(int x, int y, int z, Voxel voxel)
-        //{
-        //    if (y >= 0 && y >> 4 < StorageArrays.Length)
-        //    {
-        //        ChunkStorage storage = StorageArrays[y >> 4];
-        //        storage.SetVoxel(x, y & 15, z, voxel);
-        //    }
-        //    isSave = true;
-        //}
-
-
 
         /// <summary>
         /// Чтение чанка
@@ -570,200 +542,23 @@ namespace VoxelEngine
             }
         }
 
-        //public void NoRender()
-        //{
-        //    buffer.Clear();
-        //}
-        /// <summary>
-        /// Был ли рендер меша
-        /// </summary>
-        /*
-        public void RenderSkyLight()
-        {
-            
-            //return;
-            int x, y, z;
-            // Всё темно
-            for (y = 0; y < 256; y++)
-            {
-                for (z = 0; z < 16; z++)
-                {
-                    for (x = 0; x < 16; x++)
-                    {
-                        Voxels[y, x, z].SetB2(0);
-                    }
-                }
-            }
-
-            // Небо, верхний ряд светлый
-            y = 255;
-            for (z = 0; z < 16; z++)
-            {
-                for (x = 0; x < 16; x++)
-                {
-                    Voxel voxel = Voxels[y, x, z];
-                    Voxels[y, x, z].SetB2((byte)(voxel.GetId() == 0 ? 15 : 0));
-                }
-            }
-            // Пробегаем вниз
-            for (y = 254; y >= 0; y--)
-            {
-                for (z = 0; z < 16; z++)
-                {
-                    for (x = 0; x < 16; x++)
-                    {
-                        Voxel voxel = Voxels[y, x, z];
-                        if (voxel.GetId() == 0)
-                        {
-                            byte b = Voxels[y + 1, x, z].GetB2();
-                            if (b == 15) Voxels[y, x, z].SetB2(b);
-                            else if (b > 0) Voxels[y, x, z].SetB2((byte)(b - 1));
-                            else Voxels[y, x, z].SetB2(0);
-                        }
-                        else
-                        {
-                            Voxels[y, x, z].SetB2(0);
-                        }
-                    }
-                }
-            }
-            // Пробегаем вниз по соседним
-            //byte[,,] voxs = new byte[VE.CHUNK_HEIGHT, VE.CHUNK_WIDTH, VE.CHUNK_WIDTH];
-            for (y = 254; y >= 0; y--)
-            {
-                byte[,] voxs = new byte[16, 16];
-                for (z = 0; z < 16; z++)
-                {
-                    for (x = 0; x < 16; x++)
-                    {
-                        Voxel voxel = Voxels[y, x, z];
-                        voxs[x, z] = voxel.GetB2();
-                        if (voxel.GetId() == 0)
-                        {
-                            if (voxs[x, z] < 15)
-                            {
-                                //BlockRender blockRender = new BlockRender(this, GetBlock(new vec3i(x, y, z)));
-                                byte l1 = voxs[x, z];
-                                byte l2 = IsBlockLight(new vec3i(x + 1, y, z));
-                                byte l3 = IsBlockLight(new vec3i(x - 1, y, z));
-                                byte l4 = IsBlockLight(new vec3i(x, y, z + 1));
-                                byte l5 = IsBlockLight(new vec3i(x, y, z - 1));
-                                //if (l2 > l1) l1 = l2;
-                                //l1--;
-                                //if (voxs[x, z] != l1)
-                                {
-                                    voxs[x, z] = (byte)((l1 + l2 + l3 + l4 + l5) / 5);
-                                    //break;
-                                }
-                            }
-                        }
-
-                    }
-                }
-                for (z = 0; z < 16; z++)
-                {
-                    for (x = 0; x < 16; x++)
-                    {
-                        Voxels[y, x, z].SetB2(voxs[x, z]);
-                    }
-                }
-
-            }
-        }
-
-        /// <summary>
-        /// Проверка блока по координате
-        /// </summary>
-        public byte IsBlockLight(vec3i pos)
-        {
-            if (pos.y < 0 || pos.y > 255) return 0;
-            //true; // true чтоб не видно было
-            int xc = X;
-            int zc = Z;
-            int xv = pos.x;
-            int zv = pos.z;
-            bool isOtherChunk = false;
-            if (pos.x == -1)
-            {
-                xv = 15;
-                xc--;
-                isOtherChunk = true;
-            }
-            else if (pos.x == 16)
-            {
-                xv = 0;
-                xc++;
-                isOtherChunk = true;
-            }
-            if (pos.z == -1)
-            {
-                zv = 15;
-                zc--;
-                isOtherChunk = true;
-            }
-            else if (pos.z == 16)
-            {
-                zv = 0;
-                zc++;
-                isOtherChunk = true;
-            }
-
-            if (isOtherChunk)
-            {
-                // Соседний блок в соседнем чанке
-                ChunkRender chunk = World.GetChunk(xc, zc);
-                if (chunk != null)
-                {
-                    return chunk.Voxels[pos.y, xv, zv].GetB2();
-                    //return chunk.Voxels[pos.y << 8 | zv << 4 | xv].GetB2();
-                }
-            }
-            return Voxels[pos.y, xv, zv].GetB2();
-            //return Voxels[pos.y << 8 | zv << 4 | xv].GetB2();
-        }*/
-
         /// <summary>
         /// Сгенерировать сетку меша
         /// </summary>
         public void Render()
         {
-            //RenderSkyLight();
             List<float> bufferCache = new List<float>();
-
             _alphas = new List<VoxelData>();
             Camera camera = OpenGLF.GetInstance().Cam;
 
             for (int y = 0; y < 256; y++)
             {
-                // int y1 = y * VE.CHUNK_WIDTH;
                 for (int z = 0; z < 16; z++)
                 {
-                    //  int z1 = (y1 + z) * VE.CHUNK_WIDTH;
                     for (int x = 0; x < 16; x++)
                     {
-                        ///(y * VE.CHUNK_WIDTH + z) * VE.CHUNK_WIDTH + x
-                        ///Voxel voxel = new Voxel(Voxels[z1 + x]);// GetVoxel(x, y, z);
-
-                        //if ((byte)(Voxels[z1 + x] >> 8) == 0) continue;
-                        //if ((byte)(Voxels[y,x,z].Id >> 8) == 0) continue;
                         if (GetVoxel(x, y, z).GetId() == 0) continue;
-                        //if (Voxels[y, x, z].GetId() == 0) continue;
-                        //if (Voxels[y << 8 | z << 4 | x].GetId() == 0) continue;
-                        //if ((byte)(Voxels[y, x, z] >> 8) == 0) continue;
-
-
-                        ///new BlockStone();
-                        //Block block = GetBlock(new vec3i(x, y, z));
-                        //Block block = Blocks.GetBlock(new Voxel(Voxels[z1 + x]), new vec3i(x, y, z));
-                        //Block block = Blocks.GetBlock(GetVoxel(x, y, z), new vec3i(X << 4 | x, y, Z << 4 | z));
                         Block block = GetBlock0(new vec3i(x, y, z));
-                        //Block block = Blocks.GetBlock(Voxels[y << 8 | z << 4 | x], new vec3i(X << 4 | x, y, Z << 4 | z));
-                        //Block block = Blocks.GetBlock(new Voxel(Voxels[y,x,z]), new vec3i(x, y, z));
-
-                        ///Block block = GetBlock(x, y, z);
-                        /// Если блок равен 0 значит это воздух
-                        ///if (block.Id != 0)
-                        ///{
                         if (block.IsAlphe)
                         {
                             _alphas.Add(new VoxelData()
@@ -779,7 +574,6 @@ namespace VoxelEngine
                         {
                             bufferCache.AddRange(_RenderVoxel(block));
                         }
-                        ///}
                     }
                 }
             }
@@ -902,7 +696,7 @@ namespace VoxelEngine
             if (isTick && block.EBlock == EnumBlock.Water)
             {
                 
-                AddLiquidTicks(liquidTicks, new BlockTick(block.Position, 10));
+                AddLiquidTicks(liquidTicks, new BlockTick(block.Position, VE.SPEED_WATER));
                 //liquidTicks.Add(new BlockTick(block, 10));
                 //tickBlock.Add(block);
             } else if (isTick)
@@ -911,20 +705,6 @@ namespace VoxelEngine
                 AddLiquidTicks(liquidTicks, SetBlockLiquidTicks(block));
                 //liquidTicks.AddRange(SetBlockLiquidTicks(block));
             }
-            //var11.set(x, y & 15, z, eBlock);
-
-            if (block.EBlock != blockOld.EBlock)
-            {
-                //if (!this.worldObj.isRemote)
-                //{
-                //    blockOld.breakBlock(this.worldObj, pos, eBlockOld);
-                //}
-                //else if (blockOld instanceof ITileEntityProvider)
-                //{
-                //    this.worldObj.removeTileEntity(pos);
-                //}
-            }
-
 
             if (var12)
             {
@@ -955,39 +735,6 @@ namespace VoxelEngine
                     //PropagateSkylightOcclusion(x, z);
                 }
             }
-
-            //TileEntity var15;
-
-            //if (var10 instanceof ITileEntityProvider)
-            //{
-            //    var15 = this.func_177424_a(pos, Chunk.EnumCreateEntityType.CHECK);
-
-            //    if (var15 != null)
-            //    {
-            //        var15.updateContainingBlockInfo();
-            //    }
-            //}
-
-            //if (!this.worldObj.isRemote && blockOld != var9)
-            //{
-            //    block.onBlockAdded(this.worldObj, pos, eBlock);
-            //}
-
-            //if (block instanceof ITileEntityProvider)
-            //{
-            //    var15 = this.func_177424_a(pos, Chunk.EnumCreateEntityType.CHECK);
-
-            //    if (var15 == null)
-            //    {
-            //        var15 = ((ITileEntityProvider)var9).createNewTileEntity(this.worldObj, block.getMetaFromState(eBlock));
-            //        this.worldObj.setTileEntity(pos, var15);
-            //    }
-
-            //    if (var15 != null)
-            //    {
-            //        var15.updateContainingBlockInfo();
-            //    }
-            //}
 
             // пометка на редактирование
             isModified = true;
@@ -1077,7 +824,6 @@ namespace VoxelEngine
         /// </summary>
         public byte GetBlockLightOpacity(int x, int y, int z)
         {
-            //return GetVoxel(x, y, z).GetBlockLightOpacity();
             return Blocks.GetBlockLightOpacity(GetVoxel(x, y, z).GetId());
         }
 
@@ -1284,7 +1030,7 @@ namespace VoxelEngine
 
         private void _UpdateSkylightNeighborHeight(int x, int z, int startY, int endY)
         {
-            if (endY > startY)// && World.isAreaLoaded(new BlockPos(x, 0, z), 16))
+            if (endY > startY)
             {
                 for (int var5 = startY; var5 < endY; ++var5)
                 {
@@ -1301,27 +1047,10 @@ namespace VoxelEngine
         /// </summary>
         public void Tick()
         {
-            //if (tickBlock.Count > 0)
-            //{
-            //    Block b = GetBlock(tickBlock[0].Position.Offset(Pole.Down).ToVec3i());
-            //    tickBlock.RemoveAt(0);
-            //    if (b.EBlock == EnumBlock.Air)
-            //    {
-            //        //b.Id = tickBlock[0].Id;
-            //        SetBlockState(Blocks.GetBlock(EnumBlock.Water, b.Position));
-
-            //    }
-            //}
-
             // Блок жидкостей
             LiquidTick();
         }
 
-        /// <summary>
-        /// Массив действий в чанке надо блоками жидкостей
-        /// TODO:: 2021-07-17 научиться сохранять и считывать
-        /// </summary>
-        //protected List<BlockTick> liquidTicks = new List<BlockTick>(BlockTick);
         /// <summary>
         /// Массив действий в чанке надо блоками жидкостей ()
         /// TODO:: 2021-07-17 научиться сохранять и считывать
@@ -1385,144 +1114,7 @@ namespace VoxelEngine
             {
                 Debag.GetInstance().ChunkLiquidTicks = liquidTicks.Count;
             }
-        }/*
-                    // Блок воды или течения воды
-                    if (bt.Blk.EBlock == EnumBlock.Water || bt.Blk.EBlock == EnumBlock.WaterFlowing)
-                    {
-                        // блок снизу
-                        Block b = GetBlock(bt.Blk.Position.Offset(Pole.Down).ToVec3i());
-                        // если снизу воздух
-                        if (b.EBlock == EnumBlock.Air)
-                        {
-                            Block blockNew = Blocks.GetBlock(EnumBlock.WaterFlowing, b.Position);
-                            blockNew.Properties = 0;
-                            //SetParam4bit(blockNew.Position.ToVec3i(), 3);
-                            //SetParam4bit(blockNew.Position.ToVec3i(), 1);
-                            World.SetBlockState(blockNew, false);
-                            AddLiquidTicks(liquidTicksNew, new BlockTick(blockNew, 10));
-                        }
-                        // если блок течения и параметр == 0 это вертикальное течение
-                        //if (bt.Blk.EBlock == EnumBlock.WaterFlowing && bt.Blk.Properties == 0)
-                        //{
-                        //    // блок сверху
-                        //    b = GetBlock(bt.Blk.Position.Offset(Pole.Up).ToVec3i());
-                        //    // если нет воды, то будем убирать течение
-                        //    if (b.EBlock != EnumBlock.Water && b.EBlock != EnumBlock.WaterFlowing)
-                        //    {
-                        //        Block blockNew = Blocks.GetAir(bt.Blk.Position);
-                        //        World.SetBlockState(blockNew, false);
-                        //        AddLiquidTicks(liquidTicksNew, SetBlockLiquidTicks(blockNew));
-                        //    }
-                        //}
-
-                        // максимальный параметр
-                        byte pmax = 4;
-                        // проверка сбоку
-                        
-                        //byte p = pmax;
-                        //if (bt.Blk.EBlock == EnumBlock.Water) p = 1;
-                        //if (bt.Blk.EBlock == EnumBlock.WaterFlowing)
-                        //{
-                        //    p = (byte)(bt.Blk.Properties + 1);
-                        //}
-                        ////p = 0;
-                        //if (p < pmax)
-                        //{
-                            byte bb = pmax;
-                            if (bt.Blk.EBlock == EnumBlock.Water) bb = 0;
-                            if (bt.Blk.EBlock == EnumBlock.WaterFlowing) bb = bt.Blk.Properties;
-
-                            if (bb < pmax) {
-                                // пров еряем течение максимальное
-                                // TODO: проверка сверху добавить
-                                byte bb2 = pmax;
-
-                                for (int j = 0; j < 6; j++)
-                                {
-                                    if (j == 1) continue;
-
-                                    b = GetBlock(bt.Blk.Position.Offset((Pole)j).ToVec3i());
-                                    if (b.EBlock == EnumBlock.Water)
-                                    {
-                                        bb2 = 0;
-                                        break;
-                                    }
-                                    else if (b.EBlock == EnumBlock.WaterFlowing && b.Properties < bb)
-                                    {
-                                        bb2 = b.Properties;
-                                    }
-                                }
-
-                                if (bb < bb2)// || bb == 0)
-                                {
-                                    // проверка растекания
-                                    for (int j = 2; j < 6; j++)
-                                    {
-                                        b = GetBlock(bt.Blk.Position.Offset((Pole)j).ToVec3i());
-                                        // если сбоку воздух
-                                        if (b.EBlock == EnumBlock.Air)
-                                        {
-                                            Block b2 = GetBlock(b.Position.Offset(Pole.Down).ToVec3i());
-                                            if (b2.EBlock != EnumBlock.Air)
-                                            {
-                                                // Если снизу не воздух то растекаемся
-                                                Block blockNew = Blocks.GetBlock(EnumBlock.WaterFlowing, b.Position);
-                                                blockNew.Properties = (byte)(bb + 1);
-                                                World.SetBlockState(blockNew, false);
-                                                AddLiquidTicks(liquidTicksNew, new BlockTick(blockNew, 10));
-                                            }
-                                        }
-                                    }
-                                }
-                                //else if (bb >= pmax)
-                                //{
-                                //    // исчезает в воздух
-                                //    Block blockNew = Blocks.GetAir(b.Position);
-                                //    World.SetBlockState(blockNew, false);
-                                //    AddLiquidTicks(liquidTicksNew, new BlockTick(blockNew, 10));
-                                //}
-                                //else if (bb > bb2)
-                                //{
-                                //    // меняется волна
-                                //    Block blockNew = Blocks.GetBlock(EnumBlock.WaterFlowing, b.Position);
-                                //    blockNew.Properties = bb;
-                                //    World.SetBlockState(blockNew, false);
-                                //    AddLiquidTicks(liquidTicksNew, new BlockTick(blockNew, 10));
-                                //}
-                         //   }
-
-                            
-
-                            
-                        }
-                    }
-                }
-            }
-            // удаляем
-            if (indexs.Count > 0)
-            {
-                for (int i = 0; i < indexs.Count; i++)
-                {
-                    liquidTicks.Remove(indexs[i]);
-                    //liquidTicks.RemoveAt(i);
-                }
-            }
-            // добавляем новые
-            if (liquidTicksNew.Count > 0)
-            {
-                foreach (DictionaryEntry lt in liquidTicksNew)
-                {
-                    AddLiquidTicks(liquidTicks, lt.Value as BlockTick);
-                }
-                    //liquidTicks.AddRange(liquidTicksNew);
-            }
-
-            if (OpenGLF.GetInstance().Cam.ToPositionChunk() == new vec2i(X, Z))
-            {
-                Debag.GetInstance().ChunkLiquidTicks = liquidTicks.Count;
-            }
         }
-        */
 
         protected void LiquidTickBlock(Block block)
         {
@@ -1532,12 +1124,37 @@ namespace VoxelEngine
             if (block.EBlock == EnumBlock.Water)
             {
                 // если стоячая вода
-                for (int i = 1; i < 6; i++) // низ и стороны блока
+                bool isPit = false;
+                Block bd = GetBlock(block.Position.Offset(Pole.Down).ToVec3i());
+                bool isDown = false;
+                if (bd.IsWater || bd.EBlock == EnumBlock.Air)
                 {
-                    Block b = GetBlock(block.Position.Offset((Pole)i).ToVec3i());
-                    if (b.EBlock == EnumBlock.Air)
+                    isDown = true;
+                    AddLquidTicksBlock(EnumBlock.WaterFlowing, bd.Position, 0, VE.SPEED_WATER);
+                }
+
+                if (!isDown)
+                {
+                    for (int i = 2; i < 6; i++) // стороны блока
                     {
-                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, 10);
+                        if (LiquidRowPit(block, (Pole)i) >= 0)
+                        {
+                            isPit = true;
+                            AddLquidTicksBlock(
+                                EnumBlock.WaterFlowing, block.Position.Offset((Pole)i), block.Properties + 1, VE.SPEED_WATER
+                            );
+                        }
+                    }
+                }
+                if (!isPit)
+                {
+                    for (int i = 2; i < 6; i++) // низ и стороны блока
+                    {
+                        Block b = GetBlock(block.Position.Offset((Pole)i).ToVec3i());
+                        if (b.EBlock == EnumBlock.Air)
+                        {
+                            AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.SPEED_WATER);
+                        }
                     }
                 }
             }
@@ -1575,12 +1192,12 @@ namespace VoxelEngine
                     if (pp >= pmax)
                     {
                         // меняем блок на воздух
-                        AddLquidTicksBlock(EnumBlock.Air, block.Position, 0, 5);
+                        AddLquidTicksBlock(EnumBlock.Air, block.Position, 0, VE.SPEED_WATER2);
                     }
                     else
                     {
                         // проточная вода тоньше слой
-                        AddLquidTicksBlock(EnumBlock.WaterFlowing, block.Position, pp, 5);
+                        AddLquidTicksBlock(EnumBlock.WaterFlowing, block.Position, pp, VE.SPEED_WATER2);
                     }
                     // запуск проверки соседних блоков на воду
                     AddLiquidTicks(liquidTicksNew, SetBlockLiquidTicks(block));
@@ -1593,23 +1210,34 @@ namespace VoxelEngine
                     b = GetBlock(block.Position.Offset(Pole.Down).ToVec3i());
                     if (b.EBlock == EnumBlock.Air)
                     {
-                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, 10);
+                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.SPEED_WATER);
                     }
                     else if (block.Properties < pmax && !b.IsWater)
                     {
                         // Нижний блок твёрдый, продолжаем растекаться
-                        // Проверка сторон
+
+                        // Проверка сторон на ямки
+                        bool isPit = false;
                         for (int i = 2; i < 6; i++) // стороны блока
                         {
-                            Block b2 = GetBlock(block.Position.Offset((Pole)i).ToVec3i());
-                            if (b2.EBlock == EnumBlock.Air)
+                            if (LiquidRowPit(block, (Pole)i) >= 0)
                             {
-                                // Проверяем ниже на предмет не воздуха
-                                Block b3 = GetBlock(b.Position.Offset(Pole.Down).ToVec3i());
-                                if (((b3.EBlock != EnumBlock.Air || block.Properties == 0)
-                                    && !b3.IsWater))
+                                isPit = true;
+                                AddLquidTicksBlock(
+                                    EnumBlock.WaterFlowing, block.Position.Offset((Pole)i), block.Properties + 1, VE.SPEED_WATER
+                                );
+                            }
+                        }
+                        if (!isPit)
+                        {
+                            // Проверка сторон
+                            for (int i = 2; i < 6; i++) // стороны блока
+                            {
+                                Block b2 = GetBlock(block.Position.Offset((Pole)i).ToVec3i());
+                                if (b2.EBlock == EnumBlock.Air)
                                 {
-                                    AddLquidTicksBlock(EnumBlock.WaterFlowing, b2.Position, block.Properties + 1, 10);
+                                    // Проверяем ниже на предмет не воздуха
+                                    AddLquidTicksBlock(EnumBlock.WaterFlowing, b2.Position, block.Properties + 1, VE.SPEED_WATER);
                                 }
                             }
                         }
@@ -1617,11 +1245,43 @@ namespace VoxelEngine
                     else if (block.Properties < pmax && b.IsWater)
                     {
                         // Нижний блок вода, проверка растекания
-                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, 10);
+                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.SPEED_WATER);
                     }
                 }
             }
         }
+
+        /// <summary>
+        /// Есть ли впереди ямка
+        /// </summary>
+        protected int LiquidRowPit(Block block, Pole side)
+        {
+            int pr = block.Properties;
+            Block b = block;
+            int count = 1;
+            while (pr < VE.WATER)
+            {
+                Block b2 = GetBlock(b.Position.Offset(side).ToVec3i());
+                if (b2.EBlock == EnumBlock.Air)
+                {
+                    // Проверяем ниже на предмет воздуха или воды
+                    Block b3 = GetBlock(b2.Position.Offset(Pole.Down).ToVec3i());
+                    if (b3.EBlock == EnumBlock.Air || b3.IsWater)
+                    {
+                        return count;
+                    }
+                }
+                else
+                {
+                    return -1;
+                }
+                b = b2;
+                pr++;
+                count++;
+            }
+            return -1;
+        }
+
 
         /// <summary>
         /// Добавить блок на проверку в очередь

@@ -57,6 +57,18 @@
         /// <summary>
         /// Текучая вода
         /// </summary>
-        WaterFlowing = 13
+        WaterFlowing = 13,
+        /// <summary>
+        /// Бревно
+        /// </summary>
+        Oak = 14,
+        /// <summary>
+        /// Листва
+        /// </summary>
+        Leaves = 15,
+        /// <summary>
+        /// Сажанец
+        /// </summary>
+        Sapling = 16
     }
 }

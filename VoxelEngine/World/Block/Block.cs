@@ -66,7 +66,7 @@ namespace VoxelEngine
         /// </summary>
         public override string ToString()
         {
-            return base.ToString();
+            return Id.ToString() + " " + Position.ToString();
         }
 
         public Block() { }
@@ -105,8 +105,6 @@ namespace VoxelEngine
         {
             return Blocks.GetBlockLightOpacity(Id);
         }
-
-
 
     }
 }

@@ -98,6 +98,9 @@
     <Compile Include="Threads\ThreadChunk.cs" />
     <Compile Include="World\Block\Block.cs" />
     <Compile Include="World\Block\BlockAir.cs" />
+    <Compile Include="World\Block\BlockSapling.cs" />
+    <Compile Include="World\Block\BlockLeaves.cs" />
+    <Compile Include="World\Block\BlockOak.cs" />
     <Compile Include="World\Block\BlockBrol.cs" />
     <Compile Include="World\Block\BlockFaceLiquid.cs" />
     <Compile Include="World\Block\BlockRender.cs" />
@@ -119,6 +122,7 @@
     <Compile Include="World\Block\Model\Box.cs" />
     <Compile Include="World\Block\Model\Face.cs" />
     <Compile Include="World\Chunk\ChunkMeshs.cs" />
+    <Compile Include="World\Chunk\ChunkStorage.cs" />
     <Compile Include="World\GuiWater.cs" />
     <Compile Include="World\Storage\ChunkStorage.cs" />
     <Compile Include="World\HitBoxPlayer.cs" />

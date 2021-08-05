@@ -127,5 +127,11 @@
         /// </summary>
         public const float SPEED_SWIM = 4f;
 
+        /// <summary>
+        /// Скорость растекания и высыхания воды в тактах
+        /// </summary>
+        public const int SPEED_WATER = 5;
+        public const int SPEED_WATER2 = 1;
+
     }
 }
