@@ -31,9 +31,10 @@ namespace VoxelEngine
                 case 11: block = new BlockWater(); break;
                 case 13: block = new BlockWaterFlowing(); break;
 
-                case 14: block = new BlockOak(); break;
+                case 14: block = new BlockLog(); break;
                 case 15: block = new BlockLeaves(); break;
                 case 16: block = new BlockSapling(); break;
+                case 17: block = new BlockLeavesApple(); break;
             }
             
             // тут нада id voxel-я, так-как не успевает замениться тип блока, нет света корректного
@@ -78,6 +79,7 @@ namespace VoxelEngine
                 case EnumBlock.WaterFlowing: return 3;
                 case EnumBlock.Leaves: return 3;
                 case EnumBlock.Sapling: return 0;
+                case EnumBlock.LeavesApple: return 4;
             }
             return 15;
         }

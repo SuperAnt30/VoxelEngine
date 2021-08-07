@@ -40,7 +40,10 @@ namespace VoxelEngine
         /// Есть ли столкновение
         /// </summary>
         public bool IsCollision { get; protected set; } = true;
-
+        /// <summary>
+        /// Можно ли выбирать блок
+        /// </summary>
+        public bool IsAction { get; protected set; } = true;
         /// <summary>
         /// Вода ли это
         /// </summary>

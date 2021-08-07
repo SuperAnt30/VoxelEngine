@@ -1356,7 +1356,7 @@ namespace VoxelEngine
             while (t <= maxDist)
             {
                 Block block = GetBlock(new vec3i(ix, iy, iz));
-                if (block.IsCollision)
+                if (block.IsAction)
                 {
                     end.x = px + t * dx;
                     end.y = py + t * dy;

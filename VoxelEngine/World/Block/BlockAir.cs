@@ -13,6 +13,7 @@ namespace VoxelEngine
             Boxes = new Box[] { new Box(33) };
 
             IsCollision = false;
+            IsAction = false;
         }
     }
 }

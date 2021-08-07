@@ -69,6 +69,29 @@ namespace VoxelEngine.Util
             return new BlockPos(ToVec3i() + EnumFacing.DirectionVec(pole));
         }
 
+        /// <summary>
+        /// Позиция блока снизу
+        /// </summary>
+        public BlockPos OffsetDown()
+        {
+            return new BlockPos(ToVec3i() + EnumFacing.DirectionVec(Pole.Down));
+        }
+
+        /// <summary>
+        /// Позиция блока сверху
+        /// </summary>
+        public BlockPos OffsetUp()
+        {
+            return new BlockPos(ToVec3i() + EnumFacing.DirectionVec(Pole.Up));
+        }
+        /// <summary>
+        /// Позиция блока сверху
+        /// </summary>
+        public BlockPos OffsetUp(int i)
+        {
+            return new BlockPos(ToVec3i() + (EnumFacing.DirectionVec(Pole.Up) * i));
+        }
+
         public vec3i ToVec3i()
         {
             return new vec3i(X, Y, Z);

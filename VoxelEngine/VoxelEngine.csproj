@@ -73,6 +73,7 @@
     <Compile Include="Actions\Keyboard.cs" />
     <Compile Include="Actions\Mouse.cs" />
     <Compile Include="Actions\PlayerCamera.cs" />
+    <Compile Include="Gen\Trees.cs" />
     <Compile Include="Util\BlockPos.cs" />
     <Compile Include="Util\EnumFacing.cs" />
     <Compile Include="Util\EnumSkyBlock.cs" />
@@ -98,9 +99,10 @@
     <Compile Include="Threads\ThreadChunk.cs" />
     <Compile Include="World\Block\Block.cs" />
     <Compile Include="World\Block\BlockAir.cs" />
+    <Compile Include="World\Block\BlockLeavesApple.cs" />
     <Compile Include="World\Block\BlockSapling.cs" />
     <Compile Include="World\Block\BlockLeaves.cs" />
-    <Compile Include="World\Block\BlockOak.cs" />
+    <Compile Include="World\Block\BlockLog.cs" />
     <Compile Include="World\Block\BlockBrol.cs" />
     <Compile Include="World\Block\BlockFaceLiquid.cs" />
     <Compile Include="World\Block\BlockRender.cs" />

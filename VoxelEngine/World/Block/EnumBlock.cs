@@ -61,7 +61,7 @@
         /// <summary>
         /// Бревно
         /// </summary>
-        Oak = 14,
+        Log = 14,
         /// <summary>
         /// Листва
         /// </summary>
@@ -69,6 +69,10 @@
         /// <summary>
         /// Сажанец
         /// </summary>
-        Sapling = 16
+        Sapling = 16,
+        /// <summary>
+        /// Листва с яблоком
+        /// </summary>
+        LeavesApple = 17
     }
 }

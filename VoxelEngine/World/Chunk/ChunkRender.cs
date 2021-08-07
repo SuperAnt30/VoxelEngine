@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using VoxelEngine.Util;
 using VoxelEngine.World;
 using System.Collections;
+using VoxelEngine.Gen;
 
 namespace VoxelEngine
 {
@@ -97,6 +98,14 @@ namespace VoxelEngine
 
             for (int i = 0; i < StorageArrays.Length; i++) StorageArrays[i] = new ChunkStorage();
             World = world;
+        }
+
+        /// <summary>
+        /// Получить блок
+        /// </summary>
+        public Block GetBlock(BlockPos pos)
+        {
+            return GetBlock(pos.ToVec3i());
         }
 
         /// <summary>
@@ -666,6 +675,7 @@ namespace VoxelEngine
 
             int var7 = heightMap[x, z];
             Block blockOld = GetBlock0(new vec3i(x, y, z));
+
             //EnumBlock eBlockOld = GetBlockState(pos);
 
             if (block.EBlock == blockOld.EBlock)
@@ -675,6 +685,19 @@ namespace VoxelEngine
                     SetParam4bit(x, y, z, block.Properties);
                 }
                 return null;
+            }
+
+            // Если кликаем по яблоку меняем на листву TODO:: временно
+            if (blockOld.EBlock == EnumBlock.LeavesApple && block.EBlock == EnumBlock.Air)
+            {
+                block = Blocks.GetBlock(EnumBlock.Leaves, block.Position);
+            }
+            if (block.EBlock == EnumBlock.Sapling)
+            {
+                // проверка что на землю садим
+                Block blockNew = GetBlock(block.Position.OffsetDown());
+                if (blockNew.EBlock != EnumBlock.Dirt && blockNew.EBlock != EnumBlock.Grass)
+                    return null;
             }
 
             bool var12 = false;
@@ -696,13 +719,24 @@ namespace VoxelEngine
             if (isTick && block.EBlock == EnumBlock.Water)
             {
                 
-                AddLiquidTicks(liquidTicks, new BlockTick(block.Position, VE.SPEED_WATER));
+                AddTicks(liquidTicks, new BlockTick(block.Position, EnumBlock.Water, VE.TICK_WATER));
                 //liquidTicks.Add(new BlockTick(block, 10));
                 //tickBlock.Add(block);
-            } else if (isTick)
+            }
+            else if (isTick && block.EBlock == EnumBlock.Sapling)
+            {
+                // саженец проростает
+                AddTicks(liquidTicks, new BlockTick(block.Position, EnumBlock.Sapling, VE.TICK_TREE_TIME)); // TODO::рандом
+            }
+            else if (isTick && blockOld.EBlock == EnumBlock.LeavesApple)
+            {
+                // Яблоко вырастает заного
+                AddTicks(liquidTicks, new BlockTick(block.Position, EnumBlock.LeavesApple, VE.TICK_TREE_TIME)); // TODO::рандом
+            }
+            else if (isTick)
             {
                 // проверка соседних блоков на воду
-                AddLiquidTicks(liquidTicks, SetBlockLiquidTicks(block));
+                AddTicks(liquidTicks, SetBlockTicks(block.Position, blockOld.EBlock));
                 //liquidTicks.AddRange(SetBlockLiquidTicks(block));
             }
 
@@ -750,20 +784,27 @@ namespace VoxelEngine
         }
 
         /// <summary>
-        /// проверка соседних блоков на воду
+        /// проверка соседних блоков на такты
         /// </summary>
-        /// <param name="block"></param>
-        protected List<BlockTick> SetBlockLiquidTicks(Block block)
+        /// <param name="pos"></param>
+        protected List<BlockTick> SetBlockTicks(BlockPos pos, EnumBlock eBlock)
         {
             List<BlockTick> bt = new List<BlockTick>(); 
             for (int i = 0; i < 6; i++)
             {
-                BlockPos bpos = block.Position.Offset((Pole)i);
+                BlockPos bpos = pos.Offset((Pole)i);
                 Block b = GetBlock(bpos.ToVec3i());
                 
-                if (b.EBlock == EnumBlock.Water || b.EBlock == EnumBlock.WaterFlowing)
+                // вода
+                if ((eBlock == EnumBlock.Water || eBlock == EnumBlock.WaterFlowing) && b.IsWater)
                 {
-                    bt.Add(new BlockTick(b.Position, 10));
+                    bt.Add(new BlockTick(b.Position, b.EBlock, VE.TICK_WATER_DRY));
+                }
+                // листва дерева
+                else if((eBlock == EnumBlock.Log || eBlock == EnumBlock.Leaves || eBlock == EnumBlock.LeavesApple) 
+                    && (b.EBlock == EnumBlock.Leaves || b.EBlock == EnumBlock.LeavesApple))
+                {
+                    bt.Add(new BlockTick(b.Position, b.EBlock, VE.TICK_LEAVES));
                 }
             }
             return bt;
@@ -1047,8 +1088,8 @@ namespace VoxelEngine
         /// </summary>
         public void Tick()
         {
-            // Блок жидкостей
-            LiquidTick();
+            // Блоки для тактов
+            BlocksTick();
         }
 
         /// <summary>
@@ -1058,24 +1099,24 @@ namespace VoxelEngine
         protected Hashtable liquidTicks = new Hashtable();
 
 
-        protected void AddLiquidTicks(Hashtable lt, BlockTick blockTick)
+        protected void AddTicks(Hashtable lt, BlockTick blockTick)
         {
             string key = blockTick.Position.ToString();
             if (lt.ContainsKey(key)) lt[key] = blockTick;
             else lt.Add(key, blockTick);
         }
 
-        protected void AddLiquidTicks(Hashtable lt, List<BlockTick> blockTicks)
+        protected void AddTicks(Hashtable lt, List<BlockTick> blockTicks)
         {
-            foreach (BlockTick bt in blockTicks) AddLiquidTicks(lt, bt);
+            foreach (BlockTick bt in blockTicks) AddTicks(lt, bt);
         }
 
 
         Hashtable liquidTicksNew;
         /// <summary>
-        /// Жидкие блоки в тике
+        /// Блоки в тике
         /// </summary>
-        protected void LiquidTick()
+        protected void BlocksTick()
         {
             List<string> indexs = new List<string>();
             liquidTicksNew = new Hashtable();
@@ -1090,7 +1131,32 @@ namespace VoxelEngine
                 {
                     indexs.Add(lt.Key.ToString());
                     Block block = GetBlock(bt.Position.ToVec3i());
-                    LiquidTickBlock(block);// bt.Blk);
+                    if (block.IsWater) LiquidTickBlock(block);// bt.Blk);
+                    else if (block.EBlock == EnumBlock.Sapling)
+                    {
+                        Trees trees = new Trees(World);
+                        if (!trees.Generate(block.Position))
+                        {
+                            AddTicks(liquidTicksNew, new BlockTick(block.Position, block.EBlock, VE.TICK_TREE_REPEAT));
+                        }
+                    }
+                    else if (block.EBlock == EnumBlock.Leaves || block.EBlock == EnumBlock.LeavesApple)
+                    {
+                        // проверка листвы в 5 блоков от древесины
+                        Trees trees = new Trees(World);
+                        if (!trees.IsWood(block.Position))
+                        {
+                            Block blockNew = Blocks.GetAir(block.Position);
+                            World.SetBlockState(blockNew, false);
+                            AddTicks(liquidTicksNew, SetBlockTicks(blockNew.Position, EnumBlock.Leaves));
+                        } else if (block.EBlock == EnumBlock.Leaves && bt.EBlock == EnumBlock.LeavesApple)
+                        {
+                            Block blockNew = Blocks.GetBlock(EnumBlock.LeavesApple, block.Position);
+                            World.SetBlockState(blockNew, false);
+                            AddTicks(liquidTicksNew, SetBlockTicks(blockNew.Position, EnumBlock.Leaves));
+                        }
+                        //AddTicks(liquidTicksNew, new BlockTick(blockNew.Position, 5));
+                    }
                 }
             }
             // удаляем
@@ -1106,7 +1172,7 @@ namespace VoxelEngine
             {
                 foreach (DictionaryEntry lt in liquidTicksNew)
                 {
-                    AddLiquidTicks(liquidTicks, lt.Value as BlockTick);
+                    AddTicks(liquidTicks, lt.Value as BlockTick);
                 }
             }
             liquidTicksNew.Clear();
@@ -1130,7 +1196,7 @@ namespace VoxelEngine
                 if (bd.IsWater || bd.EBlock == EnumBlock.Air)
                 {
                     isDown = true;
-                    AddLquidTicksBlock(EnumBlock.WaterFlowing, bd.Position, 0, VE.SPEED_WATER);
+                    AddLquidTicksBlock(EnumBlock.WaterFlowing, bd.Position, 0, VE.TICK_WATER);
                 }
 
                 if (!isDown)
@@ -1141,7 +1207,7 @@ namespace VoxelEngine
                         {
                             isPit = true;
                             AddLquidTicksBlock(
-                                EnumBlock.WaterFlowing, block.Position.Offset((Pole)i), block.Properties + 1, VE.SPEED_WATER
+                                EnumBlock.WaterFlowing, block.Position.Offset((Pole)i), block.Properties + 1, VE.TICK_WATER
                             );
                         }
                     }
@@ -1153,7 +1219,7 @@ namespace VoxelEngine
                         Block b = GetBlock(block.Position.Offset((Pole)i).ToVec3i());
                         if (b.EBlock == EnumBlock.Air)
                         {
-                            AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.SPEED_WATER);
+                            AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.TICK_WATER);
                         }
                     }
                 }
@@ -1192,15 +1258,15 @@ namespace VoxelEngine
                     if (pp >= pmax)
                     {
                         // меняем блок на воздух
-                        AddLquidTicksBlock(EnumBlock.Air, block.Position, 0, VE.SPEED_WATER2);
+                        AddLquidTicksBlock(EnumBlock.Air, block.Position, 0, VE.TICK_WATER_DRY);
                     }
                     else
                     {
                         // проточная вода тоньше слой
-                        AddLquidTicksBlock(EnumBlock.WaterFlowing, block.Position, pp, VE.SPEED_WATER2);
+                        AddLquidTicksBlock(EnumBlock.WaterFlowing, block.Position, pp, VE.TICK_WATER_DRY);
                     }
                     // запуск проверки соседних блоков на воду
-                    AddLiquidTicks(liquidTicksNew, SetBlockLiquidTicks(block));
+                    AddTicks(liquidTicksNew, SetBlockTicks(block.Position, EnumBlock.WaterFlowing));
                 }
                 else
                 if (block.Properties <= pmax)
@@ -1210,7 +1276,7 @@ namespace VoxelEngine
                     b = GetBlock(block.Position.Offset(Pole.Down).ToVec3i());
                     if (b.EBlock == EnumBlock.Air)
                     {
-                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.SPEED_WATER);
+                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.TICK_WATER);
                     }
                     else if (block.Properties < pmax && !b.IsWater)
                     {
@@ -1224,7 +1290,7 @@ namespace VoxelEngine
                             {
                                 isPit = true;
                                 AddLquidTicksBlock(
-                                    EnumBlock.WaterFlowing, block.Position.Offset((Pole)i), block.Properties + 1, VE.SPEED_WATER
+                                    EnumBlock.WaterFlowing, block.Position.Offset((Pole)i), block.Properties + 1, VE.TICK_WATER
                                 );
                             }
                         }
@@ -1237,7 +1303,7 @@ namespace VoxelEngine
                                 if (b2.EBlock == EnumBlock.Air)
                                 {
                                     // Проверяем ниже на предмет не воздуха
-                                    AddLquidTicksBlock(EnumBlock.WaterFlowing, b2.Position, block.Properties + 1, VE.SPEED_WATER);
+                                    AddLquidTicksBlock(EnumBlock.WaterFlowing, b2.Position, block.Properties + 1, VE.TICK_WATER);
                                 }
                             }
                         }
@@ -1245,7 +1311,7 @@ namespace VoxelEngine
                     else if (block.Properties < pmax && b.IsWater)
                     {
                         // Нижний блок вода, проверка растекания
-                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.SPEED_WATER);
+                        AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.TICK_WATER);
                     }
                 }
             }
@@ -1295,7 +1361,7 @@ namespace VoxelEngine
             Block blockNew = Blocks.GetBlock(eBlock, pos);
             blockNew.Properties = (byte)properties;
             World.SetBlockState(blockNew, false);
-            AddLiquidTicks(liquidTicksNew, new BlockTick(blockNew.Position, tick));
+            AddTicks(liquidTicksNew, new BlockTick(blockNew.Position, blockNew.EBlock, tick));
         }
 
 

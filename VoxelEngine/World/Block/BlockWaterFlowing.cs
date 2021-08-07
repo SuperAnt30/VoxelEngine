@@ -16,6 +16,7 @@ namespace VoxelEngine
             Color = new vec4(0.24f, 0.45f, 0.88f, 1f);
             //Color = new vec4(0.54f, 0.65f, 0.88f, 1f);
             IsCollision = false;
+            IsAction = false;
             IsWater = true;
         }
     }

@@ -128,10 +128,30 @@
         public const float SPEED_SWIM = 4f;
 
         /// <summary>
-        /// Скорость растекания и высыхания воды в тактах
+        /// Скорость растекания воды
         /// </summary>
-        public const int SPEED_WATER = 5;
-        public const int SPEED_WATER2 = 1;
+        public const int TICK_WATER = 5;
+        /// <summary>
+        /// Скорость высыхания воды
+        /// </summary>
+        public const int TICK_WATER_DRY = 4;
+
+        /// <summary>
+        /// Время через сколько вырастет дерево
+        /// </summary>
+        public const int TICK_TREE_TIME = 200;
+        /// <summary>
+        /// Время через сколько вырастет дерево если сразу не получилось
+        /// </summary>
+        public const int TICK_TREE_REPEAT = 10;
+        /// <summary>
+        /// Через сколько будет исчезать листва
+        /// </summary>
+        public const int TICK_LEAVES = 10;
+        /// <summary>
+        /// Растояние высыхание листвы от бревна
+        /// </summary>
+        public const int SIZE_LEAVES = 4;
 
     }
 }

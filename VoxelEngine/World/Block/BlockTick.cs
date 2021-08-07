@@ -7,16 +7,23 @@ namespace VoxelEngine.World
     /// </summary>
     public class BlockTick
     {
+        /// <summary>
+        /// Позиция блока
+        /// </summary>
         public BlockPos Position { get; protected set; }
-
+        /// <summary>
+        /// Какой блок запустил проверку
+        /// </summary>
+        public EnumBlock EBlock { get; protected set; }
         /// <summary>
         /// Количество тиков ещё
         /// </summary>
         protected int _countTick;
 
-        public BlockTick(BlockPos pos, int countTick)
+        public BlockTick(BlockPos pos, EnumBlock eBlock, int countTick)
         {
             Position = pos;
+            EBlock = eBlock;
             _countTick = countTick;
         }
 
