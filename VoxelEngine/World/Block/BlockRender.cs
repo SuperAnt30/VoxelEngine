@@ -2,6 +2,7 @@
 using VoxelEngine.Glm;
 using VoxelEngine.Model;
 using VoxelEngine.Util;
+using VoxelEngine.World.Chunk;
 
 namespace VoxelEngine
 {
@@ -374,28 +375,34 @@ namespace VoxelEngine
         {
             if (y < 0 || y > 255) return new Voxel();
 
-            int xc = ChunkRend.X + (x >> 4);
-            int zc = ChunkRend.Z + (z >> 4);
+            int xc = ChunkRend.Chunk.X + (x >> 4);
+            int zc = ChunkRend.Chunk.Z + (z >> 4);
             int xv = x & 15;
             int zv = z & 15;
 
-            if (xc == ChunkRend.X && zc == ChunkRend.Z)
+            if (xc == ChunkRend.Chunk.X && zc == ChunkRend.Chunk.Z)
             {
                 // Соседний блок в этом чанке
-                return ChunkRend.GetVoxel(x, y, z);
+                return ChunkRend.Chunk.GetVoxel(x, y, z);
             }
             // Соседний блок в соседнем чанке
-            ChunkRender chunk = null;
-            if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z + 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkSouth();
-            else if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z - 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkNorth();
-            else if (xc == ChunkRend.X + 1 && zc == ChunkRend.Z + 1 && ChunkRend.ChunkEast() != null) chunk = ChunkRend.ChunkEast().ChunkSouth();
-            else if (xc == ChunkRend.X + 1 && zc == ChunkRend.Z - 1 && ChunkRend.ChunkEast() != null) chunk = ChunkRend.ChunkEast().ChunkNorth();
-            else if (xc == ChunkRend.X - 1) chunk = ChunkRend.ChunkWest();
-            else if (xc == ChunkRend.X + 1) chunk = ChunkRend.ChunkEast();
-            else if (zc == ChunkRend.Z + 1) chunk = ChunkRend.ChunkSouth();
-            else if (zc == ChunkRend.Z - 1) chunk = ChunkRend.ChunkNorth();
+            //ChunkRender chunk = null;
 
-            if (chunk != null) return chunk.GetVoxel(xv, y, zv);
+
+            ChunkD chunkD = ChunkRend.Chunk.World.ChunkPr.ProvideChunk(xc, zc);
+
+            //if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z + 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkSouth();
+            //else if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z - 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkNorth();
+            //else if (xc == ChunkRend.X + 1 && zc == ChunkRend.Z + 1 && ChunkRend.ChunkEast() != null) chunk = ChunkRend.ChunkEast().ChunkSouth();
+            //else if (xc == ChunkRend.X + 1 && zc == ChunkRend.Z - 1 && ChunkRend.ChunkEast() != null) chunk = ChunkRend.ChunkEast().ChunkNorth();
+            //else if (xc == ChunkRend.X - 1) chunk = ChunkRend.ChunkWest();
+            //else if (xc == ChunkRend.X + 1) chunk = ChunkRend.ChunkEast();
+            //else if (zc == ChunkRend.Z + 1) chunk = ChunkRend.ChunkSouth();
+            //else if (zc == ChunkRend.Z - 1) chunk = ChunkRend.ChunkNorth();
+
+
+
+            if (chunkD != null) return chunkD.GetVoxel(xv, y, zv);
 
             return new Voxel();
         }

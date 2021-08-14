@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
-namespace VoxelEngine
+namespace VoxelEngine.World
 {
     /// <summary>
     /// Объект файла региона
     /// </summary>
-    public class RegionFile
+    public class RegionFile : Coords
     {
-        public int X { get; protected set; }
-        public int Z { get; protected set; }
         /// <summary>
         /// Путь к файлу
         /// </summary>

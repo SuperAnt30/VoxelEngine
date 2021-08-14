@@ -27,7 +27,7 @@ namespace VoxelEngine
         /// </summary>
         public void Done() => _isDone = true;
         /// <summary>
-        /// Надо сделать
+        /// Надо сделать // TODO:: поток зачем пауза
         /// </summary>
         public void Pause() => _isDone = false;
 

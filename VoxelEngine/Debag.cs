@@ -3,6 +3,7 @@ using SharpGL;
 using System;
 using System.IO;
 using VoxelEngine.Util;
+using VoxelEngine.World;
 
 namespace VoxelEngine
 {
@@ -31,7 +32,7 @@ namespace VoxelEngine
         /// <summary>
         /// Объект мира которы берёт из объекта ThreadWorld
         /// </summary>
-        public WorldRender World { get; set; }
+        public WorldD World { get; set; }
 
         protected long _dtime = DateTime.Now.Ticks;
         protected TimeSpan _stime;// = new TimeSpan(0);
@@ -135,7 +136,7 @@ namespace VoxelEngine
 
         public string ToStringFrontCam()
         {
-            return string.Format("CamFront XYZ: {0} Angle: ({1:0.00} | {2:0.00}) {3}",
+            return string.Format("CamFront XYZ: {0} Angle YP: ({1:0.00} | {2:0.00}) {3}",
                 OpenGLF.GetInstance().Cam.Front,
                 OpenGLF.GetInstance().Cam.AngleYaw(),
                 OpenGLF.GetInstance().Cam.AnglePitch(),
@@ -322,7 +323,7 @@ namespace VoxelEngine
                     + "Время загрузки первых чанков: " + _stime.TotalSeconds.ToString() + "  загрузки: " + _stimeLoad.TotalSeconds.ToString() + "\r\n"
                     + ToStringMem() + "\r\n"
                     + Keyboard.GetInstance().PlCamera.StrDebug + "\r\n"
-                    + BB + " " + CountTest + " " + CountTest2 + "\r\n"
+                    + "BB: " + BB + " CT: " + CountTest + " CT2: " + CountTest2 + "\r\n"
                     //+ Keyboard.GetInstance().PlCamera._time + "\r\n\r\n"
                     + "В руке: " + NumberBlock;
                     //+ ToStringInfo();

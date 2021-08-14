@@ -14,11 +14,7 @@ namespace VoxelEngine
         #region Instance
 
         private static OpenGLF instance;
-        private OpenGLF()
-        {
-            DistSqrt = _GetSqrt(VE.CHUNK_VISIBILITY);
-            DistSqrtAlpha = _GetSqrt(VE.CHUNK_VISIBILITY_ALPHA);
-        }
+        private OpenGLF() { }
 
         /// <summary>
         /// Передать по ссылке объект если он создан, иначе создать
@@ -283,29 +279,6 @@ namespace VoxelEngine
         {
             IsLine = !IsLine;
         }
-        /// <summary>
-        /// Массив по длинам используя квадратный корень для всей видимости
-        /// </summary>
-        public ChunkLoading[] DistSqrt { get; protected set; }
-        /// <summary>
-        /// Массив по длинам используя квадратный корень для альфа видимости
-        /// </summary>
-        public ChunkLoading[] DistSqrtAlpha { get; protected set; }
-
-        /// <summary>
-        /// Сгенерировать массив по длинам используя квадратный корень
-        /// </summary>
-        /// <param name="vis">Видимость, в одну сторону от ноля</param>
-        protected ChunkLoading[] _GetSqrt(int vis)
-        {
-            List<ChunkLoading> r = new List<ChunkLoading>();
-            for (int x = -vis; x <= vis; x++)
-                for (int y = -vis; y <= vis; y++)
-                {
-                    r.Add(new ChunkLoading(x, y, Mth.Sqrt(x * x + y * y)));
-                }
-            r.Sort();
-            return r.ToArray();
-        }
+        
     }
 }

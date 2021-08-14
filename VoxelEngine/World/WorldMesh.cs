@@ -46,7 +46,7 @@ namespace VoxelEngine
             Camera camera = OpenGLF.GetInstance().Cam;
             Pole pole = camera.GetPole();
             vec2i pos = camera.ToPositionChunk();
-            ChunkLoading[] spiral = OpenGLF.GetInstance().DistSqrt;
+            ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
 
             if (max == -1) max = spiral.Length - 1;
 
@@ -73,7 +73,7 @@ namespace VoxelEngine
             Pole pole = camera.GetPole();
             vec3i vec = EnumFacing.DirectionVec(pole);
             vec2i pos = camera.ToPositionChunk();
-            ChunkLoading[] spiral = OpenGLF.GetInstance().DistSqrt;
+            ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
 
             // Прорисовка алфы в зависимости куда смотрим. От до
             for (int i = spiral.Length - 1; i >= 0; i--)
@@ -104,7 +104,7 @@ namespace VoxelEngine
             Camera camera = OpenGLF.GetInstance().Cam;
             Pole pole = camera.GetPole();
             vec2i pos = camera.ToPositionChunk();
-            ChunkLoading[] spiral = OpenGLF.GetInstance().DistSqrt;
+            ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
 
             // Прорисовка алфы в зависимости куда смотрим. От до
             for (int i = spiral.Length - 1; i >= 0; i--)

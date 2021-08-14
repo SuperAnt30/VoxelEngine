@@ -74,9 +74,11 @@
     <Compile Include="Actions\Mouse.cs" />
     <Compile Include="Actions\PlayerCamera.cs" />
     <Compile Include="Gen\Trees.cs" />
+    <Compile Include="Test.cs" />
     <Compile Include="Util\BlockPos.cs" />
     <Compile Include="Util\EnumFacing.cs" />
     <Compile Include="Util\EnumSkyBlock.cs" />
+    <Compile Include="Util\Map.cs" />
     <Compile Include="Util\Mth.cs" />
     <Compile Include="Graphics\Shaders\ShaderSkyBox.cs" />
     <Compile Include="Util\WinApi.cs" />
@@ -97,6 +99,7 @@
     <Compile Include="Graphics\Shaders\ShaderLine.cs" />
     <Compile Include="Graphics\TextureAnimation.cs" />
     <Compile Include="Threads\ThreadChunk.cs" />
+    <Compile Include="VES.cs" />
     <Compile Include="World\Block\Block.cs" />
     <Compile Include="World\Block\BlockAir.cs" />
     <Compile Include="World\Block\BlockLeavesApple.cs" />
@@ -123,9 +126,15 @@
     <Compile Include="World\Block\EnumBlock.cs" />
     <Compile Include="World\Block\Model\Box.cs" />
     <Compile Include="World\Block\Model\Face.cs" />
+    <Compile Include="World\Chunk\ChunkD.cs" />
+    <Compile Include="World\Chunk\ChunkMap.cs" />
     <Compile Include="World\Chunk\ChunkMeshs.cs" />
+    <Compile Include="World\Chunk\ChunkProvider.cs" />
     <Compile Include="World\Chunk\ChunkStorage.cs" />
+    <Compile Include="World\Coords.cs" />
     <Compile Include="World\GuiWater.cs" />
+    <Compile Include="World\RegionMap.cs" />
+    <Compile Include="World\RegionProvider.cs" />
     <Compile Include="World\Storage\ChunkStorage.cs" />
     <Compile Include="World\HitBoxPlayer.cs" />
     <Compile Include="World\LineMesh.cs" />
@@ -140,10 +149,10 @@
     <Compile Include="World\LineRender.cs" />
     <Compile Include="World\SkyBoxMesh.cs" />
     <Compile Include="World\Voxel\VoxelEvent.cs" />
+    <Compile Include="World\WorldD.cs" />
     <Compile Include="World\WorldFile.cs" />
     <Compile Include="World\WorldLineMesh.cs" />
     <Compile Include="World\WorldMesh.cs" />
-    <Compile Include="World\WorldMeshArray.cs" />
     <Compile Include="World\Block\BlockFaceUV.cs" />
     <Compile Include="World\Chunk\ChunkRender.cs" />
     <Compile Include="Graphics\Camera.cs" />
@@ -171,7 +180,6 @@
     <Compile Include="World\Perlin.cs" />
     <Compile Include="World\Chunk\ChunkLoading.cs" />
     <Compile Include="World\Voxel\VoxelData.cs" />
-    <Compile Include="World\WorldMeshDictionary.cs" />
     <Compile Include="World\WorldRender.cs" />
     <Compile Include="World\RegionFile.cs" />
     <EmbeddedResource Include="FormGame.resx">

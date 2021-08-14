@@ -2,6 +2,8 @@
 using System.IO;
 using System.Windows.Forms;
 using VoxelEngine.Glm;
+using VoxelEngine.World;
+using VoxelEngine.World.Chunk;
 
 namespace VoxelEngine
 {
@@ -30,7 +32,7 @@ namespace VoxelEngine
         /// <summary>
         /// Объект мира
         /// </summary>
-        public WorldRender World { get; set; }
+        public WorldD World { get; set; }
 
         public PlayerCamera PlCamera { get; protected set; } = new PlayerCamera();
 
@@ -120,7 +122,7 @@ namespace VoxelEngine
             vec2i ch;
             vec3i bl;
             //Block blk;
-            ChunkRender chunk;
+            ChunkD chunk;
             //Debag.Log("LogKey", keys.ToString());
             switch (keys)
             {

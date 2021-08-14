@@ -15,6 +15,27 @@ namespace VoxelEngine.Glm
             }
         }
 
+        /// <summary>
+        /// Четверть Пи, аналог 45гр
+        /// </summary>
+        public readonly static float pi45 = 0.7853981625f;
+        /// <summary>
+        /// Половина Пи, аналог 90гр
+        /// </summary>
+        public readonly static float pi90 = 1.570796325f;
+        /// <summary>
+        /// Половина Пи, аналог 135гр
+        /// </summary>
+        public readonly static float pi135 = 2.356194487f;
+        /// <summary>
+        /// Пи, аналог 180гр
+        /// </summary>
+        public readonly static float pi = 3.14159265f;
+        /// <summary>
+        /// Два Пи, аналог 360гр
+        /// </summary>
+        public readonly static float pi360 = 6.28318531f;
+
         public static float degrees(float radians)
         {
             return radians * (57.295779513082320876798154814105f);

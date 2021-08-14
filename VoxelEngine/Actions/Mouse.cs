@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using VoxelEngine.Util;
+using VoxelEngine.World;
 
 namespace VoxelEngine
 {
@@ -31,7 +32,7 @@ namespace VoxelEngine
         /// <summary>
         /// Объект мира
         /// </summary>
-        public WorldRender World { get; set; }
+        public WorldD World { get; set; }
 
         /// <summary>
         /// Вращается ли камера от мышки

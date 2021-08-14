@@ -47,6 +47,22 @@ namespace VoxelEngine
             IsAlpha = isAlpha;
         }
 
+        public bool IsCache
+        {
+            get
+            {
+                return Distance == -1f;
+            }
+        }
+
+        public bool IsRegion
+        {
+            get
+            {
+                return Distance == -2f;
+            }
+        }
+
         /// <summary>
         /// Метод для сортировки
         /// </summary>
@@ -56,6 +72,13 @@ namespace VoxelEngine
                 return Distance.CompareTo(v.Distance);
             else
                 throw new Exception("Невозможно сравнить два объекта");
+        }
+
+        public string Key()
+        {
+            string s = "";
+            if (IsCache) s = "c"; else if (IsRegion) s = "r";
+            return WorldMesh.KeyChunk(X, Z) + s;
         }
 
         public override string ToString()

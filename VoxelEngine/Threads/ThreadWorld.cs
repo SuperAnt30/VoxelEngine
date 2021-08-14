@@ -3,6 +3,37 @@
 namespace VoxelEngine
 {
     /// <summary>
+    /// Тип запроса потоков
+    /// </summary>
+    public enum RenderType
+    {
+        /// <summary>
+        /// Нет
+        /// </summary>
+        None = -1,
+        /// <summary>
+        /// Рендер всех чанков сплошных блоков
+        /// </summary>
+        Dense = 0,
+        /// <summary>
+        /// Рендер тикущего чанка алфа блоков
+        /// </summary>
+        AlphaOne = 1,
+        /// <summary>
+        /// Рендер всех чанков алфа блоков
+        /// </summary>
+        //  Alpha = 2,
+        /// <summary>
+        /// Рендер тикущего чанка сплошных блоков
+        /// </summary>
+        DenseOne = 3,
+        /// <summary>
+        /// Всё
+        /// </summary>
+        All = 4
+    }
+    /*
+    /// <summary>
     /// Объект потока который контралирует рендер мира от камеры
     /// </summary>
     public class ThreadWorld : ThreadObject
@@ -12,36 +43,7 @@ namespace VoxelEngine
         /// </summary>
         public WorldRender World { get; protected set; } = new WorldRender();
 
-        /// <summary>
-        /// Тип запроса потоков
-        /// </summary>
-        public enum RenderType
-        {
-            /// <summary>
-            /// Нет
-            /// </summary>
-            None = -1,
-            /// <summary>
-            /// Рендер всех чанков сплошных блоков
-            /// </summary>
-            Dense = 0,
-            /// <summary>
-            /// Рендер тикущего чанка алфа блоков
-            /// </summary>
-            AlphaOne = 1,
-            /// <summary>
-            /// Рендер всех чанков алфа блоков
-            /// </summary>
-          //  Alpha = 2,
-            /// <summary>
-            /// Рендер тикущего чанка сплошных блоков
-            /// </summary>
-            DenseOne = 3,
-            /// <summary>
-            /// Всё
-            /// </summary>
-            All = 4
-        }
+        
 
         /// <summary>
         /// Сохраняем ли мир
@@ -61,7 +63,10 @@ namespace VoxelEngine
         /// <summary>
         /// Массив запросов
         /// </summary>
-        protected ChunkLoading[] _dones = new ChunkLoading[8];
+        //protected ChunkLoading[] _dones = new ChunkLoading[8]; //8
+
+        protected RenderType _doneType = RenderType.None;
+        protected ChunkLoading _done;
 
         /// <summary>
         /// Затать запрос для смены вокселя
@@ -70,7 +75,9 @@ namespace VoxelEngine
         /// <param name="beside">соседний от центра</param>
         public void SetVoxel(vec2i positionCenter, vec2i[] beside)
         {
-            _dones[(int)RenderType.DenseOne] = new ChunkLoading(positionCenter.x, positionCenter.y) { Beside = beside };
+            //_dones[(int)RenderType.DenseOne] = new ChunkLoading(positionCenter.x, positionCenter.y) { Beside = beside };
+            _doneType = RenderType.DenseOne;
+            _done = new ChunkLoading(positionCenter.x, positionCenter.y) { Beside = beside };
         }
 
         /// <summary>
@@ -81,7 +88,9 @@ namespace VoxelEngine
         /// <param name="beside">соседний от центра</param>
         public void SetCenterPosition(vec2i positionCenter, RenderType render)
         {
-            _dones[(int)render] = new ChunkLoading(positionCenter.x, positionCenter.y);
+            //_dones[(int)render] = new ChunkLoading(positionCenter.x, positionCenter.y);
+            _doneType = render;
+            _done = new ChunkLoading(positionCenter.x, positionCenter.y);
         }
 
         /// <summary>
@@ -89,32 +98,52 @@ namespace VoxelEngine
         /// </summary>
         protected override void _Run()
         {
-            for (int i = 0; i < _dones.Length; i++)
+            if (_doneType != RenderType.None)
             {
-                if (_dones[i] != null)
+                vec2i pos = new vec2i(_done.X, _done.Z);
+                bool isDone = true;
+                switch (_doneType)
                 {
-                    bool isDone = true;
-                    vec2i pos = new vec2i(_dones[i].X, _dones[i].Z);
-                    switch ((RenderType)i)
-                    {
-                        case RenderType.AlphaOne: isDone = !World.RenderOneAlpha(pos); break;
-                        case RenderType.Dense: isDone = !World.Render(pos, false); break;
-                        case RenderType.DenseOne: isDone = !World.RenderOne(pos, _dones[i].Beside); break;
-                     //   case RenderType.Alpha: isDone = !World.RenderAlpha(pos); break;
-                        case RenderType.All: isDone = !World.Render(pos, true); break;
-                    }
-
-                    if (!isDone)
-                    {
-                        _dones[i] = null;
-                        OnThreadDone();
-                    }
+                    case RenderType.AlphaOne: isDone = !World.RenderOneAlpha(pos); break;
+                    case RenderType.Dense: isDone = !World.Render(pos, false); break;
+                    case RenderType.DenseOne: isDone = !World.RenderOne(pos, _done.Beside); break;
+                    //   case RenderType.Alpha: isDone = !World.RenderAlpha(pos); break;
+                    case RenderType.All: isDone = !World.Render(pos, true); break;
+                }
+                if (!isDone)
+                {
+                    _done = null;
+                    _doneType = RenderType.None;
+                    OnThreadDone();
                 }
             }
 
+            //for (int i = 0; i < _dones.Length; i++)
+            //{
+            //    if (_dones[i] != null)
+            //    {
+            //        bool isDone = true;
+            //        vec2i pos = new vec2i(_dones[i].X, _dones[i].Z);
+            //        switch ((RenderType)i)
+            //        {
+            //            case RenderType.AlphaOne: isDone = !World.RenderOneAlpha(pos); break;
+            //            case RenderType.Dense: isDone = !World.Render(pos, false); break;
+            //            case RenderType.DenseOne: isDone = !World.RenderOne(pos, _dones[i].Beside); break;
+            //         //   case RenderType.Alpha: isDone = !World.RenderAlpha(pos); break;
+            //            case RenderType.All: isDone = !World.Render(pos, true); break;
+            //        }
+
+            //        if (!isDone)
+            //        {
+            //            _dones[i] = null;
+            //            OnThreadDone();
+            //        }
+            //    }
+            //}
+
             if (IsSave)
             {
-                World.RegionsWrite();
+              //  World.RegionsWrite();
                 IsSave = false;
             }
         }
@@ -124,7 +153,7 @@ namespace VoxelEngine
         /// </summary>
         public void StopSave()
         {
-            World.RegionsWrite();
+           // World.RegionsWrite();
             Stop();
         }
 
@@ -139,5 +168,5 @@ namespace VoxelEngine
         //{
         //    ChunkDone?.Invoke(this, e);
         //}
-    }
+    }*/
 }

@@ -472,7 +472,7 @@ namespace VoxelEngine
                 Block block = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -3, 0));
                 if (block.EBlock == EnumBlock.WaterFlowing)
                 {
-                    BlockRender blockRender = new BlockRender(Mouse.GetInstance().World.GetChunk(block.Position), block);
+                    BlockRender blockRender = new BlockRender(new ChunkRender(Mouse.GetInstance().World.GetChunk(block.Position), new WorldRender()), block);
                     vec4 level = blockRender.HeightWater() * VE.WATER_LEVEL;
 
                     float w = level.x + level.y;

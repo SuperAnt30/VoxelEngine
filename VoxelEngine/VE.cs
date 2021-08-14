@@ -5,8 +5,11 @@
     /// </summary>
     public class VE
     {
-
-        public const int CHUNK_VISIBILITY = 6;
+        /// <summary>
+        /// Сколько чанков в тике могут рендерится
+        /// </summary>
+        public const int RENDER_CHUNK_TPS = 1;
+        public const int CHUNK_VISIBILITY = 10;
         //public const int CHUNK_ALL = 221;
 
         //public const int CHUNK_VISIBILITY = 10;
@@ -33,7 +36,7 @@
         /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// </summary>
-        public const int CHUNK_VISIBILITY_ALPHA = 5;
+        public const int CHUNK_VISIBILITY_ALPHA = 5;//5;
         /// <summary>
         /// Скольк чанков вблизи камеры активны к тику 49 это 7*7 где чанк где камеры и 3 дистанция
         /// </summary>
@@ -100,7 +103,7 @@
         /// <summary>
         /// Скорость авто прыжка и когда встаём из положения сидя
         /// </summary>
-        public const float SPEED_AUTOJAMP = 10f; //9
+        public const float SPEED_AUTOJAMP = 12f; //9
         /// <summary>
         /// Скорость падения если нет блоков под нагами
         /// Чем больше тем быстрее падает
@@ -139,7 +142,7 @@
         /// <summary>
         /// Время через сколько вырастет дерево
         /// </summary>
-        public const int TICK_TREE_TIME = 200;
+        public const int TICK_TREE_TIME = 60;
         /// <summary>
         /// Время через сколько вырастет дерево если сразу не получилось
         /// </summary>

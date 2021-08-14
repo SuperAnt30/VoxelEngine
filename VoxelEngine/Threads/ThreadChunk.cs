@@ -1,5 +1,5 @@
 ﻿namespace VoxelEngine
-{
+{/*
     /// <summary>
     /// Объект потока который занимается рендором чанка
     /// </summary>
@@ -41,7 +41,7 @@
         public new void Done()
         {
             _isDone = true;
-            World.SetPause(Index, true);
+            //World.SetPause(Index, true);
             _isPause = true;
         }
 
@@ -55,18 +55,18 @@
         /// </summary>
         protected override void _Run()
         {
-            if (_isDone && World.CountLoading(Index) > 0)
-            {
-                //System.Threading.Thread.Sleep(200);
-                //Debag.Log("log" + Index.ToString(), "ThreadChunks index {0}", Index);
-                World.LoadRender(Index);
+            //if (_isDone && World.CountLoading(Index) > 0)
+            //{
+            //    //System.Threading.Thread.Sleep(200);
+            //    //Debag.Log("log" + Index.ToString(), "ThreadChunks index {0}", Index);
+            //    World.LoadRender(Index);
                 
-            }
-            if (!_isDone && _isPause)
-            {
-                World.SetPause(Index, false);
-                _isPause = false;
-            }
+            //}
+            //if (!_isDone && _isPause)
+            //{
+            //    World.SetPause(Index, false);
+            //    _isPause = false;
+            //}
         }
 
         /// <summary>
@@ -80,5 +80,5 @@
         {
             ChunkDone?.Invoke(this, e);
         }
-    }
+    }*/
 }

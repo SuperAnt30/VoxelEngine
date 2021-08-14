@@ -1,6 +1,7 @@
 ﻿using System;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
+using VoxelEngine.World;
 
 namespace VoxelEngine.Gen
 {
@@ -12,9 +13,9 @@ namespace VoxelEngine.Gen
         /// <summary>
         /// Объект мира которы берёт из объекта ThreadWorld
         /// </summary>
-        public WorldRender World { get; protected set; }
+        public WorldD World { get; protected set; }
 
-        public Trees(WorldRender world)
+        public Trees(WorldD world)
         {
             World = world;
         }
