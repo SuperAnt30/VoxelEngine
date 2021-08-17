@@ -76,6 +76,7 @@
     <Compile Include="Gen\Trees.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Util\BlockPos.cs" />
+    <Compile Include="Util\CoordEvent.cs" />
     <Compile Include="Util\EnumFacing.cs" />
     <Compile Include="Util\EnumSkyBlock.cs" />
     <Compile Include="Util\Map.cs" />
@@ -98,7 +99,6 @@
     <Compile Include="Util\Pole.cs" />
     <Compile Include="Graphics\Shaders\ShaderLine.cs" />
     <Compile Include="Graphics\TextureAnimation.cs" />
-    <Compile Include="Threads\ThreadChunk.cs" />
     <Compile Include="VES.cs" />
     <Compile Include="World\Block\Block.cs" />
     <Compile Include="World\Block\BlockAir.cs" />
@@ -144,7 +144,6 @@
     <Compile Include="Graphics\Shaders\ShaderVoxel.cs" />
     <Compile Include="Threads\ThreadTick.cs" />
     <Compile Include="Threads\ThreadObject.cs" />
-    <Compile Include="Threads\ThreadWorld.cs" />
     <Compile Include="World\Chunk\ChunkMesh.cs" />
     <Compile Include="World\LineRender.cs" />
     <Compile Include="World\SkyBoxMesh.cs" />

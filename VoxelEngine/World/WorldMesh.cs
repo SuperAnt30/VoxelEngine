@@ -175,6 +175,7 @@ namespace VoxelEngine
                 if (cm.X <= xMin || cm.X >= xMax || cm.Z <= zMin || cm.Z >= zMax)
                 {
                     Debag.GetInstance().CountPoligonChunk -= cm.CountPoligon;
+                    OnRemoveChanged(new vec2i(cm.X, cm.Z));
                     cm.Delete();
                     vs.Add(s.Key.ToString());
                 }
@@ -236,6 +237,19 @@ namespace VoxelEngine
                 }
             }
             return r.ToArray();
+        }
+
+        /// <summary>
+        /// Событие удалена сетка
+        /// </summary>
+        public event CoordEventHandler RemoveChanged;
+
+        /// <summary>
+        /// удалена сетка
+        /// </summary>
+        protected virtual void OnRemoveChanged(vec2i position)
+        {
+            RemoveChanged?.Invoke(this, new CoordEventArgs(position));
         }
     }
 }

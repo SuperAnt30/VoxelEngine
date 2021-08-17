@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using VoxelEngine.Glm;
 using VoxelEngine.Util;
 
 namespace VoxelEngine
@@ -120,6 +121,7 @@ namespace VoxelEngine
             Sh.Create(gl);
 
             WorldM = new WorldMesh();
+            WorldM.RemoveChanged += WorldMRemoveChanged;
 
             SkyBoxM = new SkyBoxMesh(1f);
             SkyBoxSun = new SkyBoxMesh(0.9f);
@@ -129,6 +131,8 @@ namespace VoxelEngine
             //myThread.Start();
             //worldR.BeginLoading();
         }
+
+        
 
         ///// <summary>
         ///// Событие изменение позиции камеры на другой чанк
@@ -279,6 +283,24 @@ namespace VoxelEngine
         {
             IsLine = !IsLine;
         }
-        
+
+
+        /// <summary>
+        /// Событие удалена сетка
+        /// </summary>
+        public event CoordEventHandler RemoveChunkMeshChanged;
+
+        /// <summary>
+        /// удалена сетка
+        /// </summary>
+        protected virtual void OnRemoveChunkMeshChanged(CoordEventArgs e)
+        {
+            RemoveChunkMeshChanged?.Invoke(this, e);
+        }
+
+        private void WorldMRemoveChanged(object sender, CoordEventArgs e)
+        {
+            OnRemoveChunkMeshChanged(e);
+        }
     }
 }

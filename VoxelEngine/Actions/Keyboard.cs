@@ -138,7 +138,6 @@ namespace VoxelEngine
                     bl = OpenGLF.GetInstance().Cam.ToPositionBlock();
                     chunk = World.GetChunk(ch.x, ch.y);
                     chunk.Regen();
-                    OnVoxelChanged(bl, new vec2i[0]);
 
                     //MediaPlayer player = new MediaPlayer();
                     //player.Open(new Uri(@"D:\Work\3d\TestAnimation\say1.mp3"));
@@ -244,19 +243,6 @@ namespace VoxelEngine
         protected void OnMoveChanged()
         {
             MoveChanged?.Invoke(this, new EventArgs());
-        }
-
-        /// <summary>
-        /// Событие изменена позиция чанка
-        /// </summary>
-        public event VoxelEventHandler VoxelChanged;
-
-        /// <summary>
-        /// Изменена позиция чанка
-        /// </summary>
-        protected void OnVoxelChanged(vec3i position, vec2i[] beside)
-        {
-            VoxelChanged?.Invoke(this, new VoxelEventArgs(position, beside));
         }
     }
 }

@@ -17,7 +17,7 @@ namespace VoxelEngine
         {
             DistSqrt = _GetSqrt(VE.CHUNK_VISIBILITY);
             DistSqrtAlpha = _GetSqrt(VE.CHUNK_VISIBILITY_ALPHA);
-            _GetSqrtPole();
+            _GetSqrtPole3();
         }
 
         /// <summary>
@@ -98,11 +98,66 @@ namespace VoxelEngine
             distSqrtPole[i] = r.ToArray();
             r.Clear();
         }
-
         /// <summary>
         /// Заполнение сеток секторов
         /// </summary>
-        protected void _GetSqrtPole()
+        protected void _GetSqrtPole3()
+        {
+            int dis = VE.CHUNK_VISIBILITY;
+            List<ChunkLoading> r = new List<ChunkLoading>();
+
+            // 0 .. 45
+            for (int z = 0; z >= -dis; z--)
+                for (int x = -z; x >= -dis; x--)
+                    r.Add(new ChunkLoading(x, z, Mth.Sqrt(x * x + z * z)));
+            _GetSqrtPoleOne(0, r);
+
+            // 45 .. 90
+            for (int x = 0; x >= -dis; x--)
+                for (int z = -x; z >= -dis; z--)
+                    r.Add(new ChunkLoading(x, z, Mth.Sqrt(x * x + z * z)));
+            _GetSqrtPoleOne(1, r);
+
+            // 90 .. 135
+            for (int x = 0; x >= -dis; x--)
+                for (int z = x; z <= dis; z++)
+                    r.Add(new ChunkLoading(x, z, Mth.Sqrt(x * x + z * z)));
+            _GetSqrtPoleOne(2, r);
+
+            // 135 .. 180
+            for (int z = 0; z <= dis; z++)
+                for (int x = z; x >= -dis; x--)
+                    r.Add(new ChunkLoading(x, z, Mth.Sqrt(x * x + z * z)));
+            _GetSqrtPoleOne(3, r);
+
+            // 0 .. -45
+            for (int z = 0; z >= -dis; z--)
+                for (int x = dis; x >= z; x--)
+                    r.Add(new ChunkLoading(x, z, Mth.Sqrt(x * x + z * z)));
+            _GetSqrtPoleOne(7, r);
+
+            // -45 .. -90
+            for (int x = 0; x <= dis; x++)
+                for (int z = -dis; z <= x; z++)
+                    r.Add(new ChunkLoading(x, z, Mth.Sqrt(x * x + z * z)));
+            _GetSqrtPoleOne(6, r);
+
+            // -90 .. -135
+            for (int x = 0; x <= dis; x++)
+                for (int z = -x; z <= dis; z++)
+                    r.Add(new ChunkLoading(x, z, Mth.Sqrt(x * x + z * z)));
+            _GetSqrtPoleOne(5, r);
+
+            // -135 .. -180
+            for (int z = 0; z <= dis; z++)
+                for (int x = -z; x <= dis; x++)
+                    r.Add(new ChunkLoading(x, z, Mth.Sqrt(x * x + z * z)));
+            _GetSqrtPoleOne(4, r);
+        }
+        /// <summary>
+        /// Заполнение сеток секторов
+        /// </summary>
+        protected void _GetSqrtPole0125()
         {
             int dis = VE.CHUNK_VISIBILITY;
             List<ChunkLoading> r = new List<ChunkLoading>();

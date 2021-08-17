@@ -34,14 +34,6 @@ namespace VoxelEngine
         /// Объект мира
         /// </summary>
         public WorldRender World { get; protected set; } = new WorldRender();
-        /// <summary>
-        /// Отдельный поток мира
-        /// </summary>
-        //private ThreadWorld threadWorld = new ThreadWorld();
-        ///// <summary>
-        ///// Отдельные потоки загрузки чанков
-        ///// </summary>
-        //private ThreadChunk[] threadChunks = new ThreadChunk[8];
 
         public FormGame()
         {
@@ -60,9 +52,6 @@ namespace VoxelEngine
             //threadFps.SetTps(60);
             //threadFps.ThreadDone += ThreadFps_ThreadDone;
             //threadFps.Stoped += Thread_Stoped;
-
-            //threadWorld.ThreadDone += ThreadWorld_ThreadDone;
-            //threadWorld.Stoped += Thread_Stoped;
         }
 
         #region Form
@@ -77,16 +66,11 @@ namespace VoxelEngine
             //Test test = new Test();
             //test.ArrayChunk();
             timer1.Start();
+
             //threadFps.Start();
             //threadTps.Start();
            // new Thread(threadFps.Run).Start();
             //new Thread(threadTps.Run).Start();
-           // new Thread(threadWorld.Run).Start();
-
-            //for (int i = 0; i < threadChunks.Length; i++)
-            //{
-            //    new Thread(threadChunks[i].Run).Start();
-            //}
         }
 
         /// <summary>
@@ -108,22 +92,6 @@ namespace VoxelEngine
             //}
 
             World.RegionPr.RegionsWrite();
-            //if (threadWorld.IsRun)
-            //{
-            //    e.Cancel = true;
-            //    threadWorld.StopSave();
-            //    return;
-            //}
-            //for (int i = 0; i < threadChunks.Length; i++)
-            //{
-            //    if (threadChunks[i].IsRun)
-            //    {
-            //        e.Cancel = true;
-            //        threadChunks[i].Stop();
-            //        break;
-            //    }
-            //}
-
             WinApi.TimeEndPeriod(1);
         }
 
@@ -131,54 +99,7 @@ namespace VoxelEngine
 
         #region Потоки
 
-        /// <summary>
-        /// Сгенерированного мира со списками чанков
-        /// </summary>
-        //private void ThreadWorld_ThreadDone(object sender, EventArgs e)
-        //{
-        //    if (InvokeRequired) Invoke(new EventHandler(ThreadWorld_ThreadDone), sender, e);
-        //    else
-        //    {
-        //        for (int i = 0; i < threadChunks.Length; i++)
-        //        {
-        //            threadChunks[i].Done();
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// Сгенерирован чанк
-        /// </summary>
-        private void ThreadChunk_ChunkDone(object sender, ChunkEventArgs e)
-        {
-            if (InvokeRequired) Invoke(new ChunkEventHandler(ThreadChunk_ChunkDone), sender, e);
-            else
-            {
-                if (!e.IsAlpha)
-                {
-                    //Debag.GetInstance().CountTest++;
-                    OpenGLF.GetInstance().WorldM.RenderChank(e.Chunk.Chunk.X, e.Chunk.Chunk.Z, e.Chunk.ToBuffer());
-                    // можно очистить буфер сетки
-                    //e.Chunk.ClearBuffer(); // нельзя, так как заного рендерим когда перемещаемся
-                }
-                OpenGLF.GetInstance().WorldM.RenderChankAlpha(e.Chunk.Chunk.X, e.Chunk.Chunk.Z, e.Chunk.ToBufferAlpha());
-                //OpenGLF.GetInstance().WorldM.RenderChank(e.Chunk.X, e.Chunk.Z,
-                //    e.IsAlpha ? e.Chunk.ToBufferAlpha() :
-                //    e.Chunk.ToBuffer());
-            }
-        }
-
-        ///// <summary>
-        ///// Сгенерирован чанк
-        ///// </summary>
-        //private void ThreadChunk_ChunkAlphaDone(object sender, ChunkEventArgs e)
-        //{
-        //    if (InvokeRequired) Invoke(new ChunkEventHandler(ThreadChunk_ChunkAlphaDone), sender, e);
-        //    else
-        //    {
-        //        OpenGLF.GetInstance().WorldM.RenderChankAlpha(e.Chunk.X, e.Chunk.Z, e.Chunk.ToBufferAlpha());
-        //    }
-        //}
+        
 
         /// <summary>
         /// Тик FPS
@@ -195,30 +116,15 @@ namespace VoxelEngine
         private void ThreadTps_ThreadDone(object sender, EventArgs e)
         {
             if (InvokeRequired) Invoke(new EventHandler(ThreadTps_ThreadDone), sender, e);
-            else
-            {
-                Debag.GetInstance().TickCount++;
-                counterTps.CalculateFrameRate();
-
-                // Тики в других объектах
-                OpenGLF.GetInstance().Tick();
-                //Task.Factory.StartNew(() => {
-                    World.Tick();
-                //});
-
-                //Text = "Game by SuperAnt " + string.Format("FPS {1} TPS {2} CountMesh {0}",
-                //    Debag.GetInstance().CountMesh, counterFps.Fps, counterTps.Fps);
-            }
+            else Tick(); 
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            Debag.GetInstance().TickCount++;
-            counterTps.CalculateFrameRate();
-            // Тики в других объектах
-            OpenGLF.GetInstance().Tick();
-            World.Tick();
+            Tick();
         }
+
+        
 
         /// <summary>
         /// Остановка потока для закрытия приложения
@@ -241,6 +147,7 @@ namespace VoxelEngine
             OpenGLF.GetInstance().Initialized(openGLControl1.OpenGL);
             //OpenGLF.GetInstance().Cam = new Camera(new vec3(-24, 7, -24), glm.radians(70.0f));
             OpenGLF.GetInstance().Cam = new Camera(new vec3(0, 70, 0), glm.radians(70.0f));
+            OpenGLF.GetInstance().RemoveChunkMeshChanged += OpenGLFRemoveChunkMeshChanged;
             // TODO::Load
             WorldFile.Load();
             //OpenGLF.GetInstance().Cam.Rotate(0, glm.radians(20f), 0);
@@ -249,31 +156,26 @@ namespace VoxelEngine
             //OpenGLF.GetInstance().Cam = new Camera(new vec3(0, 70, 0), glm.radians(70.0f));
             OpenGLF.GetInstance().Cam.PositionChunkChanged += Cam_PositionChunkChanged;
             OpenGLF.GetInstance().Cam.PositionBlockChanged += Cam_PositionBlockChanged;
-            //for (int i = 0; i < threadChunks.Length; i++)
-            //{
-            //    threadChunks[i] = new ThreadChunk(threadWorld.World, i);
-            //    //if (i < 8)
-            //    //threadChunks[i].ChunkDone += ThreadChunk_ChunkDone;
-            //    //else threadChunks[i].ChunkDone += ThreadChunk_ChunkAlphaDone;
-            //    threadChunks[i].Stoped += Thread_Stoped;
-            //}
-            World.ChunkDone += ThreadChunk_ChunkDone;
-            World.VoxelChanged += FormGame_VoxelChanged;
+            World.ChunkDone += WorldChunkDone;
+            World.VoxelChanged += WorldVoxelChanged;
+            World.Rendered += WorldRendered;
 
-           // OpenGLF.GetInstance().WorldM.World = threadWorld.World;
-
-            Keyboard.GetInstance().VoxelChanged += FormGame_VoxelChanged;
             Keyboard.GetInstance().MoveChanged += FormGame_MoveChanged;
             Keyboard.GetInstance().World = World;
-            //Mouse.GetInstance().VoxelChanged += FormGame_VoxelChanged;
             Mouse.GetInstance().MoveChanged += FormGame_MoveChanged;
             Mouse.GetInstance().World = World;
             Debag.GetInstance().StartTime();
             Debag.GetInstance().World = World;
-            _RenderWorld(OpenGLF.GetInstance().Cam.ToPositionChunk(), RenderType.Dense);
         }
 
        
+
+        private void OpenGLFRemoveChunkMeshChanged(object sender, CoordEventArgs e)
+        {
+            // Задача если чанк с сеткой удаляется, надо пометить в кэше чанков, для будущего рендера
+            ChunkRender chunk = World.GetChunkRender(e.Position2d.x, e.Position2d.y);
+            if (chunk != null) chunk.ModifiedToRender();
+        }
 
         /// <summary>
         /// Изменён размер окна OpenGL
@@ -385,19 +287,13 @@ namespace VoxelEngine
             d.CountFrame = 0;
         }
 
-       
-
-
-
         /// <summary>
         /// Движение камеры или обзора камеры
         /// </summary>
         private void FormGame_MoveChanged(object sender, EventArgs e)
         {
             OpenGLF openGLF = OpenGLF.GetInstance();
-            //Voxel vox = threadWorld.World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
             Block block = World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            //Debag.GetInstance().BB = norm.ToString();
             if (block.Id > 0)
             {
                 float size = 1.01f;
@@ -414,25 +310,31 @@ namespace VoxelEngine
         /// <summary>
         /// Изменён воксель
         /// </summary>
-        private void FormGame_VoxelChanged(object sender, VoxelEventArgs e)
+        private void WorldVoxelChanged(object sender, VoxelEventArgs e)
         {
-            return;
-            vec2i pos = Camera.ToPositionChunk(e.Position);
-            /*if (e.Beside.Length == 0)
+
+        }
+
+        /// <summary>
+        /// Сгенерирован чанк
+        /// </summary>
+        private void WorldChunkDone(object sender, ChunkEventArgs e)
+        {
+            if (InvokeRequired) Invoke(new ChunkEventHandler(WorldChunkDone), sender, e);
+            else
             {
-                //_RenderWorld(Camera.ToPositionChunk(e.Position), RenderType.DenseOne);
-                World.RenderOne(pos, new vec2i[0]);
-            } else
-            {
-                // с соседним чанкум
-                vec2i[] beside = new vec2i[e.Beside.Length];
-                for (int i = 0; i < e.Beside.Length; i++)
-                {
-                    beside[i] = new vec2i(pos.x + e.Beside[i].x, pos.y + e.Beside[i].y);
-                }
-                World.RenderOne(pos, beside);
-            }*/
-            FormGame_MoveChanged(sender, new EventArgs());
+                OpenGLF.GetInstance().WorldM.RenderChank(e.Chunk.Chunk.X, e.Chunk.Chunk.Z, e.Chunk.ToBuffer());
+                OpenGLF.GetInstance().WorldM.RenderChankAlpha(e.Chunk.Chunk.X, e.Chunk.Chunk.Z, e.Chunk.ToBufferAlpha());
+                // Очищаю чтоб не держать в памяти дубликат сетки
+                e.Chunk.ClearBuffer();
+                e.Chunk.ClearBufferAlpha();
+            }
+
+        }
+
+        private void WorldRendered(object sender, EventArgs e)
+        {
+            World.RenderPackage();
         }
 
         /// <summary>
@@ -440,45 +342,36 @@ namespace VoxelEngine
         /// </summary>
         private void Cam_PositionChunkChanged(object sender, EventArgs e)
         {
-            _RenderWorld(OpenGLF.GetInstance().Cam.ToPositionChunk(), RenderType.All); // был All
             if (Debag.GetInstance().IsDrawChunk) 
             {
                 OpenGLF.GetInstance().WorldLineM.Chunk();
             }
-
-            OpenGLF.GetInstance().WorldM.RemoveAway(OpenGLF.GetInstance().Cam.ToPositionChunk());
-            
+            vec2i c = OpenGLF.GetInstance().Cam.ToPositionChunk();
+            OpenGLF.GetInstance().WorldM.RemoveAway(c);
+            World.RemoveAway(c);
         }
 
         private void Cam_PositionBlockChanged(object sender, EventArgs e)
         {
             // TODO:: 2021-07-15 обнуляет очередь загрузки чанков, из-за этого глюки. 
-            //_RenderWorld(OpenGLF.GetInstance().Cam.ToPositionChunk(), ThreadWorld.RenderType.AlphaOne);
         }
 
-        /// <summary>
-        /// Подготовка для генерации мира
-        /// </summary>
-        private void _RenderWorld(vec2i pos, RenderType render)
+        bool startTick = true;
+
+        protected void Tick()
         {
-            /*
-            bool isDone = true;
-            switch (render)
+            Debag.GetInstance().TickCount++;
+            counterTps.CalculateFrameRate();
+
+            // Тики в других объектах
+            OpenGLF.GetInstance().Tick();
+            World.Tick();
+
+            if (startTick)
             {
-                case RenderType.AlphaOne: isDone = !World.RenderOneAlpha(pos); break;
-                case RenderType.Dense: isDone = !World.Render(pos, false); break;
-                //case RenderType.DenseOne: isDone = !World.RenderOne(pos, _dones[i].Beside); break;
-                //   case RenderType.Alpha: isDone = !World.RenderAlpha(pos); break;
-                case RenderType.All: isDone = !World.Render(pos, true); break;
-            }*/
-
-            //for (int i = 0; i < threadChunks.Length; i++)
-            //{
-            //    threadChunks[i].Pause();
-            //}
-            //threadWorld.SetCenterPosition(chunk, render);
+                World.RenderPackage();
+                startTick = false;
+            }
         }
-
-        
     }
 }

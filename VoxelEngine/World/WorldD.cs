@@ -43,7 +43,6 @@ namespace VoxelEngine.World
                 timeSave = Debag.GetInstance().TickCount;
                 // Сохраняем миры каждые 5 мин
                 RegionPr.RegionsWrite();
-                //RegionsWrite();
             }
         }
 
@@ -180,11 +179,13 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
-        /// Удалить дальние чанки из массива кэша сеток
+        /// Удалить дальние чанки из массива кэша и регионы
+        /// TODO:: 2021-08-17 сделать ключ блокировку, чтоб пока идёт чистка, рендер и добавление чанкоы были не доступны
         /// </summary>
         public void RemoveAway(vec2i positionCam)
         {
-            List<vec2i> vs = new List<vec2i>();
+            List<vec2i> chunks = new List<vec2i>();
+            
             // дальность чанков с учётом кэша
             int visiblityCache = VE.CHUNK_VISIBILITY + 4;
             int xMin = positionCam.x - visiblityCache;
@@ -194,22 +195,37 @@ namespace VoxelEngine.World
             // Собираем массив чанков которые уже не попадают в видимость
             foreach (ChunkD cr in ChunkPr.Values)
             {
-                if (cr.X <= xMin || cr.X >= xMax || cr.Z <= zMin || cr.Z >= zMax)
+                if (cr.X < xMin || cr.X > xMax || cr.Z < zMin || cr.Z > zMax)
                 {
-                    vs.Add(new vec2i(cr.X, cr.Z));
+                    chunks.Add(new vec2i(cr.X, cr.Z));
                 }
             }
-
             // Удаляем
-            if (vs.Count > 0)
+            if (chunks.Count > 0)
             {
-                foreach (vec2i key in vs)
+                foreach (vec2i key in chunks)
                 {
                     ChunkPr.UnloadChunk(key.x, key.y);
                 }
             }
-
             Debag.GetInstance().CacheChunk = ChunkPr.Count();
+
+            List<vec2i> regions = new List<vec2i>();
+            foreach (RegionFile rf in RegionPr.Values)
+            {
+                if (rf.X < xMin >> 5 || rf.X > xMax >> 5 || rf.Z < zMin >> 5 || rf.Z > zMax >> 5)
+                {
+                    regions.Add(new vec2i(rf.X, rf.Z));
+                }
+            }
+            // Удаляем
+            if (regions.Count > 0)
+            {
+                foreach (vec2i key in regions)
+                {
+                    RegionPr.RegionRemove(key.x, key.y);
+                }
+            }
         }
 
         /// <summary>
@@ -235,7 +251,9 @@ namespace VoxelEngine.World
             int vx = newBlock.Position.X & 15;
             int vz = newBlock.Position.Z & 15;
 
-            ChunkD chunk = GetChunk(newBlock.Position.X >> 4, newBlock.Position.Z >> 4);
+            vec2i ch = new vec2i(newBlock.Position.X >> 4, newBlock.Position.Z >> 4);
+            ChunkD chunk = GetChunk(ch.x, ch.y);
+            
             Block blockOld = chunk.SetBlockState(newBlock, notTick);
 
             if (blockOld != null)
@@ -245,18 +263,18 @@ namespace VoxelEngine.World
                     //this.theProfiler.startSection("checkLight");
                     CheckLight(newBlock.Position);
                     p.AddRange(new vec2i[] {
-                        new vec2i(-1, -1), new vec2i(-1, 0), new vec2i(-1, 1),
-                        new vec2i(0, -1), new vec2i(0, 1),
-                        new vec2i(1, -1), new vec2i(1, 0), new vec2i(1, 1)
+                        new vec2i(-1, -1) + ch, new vec2i(-1, 0) + ch, new vec2i(-1, 1) + ch,
+                        new vec2i(0, -1) + ch, new vec2i(0, 1) + ch,
+                        new vec2i(1, -1) + ch, new vec2i(1, 0) + ch, new vec2i(1, 1) + ch
                     });
                     //this.theProfiler.endSection();
                 }
                 else
                 {
-                    if (vx == 0) p.Add(new vec2i(-1, 0));
-                    if (vz == 0) p.Add(new vec2i(0, -1));
-                    if (vx == 15) p.Add(new vec2i(1, 0));
-                    if (vz == 15) p.Add(new vec2i(0, 1));
+                    if (vx == 0) p.Add(new vec2i(-1, 0) + ch);
+                    if (vz == 0) p.Add(new vec2i(0, -1) + ch);
+                    if (vx == 15) p.Add(new vec2i(1, 0) + ch);
+                    if (vz == 15) p.Add(new vec2i(0, 1) + ch);
                 }
 
                 //if ((flags & 2) != 0 && (!this.isRemote || (flags & 4) == 0) && var4.isPopulated())
@@ -683,7 +701,7 @@ namespace VoxelEngine.World
         /// <summary>
         /// изменен воксель
         /// </summary>
-        protected void OnVoxelChanged(vec3i position, vec2i[] beside)
+        protected virtual void OnVoxelChanged(vec3i position, vec2i[] beside)
         {
             VoxelChanged?.Invoke(this, new VoxelEventArgs(position, beside));
         }

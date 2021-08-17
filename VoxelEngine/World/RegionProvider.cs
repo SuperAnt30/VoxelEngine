@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using VoxelEngine.Glm;
 using VoxelEngine.World.Chunk;
 
@@ -99,6 +100,9 @@ namespace VoxelEngine.World
             Debag.GetInstance().CacheRegionMem = regionMapping.Mem();
         }
 
-        
+        /// <summary>
+        /// Вернуть коллекцию
+        /// </summary>
+        public virtual ICollection Values { get { return regionMapping.Values; } }
     }
 }

@@ -11,7 +11,7 @@ namespace VoxelEngine.World.Chunk
         /// <summary>
         /// Чанк по умолчанию, если нет ни одного в списке
         /// </summary>
-        protected ChunkD chunkDefault;
+        public ChunkD ChunkDefault { get; protected set; }
 
         /// <summary>
         /// Список чанков
@@ -24,7 +24,7 @@ namespace VoxelEngine.World.Chunk
 
         public ChunkProvider(WorldD worldIn)
         {
-            chunkDefault = new ChunkD(worldIn, 0, 0);
+            ChunkDefault = new ChunkD(worldIn, 0, 0);
             world = worldIn;
         }
 
@@ -75,7 +75,7 @@ namespace VoxelEngine.World.Chunk
         public ChunkD ProvideChunk(int x, int z)
         {
             ChunkD chunk = chunkMapping.Get(x, z);
-            return chunk ?? chunkDefault;
+            return chunk ?? ChunkDefault;
         }
 
         /// <summary>

@@ -39,8 +39,5 @@ namespace VoxelEngine.World
             }
             return mem;
         }
-
-
-
     }
 }

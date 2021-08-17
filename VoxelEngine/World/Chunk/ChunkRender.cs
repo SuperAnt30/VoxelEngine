@@ -11,18 +11,17 @@ namespace VoxelEngine
     /// </summary>
     public class ChunkRender
     {
-        // Формула получения вокселя в чанке
-        // (y * VE.CHUNK_WIDTH + z) * VE.CHUNK_WIDTH + x
-
         /// <summary>
         /// Объект мира которы берёт из объекта ThreadWorld
         /// </summary>
         public WorldRender World { get; protected set; }
-
+        /// <summary>
+        /// Объект кэш чанка
+        /// </summary>
         public ChunkD Chunk { get; protected set; }
-
         /// <summary>
         /// Массив альфа блоков Voxels
+        /// TODO::2021-08-16 проверить
         /// </summary>
         protected List<VoxelData> _alphas = new List<VoxelData>();
 
@@ -38,6 +37,7 @@ namespace VoxelEngine
 
         /// <summary>
         /// Изменения для рендера
+        /// true - нужен рендер
         /// </summary>
         protected bool modifiedToRender = true;
 
@@ -47,12 +47,20 @@ namespace VoxelEngine
             if (Chunk != null)
             {
                 Chunk.Modified += ChunkModified;
-                Chunk.Tag = this;
+                Chunk.ChunkTag = this;
             }
             World = world;
         }
 
         private void ChunkModified(object sender, EventArgs e)
+        {
+            ModifiedToRender();
+        }
+
+        /// <summary>
+        /// Пометить что надо перерендерить сетку чанка
+        /// </summary>
+        public void ModifiedToRender()
         {
             modifiedToRender = true;
         }
@@ -60,11 +68,7 @@ namespace VoxelEngine
         public bool IsRender()
         {
             return !modifiedToRender;
-            //return buffer.Length > 0;
-            
         }
-
-        
 
         /// <summary>
         /// Получить массив буфера сетки
@@ -88,6 +92,13 @@ namespace VoxelEngine
         public float[] ToBufferAlpha()
         {
             return bufferAlpha;
+        }
+        /// <summary>
+        /// Очистить массив сетки
+        /// </summary>
+        public void ClearBufferAlpha()
+        {
+            bufferAlpha = new float[0];
         }
 
         public int CountBufferAlpha()
@@ -184,10 +195,5 @@ namespace VoxelEngine
             BlockRender blockRender = new BlockRender(this, block);
             return blockRender.RenderMesh();
         }
-
-        
-
-
-
     }
 }

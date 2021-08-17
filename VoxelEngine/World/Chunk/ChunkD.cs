@@ -26,7 +26,10 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public bool IsChunkLoaded { get; protected set; } = false;
 
-        public object Tag { get; set; }
+        /// <summary>
+        /// Прячем при необходимости чанк рендера
+        /// </summary>
+        public ChunkRender ChunkTag { get; set; }
 
         protected ChunkD() { }
         public ChunkD(WorldD worldIn, int x, int z)
@@ -197,8 +200,6 @@ namespace VoxelEngine.World.Chunk
             {
                 Read(b);
                 GenerateHeightMap();
-                // GenerateSkylightMap();
-                //region.SetChunk(X, Z, Write());
             }
             else
             {
@@ -261,11 +262,8 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public void SetChunkModified()
         {
-            //if (!isModified)
-            {
-                isModified = true;
-                OnModified();
-            }
+            isModified = true;
+            OnModified();
         }
 
         /// <summary>
@@ -276,9 +274,11 @@ namespace VoxelEngine.World.Chunk
             if (isModified)
             {
                 RegionFile region = World.RegionPr.GetRegion(X, Z);
-                region.SetChunk(X, Z, Write());
-
-                isModified = false;
+                if (region != null)
+                {
+                    region.SetChunk(X, Z, Write());
+                    isModified = false;
+                }
             }
         }
 
