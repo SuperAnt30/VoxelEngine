@@ -106,7 +106,7 @@ namespace VoxelEngine.Gen
             }
 
             Block block = World.GetBlock(pos.OffsetDown());
-            // проверка что саженей на земле и высота позволяет
+            // проверка что саженец на земле и высота позволяет
             if ((block.EBlock == EnumBlock.Grass || block.EBlock == EnumBlock.Dirt) && pos.Y < 200)
             {
                 // Меняем основание на землю
@@ -156,6 +156,7 @@ namespace VoxelEngine.Gen
                     }
                 }
 
+                
                 return true;
             }
 
@@ -194,6 +195,8 @@ namespace VoxelEngine.Gen
                 Ar = ar;
             }
         }
+
+        #region GenerateMinecraft
 
         /// <summary>
         /// Минимальная высота сгенерированного дерева
@@ -316,6 +319,8 @@ namespace VoxelEngine.Gen
             }
             return false;
         }
+
+        #endregion
 
         /// <summary>
         /// Проверка на конкретные блоки где может сгенерироваться дерево

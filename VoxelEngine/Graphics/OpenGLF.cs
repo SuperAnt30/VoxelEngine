@@ -1,7 +1,7 @@
 ﻿using SharpGL;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Threading.Tasks;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
 
@@ -113,8 +113,6 @@ namespace VoxelEngine
                 
             // генерация индексов для текстуры
             texture.Initialize();
-            textureAnimation.Render();
-            texture.SetTexture("atlas", textureAnimation.AtlasBox);
             // горизонтального смещения шрифта
             FontAdvance.GetInstance();
 
@@ -133,6 +131,8 @@ namespace VoxelEngine
         }
 
         
+
+
 
         ///// <summary>
         ///// Событие изменение позиции камеры на другой чанк
@@ -200,8 +200,8 @@ namespace VoxelEngine
             SkyBoxM.Draw();
 
             Sh.ShSkyBox.SetUniformMatrix4(gl, "view",
-                (Glm.glm.translate(new Glm.mat4(1.0f), Cam.Position)
-                * Glm.glm.rotate(ir, new Glm.vec3(0, 0, 1))).to_array()
+                (glm.translate(new mat4(1.0f), Cam.Position)
+                * glm.rotate(ir, new vec3(0, 0, 1))).to_array()
             );
             Sh.ShSkyBox.SetUniform1(gl, "light", 1f);
 
@@ -227,7 +227,7 @@ namespace VoxelEngine
             texture.BindTexture("atlas");
            // texture.MultiTexture();
             //WorldM.DrawDense(0, -1); //(0, 36);
-            WorldM.DrawDenseOld();
+            WorldM.DrawDense();
             //texture.BindTexture("test256");
             WorldM.DrawAlpha();
             Sh.ShVoxel.Unbind(gl);
@@ -264,16 +264,25 @@ namespace VoxelEngine
             Debag.GetInstance().CountFrame += stopwatch.ElapsedTicks;
         }
 
-
         /// <summary>
         /// Такт 20 в секунду
         /// </summary>
         public void Tick()
         {
-            Keyboard.GetInstance().PlCamera.Tick();
-            textureAnimation.Render();
-            texture.SetTexture("atlas", textureAnimation.AtlasBox);
+            // В потоке генерируем атлас
+            TickAtlas();
             Debag.GetInstance().RenderDebug();
+        }
+
+        /// <summary>
+        /// Атлас в такте
+        /// </summary>
+        protected async void TickAtlas()
+        {
+            if (await Task.Run(() => textureAnimation.Render()))
+            {
+                texture.SetTexture("atlas", textureAnimation.AtlasBox);
+            }
         }
 
         /// <summary>

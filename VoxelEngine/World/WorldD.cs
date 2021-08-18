@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
 using VoxelEngine.World.Chunk;
@@ -35,7 +37,23 @@ namespace VoxelEngine.World
             RegionPr = new RegionProvider(this);
         }
 
-        public void Tick()
+        /// <summary>
+        /// Пакет такта
+        /// </summary>
+        public void PackageTick()
+        {
+            if (isTick)
+            {
+                isTick = false;
+                Task.Factory.StartNew(() => { Tick(); });
+            }
+        }
+        /// <summary>
+        /// Можно ли запускать такт, возможно он не выполнился с прошлого шага
+        /// </summary>
+        protected bool isTick = true;
+
+        protected virtual void Tick()
         {
             // для записи
             if (timeSave + 6000 < Debag.GetInstance().TickCount)
@@ -102,6 +120,7 @@ namespace VoxelEngine.World
         public bool IsChunkLoaded(int x, int z)
         {
             if (IsChunk(x, z)) return true;
+
             ChunkPr.LoadChunk(x, z);
             Debag.GetInstance().CacheChunk = ChunkPr.Count();
             return false;
@@ -172,6 +191,7 @@ namespace VoxelEngine.World
 
         /// <summary>
         /// Очистить кэш чанков
+        /// TODO:: может вызвать ошибку изменения массива в цикле другого потока
         /// </summary>
         public void ChunksClear()
         {
@@ -179,11 +199,21 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
-        /// Удалить дальние чанки из массива кэша и регионы
-        /// TODO:: 2021-08-17 сделать ключ блокировку, чтоб пока идёт чистка, рендер и добавление чанкоы были не доступны
+        /// Запуск  Удалить дальние чанки
         /// </summary>
-        public void RemoveAway(vec2i positionCam)
+        public void PackageCleaning()
         {
+            Task.Factory.StartNew(() => { Cleaning(); });
+        }
+
+
+
+        /// <summary>
+        /// Удалить дальние чанки из массива кэша и регионы
+        /// </summary>
+        public void Cleaning()
+        {
+            vec2i positionCam = OpenGLF.GetInstance().Cam.ToPositionChunk();
             List<vec2i> chunks = new List<vec2i>();
             
             // дальность чанков с учётом кэша
@@ -226,6 +256,8 @@ namespace VoxelEngine.World
                     RegionPr.RegionRemove(key.x, key.y);
                 }
             }
+
+            OnCleaned();
         }
 
         /// <summary>
@@ -262,20 +294,29 @@ namespace VoxelEngine.World
                 {
                     //this.theProfiler.startSection("checkLight");
                     CheckLight(newBlock.Position);
-                    p.AddRange(new vec2i[] {
-                        new vec2i(-1, -1) + ch, new vec2i(-1, 0) + ch, new vec2i(-1, 1) + ch,
-                        new vec2i(0, -1) + ch, new vec2i(0, 1) + ch,
-                        new vec2i(1, -1) + ch, new vec2i(1, 0) + ch, new vec2i(1, 1) + ch
-                    });
                     //this.theProfiler.endSection();
                 }
-                else
+
+                // Пометить соседний псевдо чанк на рендер
+                int cy = newBlock.Position.Y >> 4;
+                int vy = newBlock.Position.Y & 15;
+                if (cy > 0 && vy == 0) SetModifiedRender(new vec3i(ch.x, cy - 1, ch.y));
+                if (cy < 15 && vy == 15) SetModifiedRender(new vec3i(ch.x, cy + 1, ch.y));
+                if (vx == 0)
                 {
-                    if (vx == 0) p.Add(new vec2i(-1, 0) + ch);
-                    if (vz == 0) p.Add(new vec2i(0, -1) + ch);
-                    if (vx == 15) p.Add(new vec2i(1, 0) + ch);
-                    if (vz == 15) p.Add(new vec2i(0, 1) + ch);
+                    SetModifiedRender(new vec3i(ch.x - 1, cy, ch.y));
+                    if (vz == 0) SetModifiedRender(new vec3i(ch.x - 1, cy, ch.y - 1));
+                    if (vz == 15) SetModifiedRender(new vec3i(ch.x - 1, cy, ch.y + 1));
                 }
+                if (vx == 15)
+                {
+                    SetModifiedRender(new vec3i(ch.x + 1, cy, ch.y));
+                    if (vz == 0) SetModifiedRender(new vec3i(ch.x + 1, cy, ch.y - 1));
+                    if (vz == 15) SetModifiedRender(new vec3i(ch.x + 1, cy, ch.y + 1));
+                }
+                if (vz == 0) SetModifiedRender(new vec3i(ch.x, cy, ch.y - 1));
+                if (vz == 15) SetModifiedRender(new vec3i(ch.x, cy, ch.y + 1));
+
 
                 //if ((flags & 2) != 0 && (!this.isRemote || (flags & 4) == 0) && var4.isPopulated())
                 //{
@@ -296,6 +337,20 @@ namespace VoxelEngine.World
             }
 
             OnVoxelChanged(newBlock.Position.ToVec3i(), p.ToArray());// SetBlockState(newBlock));
+        }
+
+        /// <summary>
+        /// Задать изменение для рендера псевдо чанка
+        /// </summary>
+        /// <param name="c">x,z чанк, y псевдочанк</param>
+        protected void SetModifiedRender(vec3i c)
+        {
+            ChunkD chunk = GetChunk(c.x, c.z);
+            if (chunk != null)
+            {
+                chunk.SetChunkModified();
+                chunk.StorageArrays[c.y].SetModifiedRender();
+            }
         }
 
         #region Light minecraft
@@ -693,6 +748,10 @@ namespace VoxelEngine.World
             return new Block();
         }
 
+        
+
+        #region  Event
+
         /// <summary>
         /// Событие изменен воксель
         /// </summary>
@@ -705,5 +764,28 @@ namespace VoxelEngine.World
         {
             VoxelChanged?.Invoke(this, new VoxelEventArgs(position, beside));
         }
+
+        /// <summary>
+        /// Событие законченной чистки
+        /// </summary>
+        public event EventHandler Cleaned;
+
+        protected void OnCleaned()
+        {
+            Cleaned?.Invoke(this, new EventArgs());
+        }
+
+        /// <summary>
+        /// Событие законченна обработка тика
+        /// </summary>
+        public event EventHandler Ticked;
+
+        protected void OnTicked()
+        {
+            isTick = true;
+            Ticked?.Invoke(this, new EventArgs());
+        }
+
+        #endregion
     }
 }

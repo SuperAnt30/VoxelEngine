@@ -1,10 +1,7 @@
 ﻿using VoxelEngine.Glm;
 using System;
-using System.Drawing;
-using System.Threading;
 using System.Windows.Forms;
 using VoxelEngine.Util;
-using System.Threading.Tasks;
 
 namespace VoxelEngine
 {
@@ -34,6 +31,10 @@ namespace VoxelEngine
         /// Объект мира
         /// </summary>
         public WorldRender World { get; protected set; } = new WorldRender();
+        /// <summary>
+        /// Пометка первого такта
+        /// </summary>
+        protected bool startTick = true;
 
         public FormGame()
         {
@@ -90,9 +91,16 @@ namespace VoxelEngine
             //    threadFps.Stop();
             //    return;
             //}
-
-            World.RegionPr.RegionsWrite();
-            WinApi.TimeEndPeriod(1);
+            isClosing = true;
+            if (isClosed)
+            {
+                World.RegionPr.RegionsWrite();
+                WinApi.TimeEndPeriod(1);
+            }
+            else
+            {
+                e.Cancel = true;
+            }
         }
 
         #endregion
@@ -159,6 +167,8 @@ namespace VoxelEngine
             World.ChunkDone += WorldChunkDone;
             World.VoxelChanged += WorldVoxelChanged;
             World.Rendered += WorldRendered;
+            World.Cleaned += WorldCleaned;
+            World.Ticked += WorldTicked;
 
             Keyboard.GetInstance().MoveChanged += FormGame_MoveChanged;
             Keyboard.GetInstance().World = World;
@@ -168,7 +178,7 @@ namespace VoxelEngine
             Debag.GetInstance().World = World;
         }
 
-       
+        
 
         private void OpenGLFRemoveChunkMeshChanged(object sender, CoordEventArgs e)
         {
@@ -318,23 +328,68 @@ namespace VoxelEngine
         /// <summary>
         /// Сгенерирован чанк
         /// </summary>
-        private void WorldChunkDone(object sender, ChunkEventArgs e)
+        private void WorldChunkDone(object sender, BufferEventArgs e)
         {
-            if (InvokeRequired) Invoke(new ChunkEventHandler(WorldChunkDone), sender, e);
+            if (InvokeRequired) Invoke(new BufferEventHandler(WorldChunkDone), sender, e);
             else
             {
-                OpenGLF.GetInstance().WorldM.RenderChank(e.Chunk.Chunk.X, e.Chunk.Chunk.Z, e.Chunk.ToBuffer());
-                OpenGLF.GetInstance().WorldM.RenderChankAlpha(e.Chunk.Chunk.X, e.Chunk.Chunk.Z, e.Chunk.ToBufferAlpha());
-                // Очищаю чтоб не держать в памяти дубликат сетки
-                e.Chunk.ClearBuffer();
-                e.Chunk.ClearBufferAlpha();
+                if (!e.IsAlpha)
+                {
+                    // Если пометка не альфа, то сетка твёрдых блоков
+                    OpenGLF.GetInstance().WorldM.RenderChank(e.ChunkPos.x, e.ChunkPos.y, e.Buffer);
+                }
+                // Генерация альфы всегда есть
+                OpenGLF.GetInstance().WorldM.RenderChankAlpha(e.ChunkPos.x, e.ChunkPos.y, e.BufferAlpha);
             }
-
         }
+
+        /// <summary>
+        /// Подготовка к закрытию
+        /// </summary>
+        protected bool isClosing = false;
+        /// <summary>
+        /// Потоки приостановленны для закрытия
+        /// </summary>
+        protected bool isClosed = false;
+        /// <summary>
+        /// Этап очистки, определяется по смене чанка, в этот момент глушится загрузка чанков
+        /// </summary>
+        protected bool isCleaning = false;
 
         private void WorldRendered(object sender, EventArgs e)
         {
-            World.RenderPackage();
+            if (InvokeRequired) Invoke(new EventHandler(WorldRendered), sender, e);
+            else
+            {
+                if (isClosing)
+                {
+                    isClosed = true;
+                    Close();
+                }
+                else
+                {
+                    if (isCleaning)
+                    {
+                        World.PackageCleaning();
+                    }
+                    else
+                    {
+                        World.PackageRender();
+                    }
+                }
+            }
+        }
+
+        private void WorldCleaned(object sender, EventArgs e)
+        {
+            isCleaning = false;
+            World.ChunckChanged = VE.CHUNK_RENDER_ALPHA;
+            World.PackageRender();
+        }
+
+        private void WorldTicked(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -347,16 +402,17 @@ namespace VoxelEngine
                 OpenGLF.GetInstance().WorldLineM.Chunk();
             }
             vec2i c = OpenGLF.GetInstance().Cam.ToPositionChunk();
-            OpenGLF.GetInstance().WorldM.RemoveAway(c);
-            World.RemoveAway(c);
+            OpenGLF.GetInstance().WorldM.Cleaning(c);
+            isCleaning = true;
+            ChunkRender chunk = World.GetChunkRender(c.x, c.y);
+            Debag.GetInstance().ChunkAlpheBlock = chunk == null
+                ? 0 : chunk.CountBlockAlpha();
         }
 
         private void Cam_PositionBlockChanged(object sender, EventArgs e)
         {
-            // TODO:: 2021-07-15 обнуляет очередь загрузки чанков, из-за этого глюки. 
+            World.ChunckChanged = VE.CHUNK_RENDER_ALPHA_BLOCK;
         }
-
-        bool startTick = true;
 
         protected void Tick()
         {
@@ -365,11 +421,12 @@ namespace VoxelEngine
 
             // Тики в других объектах
             OpenGLF.GetInstance().Tick();
-            World.Tick();
+            Keyboard.GetInstance().PlCamera.Tick();
+            World.PackageTick();
 
             if (startTick)
             {
-                World.RenderPackage();
+                World.PackageRender();
                 startTick = false;
             }
         }

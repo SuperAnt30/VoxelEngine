@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+
 namespace VoxelEngine
 {
     public class TextureAnimation
@@ -53,9 +54,7 @@ namespace VoxelEngine
         /// </summary>
         protected int pauseWaterStill = 0;
 
-        
-
-        public void Render()
+        public bool Render()
         {
             pauseWaterStill--;
             if (pauseWaterStill <= 0)
@@ -78,7 +77,9 @@ namespace VoxelEngine
                 if (StepWaterStill >= StepWaterStillMax) StepWaterStill = 0;
                 StepWaterFlow++;
                 if (StepWaterFlow >= StepWaterFlowMax) StepWaterFlow = 0;
+                return true;
             }
+            return false;
         }
     }
 }

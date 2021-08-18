@@ -269,11 +269,14 @@ namespace VoxelEngine
         /// </summary>
         public int CacheRegionMem { get; set; } = 0;
 
-
         /// <summary>
         /// Жидкие задачи в чанке
         /// </summary>
         public int ChunkLiquidTicks { get; set; } = 0;
+        /// <summary>
+        /// Количество альфа блоков в текущем чанке
+        /// </summary>
+        public int ChunkAlpheBlock { get; set; } = 0;
 
         /// <summary>
         /// Объект 
@@ -320,6 +323,7 @@ namespace VoxelEngine
                     + ToStringCunckCache() + "\r\n\r\n"
                     + ToStringTime() + "\r\n"
                     + "Жидкести tick чанк: " + ChunkLiquidTicks + "\r\n"
+                    + "Альфа блоков в чанке: " + ChunkAlpheBlock + "\r\n"
                     + "Время загрузки первых чанков: " + _stime.TotalSeconds.ToString() + "  загрузки: " + _stimeLoad.TotalSeconds.ToString() + "\r\n"
                     + ToStringMem() + "\r\n"
                     + Keyboard.GetInstance().PlCamera.StrDebug + "\r\n"

@@ -19,21 +19,6 @@ namespace VoxelEngine
         /// Объект кэш чанка
         /// </summary>
         public ChunkD Chunk { get; protected set; }
-        /// <summary>
-        /// Массив альфа блоков Voxels
-        /// TODO::2021-08-16 проверить
-        /// </summary>
-        protected List<VoxelData> _alphas = new List<VoxelData>();
-
-        /// <summary>
-        /// Массив буфера сетки
-        /// </summary>
-        protected float[] buffer = new float[0];
-
-        /// <summary>
-        /// Массив альфа буфера сетки 
-        /// </summary>
-        protected float[] bufferAlpha = new float[0];
 
         /// <summary>
         /// Изменения для рендера
@@ -71,120 +56,123 @@ namespace VoxelEngine
         }
 
         /// <summary>
-        /// Получить массив буфера сетки
+        /// Количество блоков с альфо цветом в чанке
         /// </summary>
-        public float[] ToBuffer()
+        public int CountBlockAlpha()
         {
-            return buffer;
+            int count = 0;
+            for (int i = 0; i < Chunk.StorageArrays.Length; i++)
+            {
+                count += Chunk.StorageArrays[i].Buffer.Alphas.Count;
+            }
+            return count;
         }
-
-        /// <summary>
-        /// Очистить массив сетки
-        /// </summary>
-        public void ClearBuffer()
-        {
-            buffer = new float[0];
-        }
-
-        /// <summary>
-        /// Получить массив буфера сетки альфа
-        /// </summary>
-        public float[] ToBufferAlpha()
-        {
-            return bufferAlpha;
-        }
-        /// <summary>
-        /// Очистить массив сетки
-        /// </summary>
-        public void ClearBufferAlpha()
-        {
-            bufferAlpha = new float[0];
-        }
-
-        public int CountBufferAlpha()
-        {
-            return bufferAlpha.Length;
-        }
-
 
         /// <summary>
         /// Сгенерировать сетку меша
         /// </summary>
-        public void Render()
+        public float[] Render()
         {
-            List<float> bufferCache = new List<float>();
-            _alphas = new List<VoxelData>();
             Camera camera = OpenGLF.GetInstance().Cam;
 
-            for (int y = 0; y < 256; y++)
+            for (int i = 0; i < Chunk.StorageArrays.Length; i++)
             {
-                for (int z = 0; z < 16; z++)
+                if (Chunk.StorageArrays[i].Buffer.IsModifiedRender)
                 {
-                    for (int x = 0; x < 16; x++)
+                    Chunk.StorageArrays[i].Buffer.Alphas.Clear();
+                    int y0 = i * 16;
+                    List<float> bufferCache = new List<float>();
+                    for (int y = y0; y < y0 + 16; y++)
                     {
-                        if (Chunk.GetVoxel(x, y, z).GetId() == 0) continue;
-                        Block block = Chunk.GetBlock0(new vec3i(x, y, z));
-                        if (block.IsAlphe)
+                        for (int z = 0; z < 16; z++)
                         {
-                            _alphas.Add(new VoxelData()
+                            for (int x = 0; x < 16; x++)
                             {
-                                Block = block,
-                                //Vox = block.Voxel,
-                                Distance = camera.DistanceTo(
-                                    new vec3(Chunk.X << 4 | x, y, Chunk.Z << 4 | z)
-                                    )
-                            });
-                        }
-                        else
-                        {
-                            bufferCache.AddRange(_RenderVoxel(block));
+                                if (Chunk.GetVoxel(x, y, z).GetId() == 0) continue;
+                                Block block = Chunk.GetBlock0(new vec3i(x, y, z));
+                                if (block.IsAlphe)
+                                {
+                                    Chunk.StorageArrays[i].Buffer.Alphas.Add(new VoxelData()
+                                    {
+                                        Block = block,
+                                        //Vox = block.Voxel,
+                                        Distance = camera.DistanceTo(
+                                            new vec3(Chunk.X << 4 | x, y, Chunk.Z << 4 | z)
+                                            )
+                                    });
+                                }
+                                else
+                                {
+                                    bufferCache.AddRange(_RenderVoxel(block));
+                                }
+                            }
                         }
                     }
+                    Chunk.StorageArrays[i].Buffer.RenderDone(bufferCache.ToArray());
+                    bufferCache.Clear();
                 }
             }
-            if (_alphas.Count > 0)
-            {
-                _alphas.Sort();
-            }
-
-            List<float> bufferAlpharCache = new List<float>();
-            for (int i = _alphas.Count - 1; i >= 0; i--)
-            {
-                bufferAlpharCache.AddRange(_RenderVoxel(_alphas[i].Block));
-            }
             modifiedToRender = false;
-            bufferAlpha = bufferAlpharCache.ToArray();
-            bufferAlpharCache.Clear();
-            buffer = bufferCache.ToArray();
-            bufferCache.Clear();
+            return GlueBuffer();
         }
 
         /// <summary>
-        /// Сгенерировать сетку меша альфа
+        /// Склейка сетки
         /// </summary>
-        public void RenderAlpha()
+        protected float[] GlueBuffer()
         {
-            List<float> bufferAlpharCache = new List<float>();
+            int count = Chunk.StorageArrays.Length;
+            int countAll = 0;
+            for (int i = 0; i < count; i++)
+            {
+                countAll += Chunk.StorageArrays[i].Buffer.Buffer.Length;
+            }
 
+            float[] buffer = new float[countAll];
+            countAll = 0;
+            for (int i = 0; i < count; i++)
+            {
+                for (int j = 0; j < Chunk.StorageArrays[i].Buffer.Buffer.Length; j++)
+                {
+                    buffer[countAll] = Chunk.StorageArrays[i].Buffer.Buffer[j];
+                    countAll++;
+                }
+            }
+            return buffer;
+        }
+
+        /// <summary>
+        /// Генерировать сетку альфы
+        /// </summary>
+        public float[] RenderAlpha()
+        {
             Camera camera = OpenGLF.GetInstance().Cam;
             Pole pole = camera.GetPole();
+            List<VoxelData> alphas = new List<VoxelData>();
 
-            foreach (VoxelData vd in _alphas)
+            // TODO:: можно оптемизировать в два массива, по удалению от персонажа, облегчим сортировку
+            for (int i = 0; i < Chunk.StorageArrays.Length; i++)
             {
-                vd.Distance = camera.DistanceTo(new vec3(vd.Block.Position.ToVec3i()));
+                if (Chunk.StorageArrays[i].Buffer.Alphas.Count > 0)
+                {
+                    foreach (VoxelData vd in Chunk.StorageArrays[i].Buffer.Alphas)
+                    {
+                        vd.Distance = camera.DistanceTo(new vec3(vd.Block.Position.ToVec3i()));
+                    }
+                    alphas.AddRange(Chunk.StorageArrays[i].Buffer.Alphas);
+                }
+            }
+            if (alphas.Count > 0)
+            {
+                alphas.Sort();
             }
 
-            if (_alphas.Count > 0)
+            List<float> buffer = new List<float>();
+            for (int i = alphas.Count - 1; i >= 0; i--)
             {
-                _alphas.Sort();
+                buffer.AddRange(_RenderVoxel(alphas[i].Block));
             }
-
-            for (int i = _alphas.Count - 1; i >= 0; i--)
-            {
-                bufferAlpharCache.AddRange(_RenderVoxel(_alphas[i].Block));
-            }
-            bufferAlpha = bufferAlpharCache.ToArray();
-            bufferAlpharCache.Clear();
+            return buffer.ToArray();
         }
 
         /// <summary>

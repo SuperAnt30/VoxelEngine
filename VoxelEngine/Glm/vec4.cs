@@ -170,7 +170,7 @@ namespace VoxelEngine.Glm
 
         public override string ToString()
         {
-            return String.Format("[{0}, {1}, {2}, {3}]", x, y, z, w);
+            return string.Format("[{0}, {1}, {2}, {3}]", x, y, z, w);
         }
 
         #endregion

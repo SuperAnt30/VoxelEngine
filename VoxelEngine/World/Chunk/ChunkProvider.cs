@@ -66,7 +66,12 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public bool IsChunk(int x, int z)
         {
-            return chunkMapping.Contains(x, z);
+            if (chunkMapping.Contains(x, z))
+            {
+                ChunkD chunkD = ProvideChunk(x, z);
+                return chunkD.IsChunkLoaded;
+            }
+            return false;
         }
 
         /// <summary>

@@ -206,7 +206,7 @@ namespace VoxelEngine.Glm
 
         public override string ToString()
         {
-            return String.Format("{0:0.00}; {1:0.00}; {2:0.00}", x, y, z);
+            return string.Format("{0:0.00}; {1:0.00}; {2:0.00}", x, y, z);
         }
 
         #endregion

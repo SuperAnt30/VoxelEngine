@@ -6,19 +6,19 @@
     public class VE
     {
         /// <summary>
-        /// Сколько чанков в тике могут рендерится
-        /// Test
-        /// </summary>
-        public const int RENDER_CHUNK_TPS = 1;
-        /// <summary>
         /// Сколько чанков видим
         /// </summary>
-        public const int CHUNK_VISIBILITY = 16;
+        public const int CHUNK_VISIBILITY = 10;
         /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
-        /// * Не используется
+        /// Количество общее число по спирале
         /// </summary>
-        public const int CHUNK_VISIBILITY_ALPHA = 5;//5;
+        public const int CHUNK_RENDER_ALPHA = 16;
+        /// <summary>
+        /// Сколько чанков обрабатывается для альфы при смене блока
+        /// Количество общее число по спирале
+        /// </summary>
+        public const int CHUNK_RENDER_ALPHA_BLOCK = 3;
         /// <summary>
         /// Скольк чанков вблизи камеры активны к тику 49 это 7*7 где чанк где камеры и 3 дистанция
         /// </summary>

@@ -18,7 +18,7 @@ namespace VoxelEngine
         /// <summary>
         /// Прорисовка чанков
         /// </summary>
-        public void DrawDenseOld()
+        public void DrawDense()
         {
             Debag.GetInstance().CountMeshChunk = _chunks.Count;
 
@@ -34,66 +34,6 @@ namespace VoxelEngine
         public static string KeyChunk(int x, int z)
         {
             return x.ToString() + ";" + z.ToString();
-        }
-
-        /// <summary>
-        /// Прорисовка чанков
-        /// </summary>
-        public void DrawDense(int min, int max)
-        {
-            Debag.GetInstance().CountMeshChunk = _chunks.Count;
-
-            Camera camera = OpenGLF.GetInstance().Cam;
-            Pole pole = camera.GetPole();
-            vec2i pos = camera.ToPositionChunk();
-            ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
-
-            if (max == -1) max = spiral.Length - 1;
-
-            // Прорисовка алфы в зависимости куда смотрим. От до
-            for (int i = max; i >= min; i--)
-            {
-                string key = KeyChunk(pos.x + spiral[i].X, pos.y + spiral[i].Z);
-                if (_chunks.ContainsKey(key))
-                {
-                    ChunkMeshs cm = _chunks[key] as ChunkMeshs;
-                    cm.MeshDense.Draw();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Прорисовка чанков
-        /// </summary>
-        public void DrawDenseNew()
-        {
-            Debag.GetInstance().CountMeshChunk = _chunks.Count;
-
-            Camera camera = OpenGLF.GetInstance().Cam;
-            Pole pole = camera.GetPole();
-            vec3i vec = EnumFacing.DirectionVec(pole);
-            vec2i pos = camera.ToPositionChunk();
-            ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
-
-            // Прорисовка алфы в зависимости куда смотрим. От до
-            for (int i = spiral.Length - 1; i >= 0; i--)
-            {
-                vec2i vec2 = new vec2i(pos.x + spiral[i].X, pos.y + spiral[i].Z);
-
-                if ((vec.x > 0 && vec2.x >= pos.x)
-                    || (vec.x < 0 && vec2.x <= pos.x)
-                    || (vec.z > 0 && vec2.y <= pos.y)
-                    || (vec.z < 0 && vec2.y >= pos.y)
-                    )
-                {
-                    string key = KeyChunk(vec2.x, vec2.y);
-                    if (_chunks.ContainsKey(key))
-                    {
-                        ChunkMeshs cm = _chunks[key] as ChunkMeshs;
-                        cm.MeshDense.Draw();
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -158,7 +98,7 @@ namespace VoxelEngine
         /// <summary>
         /// Удалить дальние чанки из массива кэша сеток
         /// </summary>
-        public void RemoveAway(vec2i positionCam)
+        public void Cleaning(vec2i positionCam)
         {
             List<string> vs = new List<string>();
             // дальность чанков с учётом кэша
@@ -191,52 +131,6 @@ namespace VoxelEngine
             }
 
             Debag.GetInstance().RenderChunk = _chunks.Count;
-        }
-
-        
-        /// <summary>
-        /// Не используется Спираль массива
-        /// </summary>
-        public static vec2i[] GetSpiralOld(bool one)
-        {
-            int size = VE.CHUNK_VISIBILITY * 2 + 1;
-            vec2i[,] a = new vec2i[size, size];
-            if (one)
-            {
-                for (int x = 0; x < size; x++)
-                    for (int y = 0; y < size; y++)
-                        a[x, y] = new vec2i(x, y);
-            } else
-            {
-                for (int x = 0; x < size; x++)
-                    for (int y = 0; y < size; y++)
-                        a[x, y] = new vec2i(size - x - 1, y);
-            }
-
-            var r = new List<vec2i>();
-            var n = a.GetLength(0);
-            int j = -1, i = 0;
-            bool h = true;
-            bool d = false;
-            int c = 0;
-            int p = n;
-            int max = n;
-            for (var cnt = 1; cnt <= a.Length; cnt++)
-            {
-                i = h ? i : !d ? ++i : --i;
-                j = !h ? j : !d ? ++j : --j;
-                p--;
-                r.Add(a[i, j]);
-                if (p <= 0)
-                {
-                    h = !h;
-                    if ((c + 1) % 2 == 0) { d = !d; }
-                    if (cnt == n || c > 1 && (c + 1) % 2 != 0) { --max; }
-                    p = max;
-                    c++;
-                }
-            }
-            return r.ToArray();
         }
 
         /// <summary>

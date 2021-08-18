@@ -16,7 +16,6 @@ namespace VoxelEngine
         private VES()
         {
             DistSqrt = _GetSqrt(VE.CHUNK_VISIBILITY);
-            DistSqrtAlpha = _GetSqrt(VE.CHUNK_VISIBILITY_ALPHA);
             _GetSqrtPole3();
         }
 
@@ -36,12 +35,6 @@ namespace VoxelEngine
         /// Массив по длинам используя квадратный корень для всей видимости
         /// </summary>
         public ChunkLoading[] DistSqrt { get; protected set; }
-        /// <summary>
-        /// Массив по длинам используя квадратный корень для альфа видимости
-        /// </summary>
-        public ChunkLoading[] DistSqrtAlpha { get; protected set; }
-
-        
 
         /// <summary>
         /// Сгенерировать массив по длинам используя квадратный корень

@@ -9,9 +9,22 @@ namespace VoxelEngine
     public class WorldRender : WorldD
     {
         /// <summary>
+        /// Изменён чанк, для перегенерации альфа цвета
+        /// </summary>
+        public int ChunckChanged { get; set; } = 0;
+
+        /// <summary>
+        /// Запуск рендер паета
+        /// </summary>
+        public void PackageRender()
+        {
+            Task.Factory.StartNew(() => { Render(); });
+        }
+
+        /// <summary>
         /// Такт 20 в секунду
         /// </summary>
-        public new void Tick()
+        protected override void Tick()
         {
             base.Tick();
 
@@ -27,10 +40,7 @@ namespace VoxelEngine
                 if (cm != null) cm.Tick();
             }
 
-           // RenderPackage();
-            // Запуск рендера чанков в другом потоке
-            //Task.Factory.StartNew(() => { Render(c); });
-            //Render(c);
+            OnTicked();
         }
 
         /// <summary>
@@ -41,17 +51,6 @@ namespace VoxelEngine
         {
             ChunkRender chunk = GetChunkRender(pos.x, pos.y);
             if (chunk != null) chunk.ModifiedToRender();
-        }
-        /// <summary>
-        /// Пометить что надо перерендерить сетку чанков
-        /// координаты чанков
-        /// </summary>
-        public void ModifiedToRenderChunks(vec2i[] beside)
-        {
-            for (int i = 0; i < beside.Length; i++)
-            {
-                ModifiedToRenderChunk(beside[i]);
-            }
         }
 
         /// <summary>
@@ -75,22 +74,11 @@ namespace VoxelEngine
         }
 
         /// <summary>
-        /// Запуск рендер паета
-        /// </summary>
-        public void RenderPackage()
-        {
-            vec2i c = OpenGLF.GetInstance().Cam.ToPositionChunk();
-            Task.Factory.StartNew(() => { Render(c); });
-        }
-
-
-        /// <summary>
         /// Запуск генерации меша
         /// </summary>
-        /// <param name="chunkPos">координаты камеры</param>
-        /// <returns>Если пауза выплёвываем с ошибкой, для последуещей попытки</returns>
-        protected void Render(vec2i chunkPos)
+        protected void Render()
         {
+            vec2i chunkPos = OpenGLF.GetInstance().Cam.ToPositionChunk();
             int count = 0;
             // Получить массив сектора
             ChunkLoading[] chunkLoading = VES.GetInstance().DistSqrtYaw(OpenGLF.GetInstance().Cam.Yaw);
@@ -103,17 +91,32 @@ namespace VoxelEngine
                 RegionPr.RegionSet(x, z);
 
                 ChunkRender cr = GetChunkRender(x, z);
-
-                if (cr != null && !cr.IsRender())
+                if (cr == null) 
                 {
-                    ChunkRender(new vec2i(x, z));
+                    // если нет чанка, включаем счётчик
                     count++;
-                    if (count >= VE.RENDER_CHUNK_TPS)
-                    {
-                        break;
-                    }
-                        
                 }
+                else
+                {
+                    // Если чанк есть и не отрендерин
+                    if (!cr.Chunk.IsChunkLoaded)
+                    {
+                        // Если у чанка нет данных, загружаем (перегружаем)
+                        cr.Chunk.OnChunkLoad();
+                    }
+                    else if (!cr.IsRender())
+                    {
+                        // Рендер чанка, если норм то выходим с массива
+                        if (ChunkRender(cr, false)) break;
+                    }
+                    else if (i < ChunckChanged)
+                    {
+                        // Рендер алфа блоков, без выхода с цикла
+                        ChunkRender(cr, true);
+                    }
+                }
+                // Количество чанков без данных, выходим с цыкла
+                if (count >= 2) break;
             }
             System.Threading.Thread.Sleep(1); // ЭТОТ    СЛИП чтоб не подвисал проц. И для перехода других потоков.
             OnRendered();
@@ -122,21 +125,19 @@ namespace VoxelEngine
         /// <summary>
         /// Рендер конкретного чанка
         /// </summary>
-        /// <param name="pos"></param>
-        protected void ChunkRender(vec2i pos)
+        protected bool ChunkRender(ChunkRender chunkR, bool isAlphe)
         {
-            bool isLoad = IsAreaLoaded(pos, 1);
-
-            if (isLoad)
+            if (IsAreaLoaded(new vec2i(chunkR.Chunk.X, chunkR.Chunk.Z), 1))
             {
-                ChunkRender chunkR = GetChunkRender(pos.x, pos.y);
-                if (chunkR != null)
+                if (chunkR.Chunk.IsChunkLoaded)
                 {
-                    chunkR.Render();
-                    //chunkR.RenderAlpha();
-                    OnChunkDone(chunkR, false);
+                    OnChunkDone(isAlphe
+                        ? new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, chunkR.RenderAlpha())
+                        : new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, chunkR.Render(), chunkR.RenderAlpha()));
+                    return true;
                 }
             }
+            return false;
         }
 
         /// <summary>
@@ -145,7 +146,6 @@ namespace VoxelEngine
         protected override void OnVoxelChanged(vec3i position, vec2i[] beside)
         {
             base.OnVoxelChanged(position, beside);
-            ModifiedToRenderChunks(beside);
         }
 
         #region Event
@@ -153,13 +153,13 @@ namespace VoxelEngine
         /// <summary>
         /// Событие сделано
         /// </summary>
-        public event ChunkEventHandler ChunkDone;
+        public event BufferEventHandler ChunkDone;
         /// <summary>
         /// Событие сделано
         /// </summary>
-        protected void OnChunkDone(ChunkRender chunk, bool isAlpha)
+        protected void OnChunkDone(BufferEventArgs e)
         {
-            ChunkDone?.Invoke(this, new ChunkEventArgs(chunk, isAlpha));
+            ChunkDone?.Invoke(this, e);
         }
 
         /// <summary>

@@ -224,7 +224,7 @@ namespace VoxelEngine
                 case Keys.D4: Debag.GetInstance().NumberBlock = 5; break;
                 case Keys.D5: Debag.GetInstance().NumberBlock = 14; break; // 6
                 case Keys.D6: Debag.GetInstance().NumberBlock = 11; break; // 7
-                case Keys.D7: Debag.GetInstance().NumberBlock = 15; break; // 8
+                case Keys.D7: Debag.GetInstance().NumberBlock = 9; break; // 8
                 case Keys.D8: Debag.GetInstance().NumberBlock = 16; break; // 9
                 case Keys.D9: Debag.GetInstance().NumberBlock = 10; break;
                 case Keys.D0: Debag.GetInstance().NumberBlock = 12; break;

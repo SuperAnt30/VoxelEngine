@@ -126,7 +126,9 @@
     <Compile Include="World\Block\EnumBlock.cs" />
     <Compile Include="World\Block\Model\Box.cs" />
     <Compile Include="World\Block\Model\Face.cs" />
+    <Compile Include="World\Chunk\ChunkBuffer.cs" />
     <Compile Include="World\Chunk\ChunkD.cs" />
+    <Compile Include="World\Chunk\BufferEvent.cs" />
     <Compile Include="World\Chunk\ChunkMap.cs" />
     <Compile Include="World\Chunk\ChunkMeshs.cs" />
     <Compile Include="World\Chunk\ChunkProvider.cs" />
@@ -139,7 +141,6 @@
     <Compile Include="World\HitBoxPlayer.cs" />
     <Compile Include="World\LineMesh.cs" />
     <Compile Include="World\GuiCursor.cs" />
-    <Compile Include="World\Chunk\ChunkEvent.cs" />
     <Compile Include="Graphics\Render.cs" />
     <Compile Include="Graphics\Shaders\ShaderVoxel.cs" />
     <Compile Include="Threads\ThreadTick.cs" />

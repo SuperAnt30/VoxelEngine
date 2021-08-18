@@ -1,4 +1,5 @@
 ﻿using VoxelEngine.Util;
+using VoxelEngine.World.Chunk;
 
 namespace VoxelEngine
 {
@@ -8,11 +9,18 @@ namespace VoxelEngine
         /// Массив вокселей
         /// </summary>
         protected Voxel[,,] _voxels = new Voxel[16, 16, 16];
+        /// <summary>
+        /// Объект буфера сеток
+        /// </summary>
+        public ChunkBuffer Buffer { get; protected set; } = new ChunkBuffer();
 
         /// <summary>
-        /// Массив буфера сетки
+        /// Пометка псевдо чанка для рендера
         /// </summary>
-        protected float[] buffer = new float[0];
+        public void SetModifiedRender()
+        {
+            Buffer.SetModifiedRender();
+        }
 
         /// <summary>
         /// Получить значение вокселя по координатам данного подчанка
@@ -25,6 +33,7 @@ namespace VoxelEngine
         public void SetVoxelId(int x, int y, int z, byte id)
         {
             _voxels[y, x, z].SetIdByte(id);
+            SetModifiedRender();
         }
 
         /// <summary>
@@ -33,6 +42,7 @@ namespace VoxelEngine
         public void SetParam4bit(int x, int y, int z, byte param)
         {
             _voxels[y, x, z].SetParam4bit(param);
+            SetModifiedRender();
         }
 
         /// <summary>
@@ -46,6 +56,7 @@ namespace VoxelEngine
         public void SetLightFor(int x, int y, int z, EnumSkyBlock type, byte light)
         {
             _voxels[y, x, z].SetLightFor(type, light);
+            SetModifiedRender();
         }
 
         /// <summary>
@@ -54,6 +65,7 @@ namespace VoxelEngine
         public void SetLightsFor(int x, int y, int z, byte light)
         {
             _voxels[y, x, z].SetLightsFor(light);
+            SetModifiedRender();
         }
 
         /// <summary>
