@@ -7,7 +7,7 @@ namespace VoxelEngine.World
         /// <summary>
         /// Добавить или изменить регион
         /// </summary>
-        public void Set(RegionFile region)
+        public void Set(RegionBinary region)
         {
             base.Set(Key(region.X, region.Z), region);
         }
@@ -15,16 +15,16 @@ namespace VoxelEngine.World
         /// <summary>
         /// Получить значение
         /// </summary>
-        public new RegionFile Get(string key)
+        public new RegionBinary Get(string key)
         {
-            return base.Get(key) as RegionFile;
+            return base.Get(key) as RegionBinary;
         }
         /// <summary>
         /// Получить значение
         /// </summary>
-        public RegionFile Get(int x, int z)
+        public RegionBinary Get(int x, int z)
         {
-            return base.Get(Key(x, z)) as RegionFile;
+            return base.Get(Key(x, z)) as RegionBinary;
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace VoxelEngine.World
         public int Mem()
         {
             int mem = 0;
-            foreach (RegionFile region in _ht.Values)
+            foreach (RegionBinary region in _ht.Values)
             {
                 mem += region.Mem();
             }

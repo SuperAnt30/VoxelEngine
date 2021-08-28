@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using VoxelEngine.Gen;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
 using VoxelEngine.World.Chunk;
@@ -13,6 +14,10 @@ namespace VoxelEngine.World
     public class WorldD
     {
         /// <summary>
+        /// Зерно генерации случайных чисел
+        /// </summary>
+        public int Seed { get; protected set; } = 2;
+        /// <summary>
         /// Чанки
         /// </summary>
         public ChunkProvider ChunkPr { get; protected set; }
@@ -20,6 +25,10 @@ namespace VoxelEngine.World
         /// Регионы
         /// </summary>
         public RegionProvider RegionPr { get; protected set; }
+        /// <summary>
+        /// Объект шумов
+        /// </summary>
+        public NoiseStorge Noise { get; protected set; }
         /// <summary>
         /// Когда было сделано сохранение мира
         /// </summary>
@@ -35,6 +44,7 @@ namespace VoxelEngine.World
             timeSave = Debag.GetInstance().TickCount;
             ChunkPr = new ChunkProvider(this);
             RegionPr = new RegionProvider(this);
+            Noise = new NoiseStorge(this);
         }
 
         /// <summary>
@@ -190,6 +200,44 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
+        /// TODO::#
+        /// </summary>
+        public BlockPos GetHorizon(BlockPos pos)
+        {
+            int y = 0;
+
+            if (pos.X >= -30000000 && pos.Z >= -30000000 && pos.X < 30000000 && pos.Z < 30000000)
+            {
+                if (IsChunkLoaded(pos.X >> 4, pos.Z >> 4))
+                {
+                    y = GetChunk(pos.X >> 4, pos.Z >> 4).GetHeight(pos.X & 15, pos.Z & 15);
+                }
+            }
+            else
+            {
+                y = 64;
+            }
+
+            return new BlockPos(pos.X, y, pos.Z);
+        }
+
+        /// <summary>
+        /// Получает наименьшую высоту участка, на который падает прямой солнечный свет. 
+        /// </summary>
+        public int GetChunksLowestHorizon(int x, int z)
+        {
+            if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000)
+            {
+                if (!IsChunkLoaded(x >> 4, z >> 4))
+                {
+                    return GetChunk(x >> 4, z >> 4).GetLowestHeight();
+                }
+            }
+            return 64;
+        }
+
+
+        /// <summary>
         /// Очистить кэш чанков
         /// TODO:: может вызвать ошибку изменения массива в цикле другого потока
         /// </summary>
@@ -241,7 +289,7 @@ namespace VoxelEngine.World
             Debag.GetInstance().CacheChunk = ChunkPr.Count();
 
             List<vec2i> regions = new List<vec2i>();
-            foreach (RegionFile rf in RegionPr.Values)
+            foreach (RegionBinary rf in RegionPr.Values)
             {
                 if (rf.X < xMin >> 5 || rf.X > xMax >> 5 || rf.Z < zMin >> 5 || rf.Z > zMax >> 5)
                 {
@@ -292,9 +340,7 @@ namespace VoxelEngine.World
             {
                 if (newBlock.GetBlockLightOpacity() != blockOld.GetBlockLightOpacity() || newBlock.LightValue != blockOld.LightValue)
                 {
-                    //this.theProfiler.startSection("checkLight");
                     CheckLight(newBlock.Position);
-                    //this.theProfiler.endSection();
                 }
 
                 // Пометить соседний псевдо чанк на рендер

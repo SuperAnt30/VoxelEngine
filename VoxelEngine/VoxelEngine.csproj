@@ -73,12 +73,25 @@
     <Compile Include="Actions\Keyboard.cs" />
     <Compile Include="Actions\Mouse.cs" />
     <Compile Include="Actions\PlayerCamera.cs" />
+    <Compile Include="Binary\ChunkBin.cs" />
+    <Compile Include="Binary\RegionBin.cs" />
+    <Compile Include="FormTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormTest.Designer.cs">
+      <DependentUpon>FormTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Gen\NoiseStorge.cs" />
+    <Compile Include="Gen\ChunkGenerate.cs" />
+    <Compile Include="Gen\NoiseGeneratorSimplex.cs" />
+    <Compile Include="Gen\NoiseGeneratorPerlin.cs" />
     <Compile Include="Gen\Trees.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Util\BlockPos.cs" />
     <Compile Include="Util\CoordEvent.cs" />
     <Compile Include="Util\EnumFacing.cs" />
     <Compile Include="Util\EnumSkyBlock.cs" />
+    <Compile Include="Util\Gzip.cs" />
     <Compile Include="Util\Map.cs" />
     <Compile Include="Util\Mth.cs" />
     <Compile Include="Graphics\Shaders\ShaderSkyBox.cs" />
@@ -100,6 +113,16 @@
     <Compile Include="Graphics\Shaders\ShaderLine.cs" />
     <Compile Include="Graphics\TextureAnimation.cs" />
     <Compile Include="VES.cs" />
+    <Compile Include="World\Biome\BiomeBase.cs" />
+    <Compile Include="World\Biome\BiomeMountainsDesert.cs" />
+    <Compile Include="World\Biome\BiomeForest.cs" />
+    <Compile Include="World\Biome\BiomeBeach.cs" />
+    <Compile Include="World\Biome\BiomeSwamp.cs" />
+    <Compile Include="World\Biome\BiomeMountains.cs" />
+    <Compile Include="World\Biome\BiomeDesert.cs" />
+    <Compile Include="World\Biome\BiomeGreenPlain.cs" />
+    <Compile Include="World\Biome\BiomeWater.cs" />
+    <Compile Include="World\Biome\EnumBiome.cs" />
     <Compile Include="World\Block\Block.cs" />
     <Compile Include="World\Block\BlockAir.cs" />
     <Compile Include="World\Block\BlockLeavesApple.cs" />
@@ -126,18 +149,20 @@
     <Compile Include="World\Block\EnumBlock.cs" />
     <Compile Include="World\Block\Model\Box.cs" />
     <Compile Include="World\Block\Model\Face.cs" />
+    <Compile Include="World\Chunk\ChunkBinary.cs" />
     <Compile Include="World\Chunk\ChunkBuffer.cs" />
     <Compile Include="World\Chunk\ChunkD.cs" />
     <Compile Include="World\Chunk\BufferEvent.cs" />
+    <Compile Include="World\Chunk\ChunkHeir.cs" />
     <Compile Include="World\Chunk\ChunkMap.cs" />
     <Compile Include="World\Chunk\ChunkMeshs.cs" />
     <Compile Include="World\Chunk\ChunkProvider.cs" />
     <Compile Include="World\Chunk\ChunkStorage.cs" />
     <Compile Include="World\Coords.cs" />
     <Compile Include="World\GuiWater.cs" />
+    <Compile Include="World\RegionBinary.cs" />
     <Compile Include="World\RegionMap.cs" />
     <Compile Include="World\RegionProvider.cs" />
-    <Compile Include="World\Storage\ChunkStorage.cs" />
     <Compile Include="World\HitBoxPlayer.cs" />
     <Compile Include="World\LineMesh.cs" />
     <Compile Include="World\GuiCursor.cs" />
@@ -177,13 +202,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VE.cs" />
     <Compile Include="World\Voxel\Voxel.cs" />
-    <Compile Include="World\Perlin.cs" />
     <Compile Include="World\Chunk\ChunkLoading.cs" />
     <Compile Include="World\Voxel\VoxelData.cs" />
     <Compile Include="World\WorldRender.cs" />
     <Compile Include="World\RegionFile.cs" />
     <EmbeddedResource Include="FormGame.resx">
       <DependentUpon>FormGame.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormTest.resx">
+      <DependentUpon>FormTest.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

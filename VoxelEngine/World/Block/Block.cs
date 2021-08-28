@@ -1,5 +1,4 @@
 ﻿using VoxelEngine.Glm;
-using System.Collections.Generic;
 using VoxelEngine.Model;
 using VoxelEngine.Util;
 
@@ -15,10 +14,6 @@ namespace VoxelEngine
         /// </summary>
         public Box[] Boxes { get; protected set; } = new Box[] { new Box() };
         /// <summary>
-        /// Проходит ли свет, прозрачность, 0 не прозрачный, 15 прозрачный полностью
-        /// </summary>
-        //public int LightOpacity { get; protected set; } = 0;
-        /// <summary>
         /// Вся ли прорисовка, аналог кактус, забор...
         /// </summary>
         public bool AllDrawing { get; protected set; } = false;
@@ -32,11 +27,6 @@ namespace VoxelEngine
         public vec4 Color { get; protected set; } = new vec4(1f, 1f, 1f, 1f);
         
         /// <summary>
-        /// Индекс блока
-        /// </summary>
-        public byte Id { get; protected set; } = 0;
-
-        /// <summary>
         /// Есть ли столкновение
         /// </summary>
         public bool IsCollision { get; protected set; } = true;
@@ -48,11 +38,15 @@ namespace VoxelEngine
         /// Вода ли это
         /// </summary>
         public bool IsWater { get; protected set; } = false;
+        /// <summary>
+        /// Явлыется ли блок небом
+        /// </summary>
+        public bool IsAir { get { return EBlock == EnumBlock.Air; } }
 
         /// <summary>
         /// Получить тип блока
         /// </summary>
-        public EnumBlock EBlock { get { return (EnumBlock)Id; } }
+        public EnumBlock EBlock { get; protected set; }
 
         /// <summary>
         /// Количество излучаемого света (плафон)
@@ -69,7 +63,7 @@ namespace VoxelEngine
         /// </summary>
         public override string ToString()
         {
-            return Id.ToString() + " " + Position.ToString();
+            return EBlock.ToString() + " " + Position.ToString();
         }
 
         public Block() { }
@@ -79,9 +73,8 @@ namespace VoxelEngine
         public void SetVoxel(Voxel voxel)
         {
             Voxel = voxel;
-            Id = voxel.GetId();
+            EBlock = voxel.GetEBlock();
             Properties = voxel.GetParam4bit();
-            //LightBlock = voxel..B1;
         }
 
         /// <summary>
@@ -97,16 +90,11 @@ namespace VoxelEngine
         }
 
         /// <summary>
-        /// Второй вариант для прорисовки
-        /// </summary>
-        //public virtual void BoxesTwo() { }
-
-        /// <summary>
         /// Сколько света вычитается для прохождения этого блока
         /// </summary>
         public byte GetBlockLightOpacity()
         {
-            return Blocks.GetBlockLightOpacity(Id);
+            return Blocks.GetBlockLightOpacity(EBlock);
         }
 
     }

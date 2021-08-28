@@ -8,7 +8,7 @@
         /// <summary>
         /// Сколько чанков видим
         /// </summary>
-        public const int CHUNK_VISIBILITY = 10;
+        public const int CHUNK_VISIBILITY = 32;
         /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// Количество общее число по спирале
@@ -23,7 +23,7 @@
         /// Скольк чанков вблизи камеры активны к тику 49 это 7*7 где чанк где камеры и 3 дистанция
         /// </summary>
         public const int CHUNKS_TICK = 49;
-        
+
         /// <summary>
         /// 1/16 часть, для тестуры
         /// </summary>

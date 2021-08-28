@@ -9,26 +9,20 @@ namespace VoxelEngine
     /// <summary>
     /// Объект рендера чанков
     /// </summary>
-    public class ChunkRender
+    public class ChunkRender: ChunkHeir
     {
         /// <summary>
-        /// Объект мира которы берёт из объекта ThreadWorld
+        /// Объект мира
         /// </summary>
         public WorldRender World { get; protected set; }
-        /// <summary>
-        /// Объект кэш чанка
-        /// </summary>
-        public ChunkD Chunk { get; protected set; }
-
         /// <summary>
         /// Изменения для рендера
         /// true - нужен рендер
         /// </summary>
         protected bool modifiedToRender = true;
 
-        public ChunkRender(ChunkD chunk, WorldRender world)
+        public ChunkRender(ChunkD chunk, WorldRender world) : base(chunk)
         {
-            Chunk = chunk;
             if (Chunk != null)
             {
                 Chunk.Modified += ChunkModified;
@@ -75,7 +69,8 @@ namespace VoxelEngine
         {
             Camera camera = OpenGLF.GetInstance().Cam;
 
-            for (int i = 0; i < Chunk.StorageArrays.Length; i++)
+            int yMax = Chunk.GetHighestHeight() >> 4;
+            for (int i = 0; i <= yMax; i++)// Chunk.StorageArrays.Length; i++)
             {
                 if (Chunk.StorageArrays[i].Buffer.IsModifiedRender)
                 {
@@ -88,22 +83,26 @@ namespace VoxelEngine
                         {
                             for (int x = 0; x < 16; x++)
                             {
-                                if (Chunk.GetVoxel(x, y, z).GetId() == 0) continue;
+                                if (Chunk.GetVoxel(x, y, z).GetEBlock() == EnumBlock.Air) continue;
                                 Block block = Chunk.GetBlock0(new vec3i(x, y, z));
+                                float[] buffer = _RenderVoxel(block);
                                 if (block.IsAlphe)
                                 {
-                                    Chunk.StorageArrays[i].Buffer.Alphas.Add(new VoxelData()
+                                    if (buffer.Length > 0)
                                     {
-                                        Block = block,
-                                        //Vox = block.Voxel,
-                                        Distance = camera.DistanceTo(
-                                            new vec3(Chunk.X << 4 | x, y, Chunk.Z << 4 | z)
-                                            )
-                                    });
+                                        Chunk.StorageArrays[i].Buffer.Alphas.Add(new VoxelData()
+                                        {
+                                            Block = block,
+                                            Buffer = buffer,
+                                            Distance = camera.DistanceTo(
+                                                new vec3(Chunk.X << 4 | x, y, Chunk.Z << 4 | z)
+                                                )
+                                        });
+                                    }
                                 }
                                 else
                                 {
-                                    bufferCache.AddRange(_RenderVoxel(block));
+                                    bufferCache.AddRange(buffer);
                                 }
                             }
                         }
@@ -170,7 +169,7 @@ namespace VoxelEngine
             List<float> buffer = new List<float>();
             for (int i = alphas.Count - 1; i >= 0; i--)
             {
-                buffer.AddRange(_RenderVoxel(alphas[i].Block));
+                buffer.AddRange(alphas[i].Buffer);
             }
             return buffer.ToArray();
         }

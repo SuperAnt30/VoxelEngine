@@ -231,9 +231,9 @@ namespace VoxelEngine
         {
             //return new vec4();
             Voxel v = GetVoxel(posChunk.x, posChunk.y + 1, posChunk.z);
-            if (v.IsEmpty()) return new vec4(1f);
-            byte id = v.GetId();
-            if (id == 11 || id == 13)
+            if (v.IsEmpty) return new vec4(1f);
+            EnumBlock eBlcok = v.GetEBlock();
+            if (Blocks.IsWater(eBlcok))
             {
                 // значит над блоком вода
                 return new vec4(0f);
@@ -413,8 +413,8 @@ namespace VoxelEngine
         public bool IsBlockedAO(int x, int y, int z)
         {
             Voxel v = GetVoxel(x, y, z);
-            if (v.IsEmpty()) return true;
-            return v.GetId() != 0 && Blocks.IsNotTransparent(v.GetId());
+            if (v.IsEmpty) return true;
+            return v.GetEBlock() != 0 && Blocks.IsNotTransparent(v.GetEBlock());
         }
 
         /// <summary>
@@ -423,7 +423,7 @@ namespace VoxelEngine
         public byte BlockedParam(int x, int y, int z)
         {
             Voxel v = GetVoxel(x, y, z);
-            if (v.IsEmpty()) return 0;
+            if (v.IsEmpty) return 0;
             return v.GetParam4bit();
         }
 
@@ -435,20 +435,20 @@ namespace VoxelEngine
         public int BlockedWater(int x, int y, int z)
         {
             Voxel v = GetVoxel(x, y, z);
-            if (v.IsEmpty()) return VE.WATER;
-            byte id = v.GetId();
-            if (id == 11) return -1;
-            if (id == 13)
+            if (v.IsEmpty) return VE.WATER;
+            EnumBlock eBlock = v.GetEBlock();
+            if (eBlock == EnumBlock.Water) return -1;
+            if (eBlock == EnumBlock.WaterFlowing)
             {
                 byte b = v.GetParam4bit();
                 if (b == 0)
                 {
                     // проверяем вверхний блок
                     Voxel v2 = GetVoxel(x, y + 1, z);
-                    if (!v2.IsEmpty())
+                    if (!v2.IsEmpty)
                     {
-                        byte id2 = v2.GetId();
-                        if (id2 == 11 || id2 == 13) return -1;
+                        EnumBlock eBlock2 = v2.GetEBlock();
+                        if (Blocks.IsWater(eBlock2)) return -1;
                     }
                 }
                 return b;
@@ -462,12 +462,12 @@ namespace VoxelEngine
         public BlockedResult BlockedLight(vec3i pos)
         {
             Voxel v = GetVoxel(pos.x, pos.y, pos.z);
-            if (v.IsEmpty()) return new BlockedResult();
+            if (v.IsEmpty) return new BlockedResult();
 
-            byte id = v.GetId();
+            EnumBlock eBlock = v.GetEBlock();
             BlockedResult br = new BlockedResult()
             {
-                IsDraw = id == 0 || !Blocks.IsNotTransparent(id),
+                IsDraw = eBlock == EnumBlock.Air || !Blocks.IsNotTransparent(eBlock),
                 LightSky = v.GetLightFor(EnumSkyBlock.Sky),
                 LightBlock = v.GetLightFor(EnumSkyBlock.Block),
                 Light = v.GetLightsFor()
@@ -475,8 +475,8 @@ namespace VoxelEngine
             // Для слияния однотипных блоков
             if (br.IsDraw)
             {
-                if (id == Blk.Id) br.IsDraw = false;
-                else if (Blk.IsWater && Blocks.IsWater(id)) br.IsDraw = false;
+                if (eBlock == Blk.EBlock) br.IsDraw = false;
+                else if (Blk.IsWater && Blocks.IsWater(eBlock)) br.IsDraw = false;
             }
             return br;
         }

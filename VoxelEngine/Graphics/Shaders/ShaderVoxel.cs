@@ -5,6 +5,7 @@
     /// </summary>
     public class ShaderVoxel : ShaderVE
     {
+        // TODO::TEST
         protected override string _VertexShaderSource { get; } = @"#version 330 core
 #extension GL_EXT_gpu_shader4 : enable
 
@@ -38,9 +39,10 @@ void main()
     light2 = (lightS > v_light.x) ? lightS + 0.2 : v_light.x + 0.2;
     //light2 = light * v_color.a + 0.2;
     if (light2 > 1.0) light2 = 1.0;
-    a_color.r = v_color.r * light2;
-    a_color.g = v_color.g * light2;
-    a_color.b = v_color.b * light2;
+// TODO::TEST
+    a_color.r = v_color.r;// * light2;
+    a_color.g = v_color.g;// * light2;
+    a_color.b = v_color.b;// * light2;
     a_color.a = 1.0;
     a_texCoord = v_texCoord;
     gl_Position = a_position;

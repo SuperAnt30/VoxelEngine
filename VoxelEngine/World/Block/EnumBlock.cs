@@ -1,5 +1,8 @@
 ﻿namespace VoxelEngine
 {
+    /// <summary>
+    /// Тип блока
+    /// </summary>
     public enum EnumBlock
     {
         /// <summary>

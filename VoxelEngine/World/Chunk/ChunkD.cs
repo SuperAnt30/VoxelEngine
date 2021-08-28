@@ -31,6 +31,11 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public ChunkRender ChunkTag { get; set; }
 
+        /// <summary>
+        /// Для записи в файл
+        /// </summary>
+        protected ChunkBinary chunkBinary;
+
         protected ChunkD() { }
         public ChunkD(WorldD worldIn, int x, int z)
         {
@@ -43,6 +48,7 @@ namespace VoxelEngine.World.Chunk
             X = x;
             Z = z;
             for (int i = 0; i < StorageArrays.Length; i++) StorageArrays[i] = new ChunkStorage();
+            chunkBinary = new ChunkBinary(this);
         }
 
         #region Block Storage
@@ -99,25 +105,35 @@ namespace VoxelEngine.World.Chunk
         }
 
         /// <summary>
+        /// Получить значение вокселя по координатам чанка
+        /// </summary>
+        public void SetVoxel(int x, int y, int z, Voxel voxel)
+        {
+            if (y >= 0 && y >> 4 < StorageArrays.Length)
+            {
+                ChunkStorage storage = StorageArrays[y >> 4];
+                storage.SetVoxel(x, y & 15, z, voxel);
+            }
+        }
+
+        /// <summary>
         /// Вернуть тип блока
         /// </summary>
         /// <param name="pos"></param>
         /// <returns></returns>
         public EnumBlock GetBlockState(BlockPos pos)
         {
-            return (EnumBlock)GetVoxel(pos.ToVec3i()).GetId();
+            return GetVoxel(pos.ToVec3i()).GetEBlock();
         }
 
         /// <summary>
         /// Задать воксель
         /// </summary>
-        public void SetVoxelId(int x, int y, int z, byte id)
+        public void SetBlockState(int x, int y, int z, EnumBlock eBlock)
         {
-            if (y >= 0 && y >> 4 < StorageArrays.Length)
-            {
-                ChunkStorage storage = StorageArrays[y >> 4];
-                storage.SetVoxelId(x, y & 15, z, id);
-            }
+            Voxel voxel = GetVoxel(x, y, z);
+            voxel.SetEBlock(eBlock);
+            SetVoxel(x, y, z, voxel);
         }
 
         /// <summary>
@@ -125,22 +141,12 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public void SetParam4bit(int x, int y, int z, byte param)
         {
-            if (y >= 0 && y >> 4 < StorageArrays.Length)
+            Voxel voxel = GetVoxel(x, y, z);
+            if (!voxel.IsEmpty)
             {
-                ChunkStorage storage = StorageArrays[y >> 4];
-                storage.SetParam4bit(x, y & 15, z, param);
-            }
-            //Voxels[y, x, z].SetParam4bit(param);
-        }
-
-        /// <summary>
-        /// Задать дополнительный параметр блока в 4 бита по глобальным координатам
-        /// </summary>
-        public void SetParam4bit(vec3i pos, byte param)
-        {
-            if (pos.x >> 4 == X && pos.z >> 4 == Z)
-            {
-                SetParam4bit(pos.x & 15, pos.y, pos.z & 15, param);
+                voxel.SetParam4bit(param);
+                SetVoxel(x, y, z, voxel);
+                SetChunkModified();
             }
         }
 
@@ -149,27 +155,13 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public void SetLightFor(int x, int y, int z, EnumSkyBlock type, byte light)
         {
-            //Voxels[y, x, z].SetLightFor(type, light);
-            if (y >= 0 && y >> 4 < StorageArrays.Length)
+            Voxel voxel = GetVoxel(x, y, z);
+            if (!voxel.IsEmpty)
             {
-                ChunkStorage storage = StorageArrays[y >> 4];
-                storage.SetLightFor(x, y & 15, z, type, light);
+                voxel.SetLightFor(type, light);
+                SetVoxel(x, y, z, voxel);
+                SetChunkModified();
             }
-            SetChunkModified();
-        }
-
-        /// <summary>
-        /// Задать яркость блока от неба
-        /// </summary>
-        public void SetLightsFor(int x, int y, int z, byte light)
-        {
-            //Voxels[y, x, z].SetLightsFor(light);
-            if (y >= 0 && y >> 4 < StorageArrays.Length)
-            {
-                ChunkStorage storage = StorageArrays[y >> 4];
-                storage.SetLightsFor(x, y & 15, z, light);
-            }
-            SetChunkModified();
         }
 
         /// <summary>
@@ -177,13 +169,9 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public byte GetLightFor(int x, int y, int z, EnumSkyBlock type)
         {
-            //return Voxels[y, x, z].GetLightFor(type);
-            if (y >= 0 && y >> 4 < StorageArrays.Length)
-            {
-                ChunkStorage storage = StorageArrays[y >> 4];
-                return storage.GetLightFor(x, y & 15, z, type);
-            }
-            return (byte)type;
+            Voxel voxel = GetVoxel(x, y, z);
+            if (voxel.IsEmpty) return (byte)type;
+            return voxel.GetLightFor(type);
         }
 
         #endregion
@@ -193,21 +181,26 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public bool LoadinData()
         {
-            RegionFile region = World.RegionPr.GetRegion(X, Z);
+            RegionBinary region = World.RegionPr.GetRegion(X, Z);
             if (region == null) return false;
             byte[] b = region.GetChunk(X, Z);
             if (b != null)
             {
-                Read(b);
+                chunkBinary.Read(b);
                 GenerateHeightMap();
+                //StartRecheckGaps(); // TODO::Под вопросом, возможно записать данные в файл
             }
             else
             {
                 // Если его нет, то генерируем
                 Generation();
-                GenerateSkylightMap();
+                GenerateHeightMap();
+                // TODO::TEST
+                //GenerateSkylightMap();
+                //StartRecheckGaps(); 
+                //func_177441_y();
                 // и сразу же записываем
-                region.SetChunk(X, Z, Write());
+                //region.SetChunk(X, Z, chunkBinary.Write());
             }
             return true;
         }
@@ -273,10 +266,10 @@ namespace VoxelEngine.World.Chunk
         {
             if (isModified)
             {
-                RegionFile region = World.RegionPr.GetRegion(X, Z);
+                RegionBinary region = World.RegionPr.GetRegion(X, Z);
                 if (region != null)
                 {
-                    region.SetChunk(X, Z, Write());
+                    region.SetChunk(X, Z, chunkBinary.Write());
                     isModified = false;
                 }
             }
@@ -289,134 +282,166 @@ namespace VoxelEngine.World.Chunk
         {
             Generation();
             GenerateSkylightMap();
-            RegionFile region = World.RegionPr.GetRegion(X, Z);
-            region.SetChunk(X, Z, Write());
+            
+            RegionBinary region = World.RegionPr.GetRegion(X, Z);
+            region.SetChunk(X, Z, chunkBinary.Write());
+        }
+
+        public void Generation()
+        {
+            ChunkGenerate chunkGenerate = new ChunkGenerate(this);
+            chunkGenerate.Generation();
         }
 
         /// <summary>
         /// Генерация чанка
         /// </summary>
-        public void Generation()
-        {
-            Perlin noise = new Perlin();
-            noise.Perlin2D(2);
-            float size = 0.01f;
-            for (int z = 0; z < 16; z++)
-            {
-                for (int x = 0; x < 16; x++)
-                {
-                    int realX = X << 4 | x;
-                    int realZ = Z << 4 | z;
+        //public void GenerationOld()
+        //{
+        //    Perlin noise = new Perlin();
+        //    noise.Perlin2D(2);
+        //    float size = 0.01f;
+        //    for (int z = 0; z < 16; z++)
+        //    {
+        //        for (int x = 0; x < 16; x++)
+        //        {
+        //            int realX = X << 4 | x;
+        //            int realZ = Z << 4 | z;
 
-                    float fn = noise.Noise(size * realX, size * realZ, 5, 0.1f); // -1 .. 1
-                    //float n = (fn + 1f) * 24f + 48f;
-                    float n = (fn + 1f) * 64f;// + 18f;
+        //            float fn = noise.Noise(size * realX, size * realZ, 5, 0.1f); // -1 .. 1
+        //            //float n = (fn + 1f) * 24f + 48f;
+        //            float n = (fn + 1f) * 64f;// + 18f;
 
-                    for (int y = 0; y < 256; y++)
-                    {
-                        //int realY = y;
+        //            for (int y = 0; y < 256; y++)
+        //            {
+        //                //int realY = y;
 
-                        int id = 0;
-                        // byte alphe = 0x00;
-                        if (y <= n)
-                        {
-                            // если не воздух
-                            if (y < 46)
-                            {
-                                // принудительно камень
-                                id = 1;
-                            }
-                            else if (y < 67 && n < 67)
-                            {
-                                // камень
-                                if (y < n - 3) id = 1;
-                                // песок
-                                else id = 4;
-                            }
-                            else if (y > 80)
-                            {
-                                // камень
-                                id = 1;
-                            }
-                            else
-                            {
-                                // камень
-                                if (y < n - 3) id = 1;
-                                // земля
-                                else if (y < n - 1) id = 2;
-                                // дёрн
-                                else id = 3;
-                            }
+        //                int id = 0;
+        //                // byte alphe = 0x00;
+        //                if (y <= n)
+        //                {
+        //                    // если не воздух
+        //                    if (y < 46)
+        //                    {
+        //                        // принудительно камень
+        //                        id = 1;
+        //                    }
+        //                    else if (y < 67 && n < 67)
+        //                    {
+        //                        // камень
+        //                        if (y < n - 3) id = 1;
+        //                        // песок
+        //                        else id = 4;
+        //                    }
+        //                    else if (y > 80)
+        //                    {
+        //                        // камень
+        //                        id = 1;
+        //                    }
+        //                    else
+        //                    {
+        //                        // камень
+        //                        if (y < n - 3) id = 1;
+        //                        // земля
+        //                        else if (y < n - 1) id = 2;
+        //                        // дёрн
+        //                        else id = 3;
+        //                    }
 
-                        }
-                        else
-                        {
-                            if (y < 65 && n < 67)
-                            {
-                                // вода
-                                id = 11;
-                            }
-                        }
-                        //id = 3;
-                        //if (id > 0 && realY > 4) id = 3;
+        //                }
+        //                else
+        //                {
+        //                    if (y < 65 && n < 67)
+        //                    {
+        //                        // вода
+        //                        id = 11;
+        //                    }
+        //                }
+        //                //id = 3;
+        //                //if (id > 0 && realY > 4) id = 3;
 
-                        //if (realX == -15 && realZ == -15 && realY == 6) id = 4;
-                        //if (realX == -15 && realZ == -15 && realY == 7) id = 4;
+        //                //if (realX == -15 && realZ == -15 && realY == 6) id = 4;
+        //                //if (realX == -15 && realZ == -15 && realY == 7) id = 4;
 
-                        //if (realX == 0 && realZ == 0 && realY == 8) id = 34;
+        //                //if (realX == 0 && realZ == 0 && realY == 8) id = 34;
 
-                        //if (realX == 58 && realZ == 58 && realY == 5) id = 2;
-                        //if (realX == 58 && realZ == 58 && realY == 6) id = 2;
-                        //if (realX == 58 && realZ == 58 && realY == 7) id = 2;
-                        //if (realX == 58 && realZ == 58 && realY == 8) id = 2;
+        //                //if (realX == 58 && realZ == 58 && realY == 5) id = 2;
+        //                //if (realX == 58 && realZ == 58 && realY == 6) id = 2;
+        //                //if (realX == 58 && realZ == 58 && realY == 7) id = 2;
+        //                //if (realX == 58 && realZ == 58 && realY == 8) id = 2;
 
-                        //if (realX == 58 && realZ == 56 && realY == 5) id = 2;
-                        //if (realX == 58 && realZ == 56 && realY == 6) id = 2;
-                        //if (realX == 58 && realZ == 56 && realY == 7) id = 2;
-                        //if (realX == 58 && realZ == 56 && realY == 8) id = 2;
+        //                //if (realX == 58 && realZ == 56 && realY == 5) id = 2;
+        //                //if (realX == 58 && realZ == 56 && realY == 6) id = 2;
+        //                //if (realX == 58 && realZ == 56 && realY == 7) id = 2;
+        //                //if (realX == 58 && realZ == 56 && realY == 8) id = 2;
 
-                        //if (realX == 56 && realZ == 58 && realY == 5) id = 2;
-                        //if (realX == 56 && realZ == 58 && realY == 6) id = 2;
-                        //if (realX == 56 && realZ == 58 && realY == 7) id = 2;
-                        //if (realX == 56 && realZ == 58 && realY == 8) id = 2;
+        //                //if (realX == 56 && realZ == 58 && realY == 5) id = 2;
+        //                //if (realX == 56 && realZ == 58 && realY == 6) id = 2;
+        //                //if (realX == 56 && realZ == 58 && realY == 7) id = 2;
+        //                //if (realX == 56 && realZ == 58 && realY == 8) id = 2;
 
-                        //if (realX == 56 && realZ == 56 && realY == 5) id = 2;
-                        //if (realX == 56 && realZ == 56 && realY == 6) id = 2;
-                        //if (realX == 56 && realZ == 56 && realY == 7) id = 2;
-                        //if (realX == 56 && realZ == 56 && realY == 8) id = 2;
+        //                //if (realX == 56 && realZ == 56 && realY == 5) id = 2;
+        //                //if (realX == 56 && realZ == 56 && realY == 6) id = 2;
+        //                //if (realX == 56 && realZ == 56 && realY == 7) id = 2;
+        //                //if (realX == 56 && realZ == 56 && realY == 8) id = 2;
 
-                        //if (realX == 56 && realZ == 56 && realY == 4) id = 4;
-                        //if (realX == 57 && realZ == 56 && realY == 4) id = 5;
-                        //if (realX == 58 && realZ == 56 && realY == 4) id = 5;
+        //                //if (realX == 56 && realZ == 56 && realY == 4) id = 4;
+        //                //if (realX == 57 && realZ == 56 && realY == 4) id = 5;
+        //                //if (realX == 58 && realZ == 56 && realY == 4) id = 5;
 
-                        //if (id == 2 || id == 143) alphe = 0x01;
+        //                //if (id == 2 || id == 143) alphe = 0x01;
 
-                        //int index = (y * VE.CHUNK_WIDTH + z) * VE.CHUNK_WIDTH + x;
-                        //Voxel voxel = new Voxel(Voxels[index])
-                        //Voxel voxel = new Voxel(Voxels[y, x, z].GetId())
-                        ////Voxel voxel = new Voxel(Voxels[y,x,z])
-                        //{
-                        //    Id = (byte)id
-                        //  //  B1 = alphe
-                        //};
-                        //Voxels[index] = voxel.GetKey();
-                        //Voxels[y, x, z] = voxel.GetKey();
-                        SetVoxelId(x, y, z, (byte)id);
-                        //GetVoxel(x, y, z).SetIdByte((byte)id);
-                        //Voxels[y, x, z].SetIdByte((byte)id);//.SetId(voxel.GetKey());
-                        //Voxels[y << 8 | z << 4 | x].SetIdByte((byte)id);//.SetId(voxel.GetKey());
+        //                //int index = (y * VE.CHUNK_WIDTH + z) * VE.CHUNK_WIDTH + x;
+        //                //Voxel voxel = new Voxel(Voxels[index])
+        //                //Voxel voxel = new Voxel(Voxels[y, x, z].GetId())
+        //                ////Voxel voxel = new Voxel(Voxels[y,x,z])
+        //                //{
+        //                //    Id = (byte)id
+        //                //  //  B1 = alphe
+        //                //};
+        //                //Voxels[index] = voxel.GetKey();
+        //                //Voxels[y, x, z] = voxel.GetKey();
+        //                SetVoxelId(x, y, z, (byte)id);
+        //                //GetVoxel(x, y, z).SetIdByte((byte)id);
+        //                //Voxels[y, x, z].SetIdByte((byte)id);//.SetId(voxel.GetKey());
+        //                //Voxels[y << 8 | z << 4 | x].SetIdByte((byte)id);//.SetId(voxel.GetKey());
 
-                    }
-                }
-            }
-        }
+        //            }
+        //        }
+        //    }
+        //}
 
         #region Light
 
+        protected int heightMapMinimum = 256;
+        protected int heightMapMaximum = 0;
+
+        /// <summary>
+        /// Возвращает низкое значение карты высот
+        /// </summary>
+        public int GetLowestHeight()
+        {
+            return heightMapMinimum;
+        }
+        /// <summary>
+        /// Возвращает высокое значение карты высот
+        /// </summary>
+        public int GetHighestHeight()
+        {
+            return heightMapMaximum;
+        }
+
+        /// <summary>
+        /// Возвращает значение карты высот в этой координате x, z в чанке. 
+        /// </summary>
+        public int GetHeight(int x, int z)
+        {
+            return heightMap[x, z];
+        }
         /// <summary>
         /// Карта высот по чанку, XZ
         /// </summary>
-        private int[,] heightMap = new int[16, 16];
+        protected int[,] heightMap = new int[16, 16];
 
         /// <summary>
         /// Может ли видеть небо
@@ -482,7 +507,7 @@ namespace VoxelEngine.World.Chunk
             {
                 SetParam4bit(x, y, z, block.Properties);
             }
-            SetVoxelId(x, y, z, block.Id);
+            SetBlockState(x, y, z, block.EBlock);
             //block.SetVoxel(GetVoxel(x, y, z));
 
 
@@ -544,15 +569,8 @@ namespace VoxelEngine.World.Chunk
 
             // пометка на редактирование
             SetChunkModified();
-            // так же соседние чанки тоже
-            //ChunkNorth().SetChunkModified();
-            //ChunkSouth().SetChunkModified();
-            //ChunkWest().SetChunkModified();
-            //ChunkEast().SetChunkModified();
 
             return blockOld;
-
-
         }
 
         /// <summary>
@@ -583,45 +601,6 @@ namespace VoxelEngine.World.Chunk
         }
 
         /// <summary>
-        /// Задать высоту блока
-        /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="id"></param>
-        public void SetHeightMap(BlockPos pos, byte id)
-        {
-            int x = pos.X & 15;
-            int y = pos.Y;
-            int z = pos.Z & 15;
-            if (id == 0)
-            {
-                if (y == heightMap[x, z])
-                {
-                    // ищем низ
-                    int heightMapMinimum = 1024;
-                    int y0 = y;
-                    while (true)
-                    {
-                        if (y0 > 0)
-                        {
-                            if (GetBlockLightOpacity(x, y - 1, z) == 0)
-                            {
-                                --y;
-                                continue;
-                            }
-                            heightMap[x, z] = y;
-                            if (y < heightMapMinimum) heightMapMinimum = y;
-                        }
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                heightMap[x, z] = y - 1;
-            }
-        }
-
-        /// <summary>
         /// Задать верхний блок на x, z
         /// </summary>
         /// <param name="x"></param>
@@ -637,8 +616,10 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public byte GetBlockLightOpacity(int x, int y, int z)
         {
-            return Blocks.GetBlockLightOpacity(GetVoxel(x, y, z).GetId());
+            return Blocks.GetBlockLightOpacity(GetVoxel(x, y, z).GetEBlock());
         }
+
+
 
         /// <summary>
         /// Создает карту высот для блока с нуля
@@ -646,7 +627,8 @@ namespace VoxelEngine.World.Chunk
         protected void GenerateHeightMap()
         {
             int y0 = 239;// this.getTopFilledSegment();
-            int heightMapMinimum = 1024;
+            heightMapMinimum = 1024;
+            heightMapMaximum = 0;
 
             for (int x = 0; x < 16; ++x)
             {
@@ -673,10 +655,8 @@ namespace VoxelEngine.World.Chunk
 
                             heightMap[x, z] = y;
 
-                            if (y < heightMapMinimum)
-                            {
-                                heightMapMinimum = y;
-                            }
+                            if (y < heightMapMinimum) heightMapMinimum = y;
+                            if (y > heightMapMaximum) heightMapMaximum = y;
                         }
 
                         ++z;
@@ -696,7 +676,7 @@ namespace VoxelEngine.World.Chunk
             //GenerateHeightMap();
             // Возвращает самый верхний экземпляр ExtendedBlockStorage для этого Chunk, который фактически содержит блок.
             int y0 = 239;// 239;// this.getTopFilledSegment();
-            int heightMapMinimum = 1024;// Integer.MAX_VALUE;
+            heightMapMinimum = 1024;// Integer.MAX_VALUE;
 
             for (int x = 0; x < 16; ++x)
             {
@@ -719,6 +699,7 @@ namespace VoxelEngine.World.Chunk
                             heightMap[x, z] = y;
 
                             if (y < heightMapMinimum) heightMapMinimum = y;
+                            if (y > heightMapMaximum) heightMapMaximum = y;
                         }
 
                         y = 15;
@@ -750,6 +731,8 @@ namespace VoxelEngine.World.Chunk
             //  this.isModified = true;
         }
 
+        
+
         /// <summary>
         /// Инициирует пересчет как блочного света, так и небесного света для данного блока внутри блока.
         /// </summary>
@@ -758,98 +741,179 @@ namespace VoxelEngine.World.Chunk
         /// <param name="z">в чанке 0-15</param>
         public void _RelightBlock(int x, int y, int z)
         {
-            int var4 = heightMap[x, z] & 255;
-            int var5 = var4;
+            int yh = heightMap[x, z] & 255;
+            int yh0 = yh;
 
-            if (y > var4)
+            if (y > yh)
             {
-                var5 = y;
+                yh0 = y;
             }
 
-            while (var5 > 0 && GetBlockLightOpacity(x, var5 - 1, z) == 0)
+            while (yh0 > 0 && GetBlockLightOpacity(x, yh0 - 1, z) == 0)
             {
-                --var5;
+                --yh0;
             }
 
             // if (var5 != var4)
             {
                 int xReal = X << 4 | x;
                 int zReal = Z << 4 | z;
-                World.MarkBlocksDirtyVertical(xReal, zReal, var5, var4);
-                heightMap[x, z] = var5;
-                int var8;
+                World.MarkBlocksDirtyVertical(xReal, zReal, yh0, yh);
+                heightMap[x, z] = yh0;
+                int y0;
                 int var13;
 
                 // if (!this.worldObj.provider.getHasNoSky())
                 {
 
-                    if (var5 < var4)
+                    if (yh0 < yh)
                     {
-                        for (var8 = var5; var8 < var4; ++var8)
+                        for (y0 = yh0; y0 < yh; ++y0)
                         {
-                            SetLightFor(x, var8 & 15, z, EnumSkyBlock.Sky, 15);
+                            SetLightFor(x, y0 & 15, z, EnumSkyBlock.Sky, 15);
                         }
                     }
                     else
                     {
-                        for (var8 = var4; var8 < var5; ++var8)
+                        for (y0 = yh; y0 < yh0; ++y0)
                         {
-                            SetLightFor(x, var8 & 15, z, EnumSkyBlock.Sky, 0);
+                            SetLightFor(x, y0 & 15, z, EnumSkyBlock.Sky, 0);
                         }
                     }
 
-                    var8 = 15;
+                    y0 = 15;
 
-                    while (var5 > 0 && var8 > 0)
+                    while (yh0 > 0 && y0 > 0)
                     {
-                        --var5;
-                        var13 = GetBlockLightOpacity(x, var5, z);
+                        --yh0;
+                        var13 = GetBlockLightOpacity(x, yh0, z);
                         if (var13 == 0) var13 = 1;
-                        var8 -= var13;
-                        if (var8 < 0) var8 = 0;
-                        SetLightFor(x, var8 & 15, z, EnumSkyBlock.Sky, (byte)var8);
+                        y0 -= var13;
+                        if (y0 < 0) y0 = 0;
+                        SetLightFor(x, y0 & 15, z, EnumSkyBlock.Sky, (byte)y0);
                     }
                 }
 
-                var8 = heightMap[x, z];
-                var13 = var4;
-                int var14 = var8;
+                y0 = heightMap[x, z];
+                var13 = yh;
+                int var14 = y0;
 
-                if (var8 < var4)
+                if (y0 < yh)
                 {
-                    var13 = var8;
-                    var14 = var4;
+                    var13 = y0;
+                    var14 = yh;
                 }
 
-                //if (var8 < this.heightMapMinimum)
-                //{
-                //    this.heightMapMinimum = var8;
-                //}
+                if (y0 < heightMapMinimum) heightMapMinimum = y0;
+                if (y0 > heightMapMaximum) heightMapMaximum = y0;
 
-                //  if (!this.worldObj.provider.getHasNoSky())
+                for (int i = 0; i < 4; i++)
                 {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        vec3i var12 = EnumFacing.DirectionHorizontalVec(EnumFacing.GetHorizontal(i));
-                        _UpdateSkylightNeighborHeight(xReal + var12.x, zReal + var12.z, var13, var14);
-                    }
-
-                    _UpdateSkylightNeighborHeight(xReal, zReal, var13, var14);
+                    vec3i var12 = EnumFacing.DirectionHorizontalVec(EnumFacing.GetHorizontal(i));
+                    UpdateSkylightNeighborHeight(xReal + var12.x, zReal + var12.z, var13, var14);
                 }
+
+                UpdateSkylightNeighborHeight(xReal, zReal, var13, var14);
 
                 //this.isModified = true;
             }
         }
 
-        private void _UpdateSkylightNeighborHeight(int x, int z, int startY, int endY)
+        protected void UpdateSkylightNeighborHeight(int x, int z, int startY, int endY)
         {
-            if (endY > startY)
+            //if (endY > startY)
+            if (endY > startY && World.IsArea(new BlockPos(x, 64, z), 16))
             {
-                for (int var5 = startY; var5 < endY; ++var5)
+                for (int y = startY; y < endY; y++)
                 {
-                    World.CheckLightFor(EnumSkyBlock.Sky, new BlockPos(x, var5, z));
+                    World.CheckLightFor(EnumSkyBlock.Sky, new BlockPos(x, y, z));
                 }
-                //this.isModified = true;
+                //SetChunkModified(); // TODO::проверить, событие скорее всего не надо
+            }
+        }
+
+        /// <summary>
+        /// Проверяет высоту блока рядом с видимым с неба блоком и при необходимости планирует обновление освещения. 
+        /// TODO::#
+        /// </summary>
+        //protected void CheckSkylightNeighborHeight(int x, int z, int startY)
+        //{
+        //    int y = World.GetHorizon(new BlockPos(x, 0, z)).Y;
+
+        //    if (y > startY)
+        //    {
+        //        UpdateSkylightNeighborHeight(x, z, startY, y + 1);
+        //    }
+        //    else if (y < startY)
+        //    {
+        //        UpdateSkylightNeighborHeight(x, z, y, startY + 1);
+        //    }
+        //}
+
+        /// <summary>
+        /// Какие столбцы нуждаются в обновлении skylightMaps 
+        /// </summary>
+        protected bool[,] updateSkylightColumns = new bool[16,16];
+        /// <summary>
+        /// Надо ли обновлять дневной свет под перекрытием
+        /// </summary>
+        protected bool isGapLightingUpdated = true;
+
+        /// <summary>
+        /// Запуск проверки бокового небесного освещения
+        /// </summary>
+        public void StartRecheckGaps()
+        {
+            for (int x = 0; x < 16; x++)
+            {
+                for (int z = 0; z < 16; z++)
+                {
+                    updateSkylightColumns[x, z] = true;
+                }
+            }
+            isGapLightingUpdated = true;
+            RecheckGaps();
+        }
+
+        /// <summary>
+        /// Распространяет значение освещенности заданного видимого неба блока вниз и вверх на соседние блоки по мере необходимости. 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="z"></param>
+        protected void PropagateSkylightOcclusion(int x, int z)
+        {
+            updateSkylightColumns[x, z] = true;
+            isGapLightingUpdated = true;
+        }
+
+        /// <summary>
+        /// Проверка бокового небесного освещения
+        /// </summary>
+        public void RecheckGaps()
+        {
+            if (!isGapLightingUpdated) return;
+            int posX = X * 16;
+            int posZ = Z * 16;
+            if (World.IsArea(new BlockPos(posX + 8, 64, posZ + 8), 16))
+            {
+                for (int x = 0; x < 16; x++)
+                {
+                    for (int z = 0; z < 16; z++)
+                    {
+                        if (updateSkylightColumns[x, z])
+                        {
+                            updateSkylightColumns[x, z] = false;
+                            int yl = GetLowestHeight();
+                            if (yl > 16) yl -= 8;
+                            int yh = GetHighestHeight() + 1;
+                            UpdateSkylightNeighborHeight(posX + x, posZ + z, yl, yh);
+                            //UpdateSkylightNeighborHeight(posX + x, posZ + z, 16, 200);
+                            // TODO:: алгоритм не доработан, надо пробегать точнее проверяя реальные блоки
+                        }
+                    }
+                }
+                isGapLightingUpdated = false;
+                Save();
             }
         }
 
@@ -860,9 +924,13 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public void Tick()
         {
+            // Проверка рендера и освещения
+            RecheckGaps();
             // Блоки для тактов
             BlocksTick();
         }
+
+        
 
         /// <summary>
         /// Массив действий в чанке надо блоками жидкостей ()
@@ -903,9 +971,14 @@ namespace VoxelEngine.World.Chunk
                 {
                     indexs.Add(lt.Key.ToString());
                     Block block = GetBlock(bt.Position.ToVec3i());
-                    if (block.IsWater) LiquidTickBlock(block);// bt.Blk);
+                    if (block.IsWater)
+                    {
+                        // жидкость вода
+                        LiquidTickBlock(block);// bt.Blk);
+                    }
                     else if (block.EBlock == EnumBlock.Sapling)
                     {
+                        // ростёт дерево
                         Trees trees = new Trees(World);
                         if (!trees.Generate(block.Position))
                         {
@@ -1136,95 +1209,6 @@ namespace VoxelEngine.World.Chunk
             World.SetBlockState(blockNew, false);
             AddTicks(liquidTicksNew, new BlockTick(blockNew.Position, blockNew.EBlock, tick));
         }
-
-        #region SaveChunk
-
-        /// <summary>
-        /// Чтение чанка
-        /// </summary>
-        /// <param name="source"></param>
-        public void Read(byte[] source)
-        {
-            //for (int i = 0; i < VE.CHUNK_VOLUME; i++)
-            //{
-            //    byte b1 = source[i * 2];
-            //    byte b2 = 0;// source[i * 2 + 1];
-            //    if (b1 == 9) { b2 = 1 << 4 | 1; }
-            //    else if (b1 == 10) { b2 = 1 << 4 | 0; }
-            //    Voxels[i] = (short)(b1 << 8 | b2);
-            //    ///Voxels[i] = (short)(source[i * 2] << 8 | source[i * 2 + 1]);
-            //}
-
-            int i = 0;
-            for (int y = 0; y < 256; y++)
-
-                for (int z = 0; z < 16; z++)
-                    for (int x = 0; x < 16; x++)
-                    {
-                        byte b1 = source[i * 2];
-                        byte b2 = source[i * 2 + 1]; // 0
-                        // TODO:: Voxel bit
-                        // if (b1 == 9) { b2 = 1 << 4 | 1; } // кактус
-                        //else if (b1 == 10) { b2 = 1 << 4 | 0; } // стекло
-                        //Voxels[y, x, z].LP = (b1 == 9 || b1 == 10);
-                        //  VoxelsLP[y, x, z] = (b1 == 9 || b1 == 10);
-                        //Vox v = Voxels[y, x, z];
-
-                        //Block bl = 
-                        //SetVoxelId(x, y, z, Blocks.GetBlock(b1, new BlockPos(x, y, z)));
-                        SetVoxelId(x, y, z, b1);
-                        SetLightsFor(x, y, z, b2);
-                        //Voxels[y, x, z].SetId((short)(b1 << 8 | b2));
-                        ////if (b1 == 9 || b1 == 10)
-                        //if ((b1 == 9 || b1 == 10))
-                        //{
-                        //    Voxels[y, x, z].SetLightPassing((byte)1);
-                        //}
-
-                        //Voxels[y, x, z] = (short)(b1 << 8 | b2);
-
-                        //if (b1 == 9)// || b1 == 10)
-                        //{
-                        //    VoxelsLP[y, x, z] = true;
-                        //}
-
-
-                        i++;
-                    }
-        }
-
-        /// <summary>
-        /// Запись чанка
-        /// </summary>
-        public byte[] Write()
-        {
-            List<byte> dest = new List<byte>();
-            //for (int i = 0; i < VE.CHUNK_VOLUME; i++)
-            //{
-            //    short s = Voxels[i];
-            //    dest.Add((byte)(s >> 8));
-            //    dest.Add((byte)(s & 0x00FF));
-            //}
-            for (int y = 0; y < 256; y++)
-
-                for (int z = 0; z < 16; z++)
-                    for (int x = 0; x < 16; x++)
-                    {
-                        Voxel voxel = GetVoxel(x, y, z);
-                        //byte s = GetVoxel(x, y, z).GetId();// Voxels[y,x,z].GetId();
-                        //byte s = Voxels[y << 8 | z << 4 | x].GetId();
-
-                        //short s = Voxels[y, x, z];
-                        //dest.Add(s);
-                        //dest.Add(0);// (byte)(s & 0x00FF));
-                        dest.Add(voxel.GetId());
-                        dest.Add(voxel.GetLightsFor());
-                    }
-
-            return dest.ToArray();
-        }
-
-        #endregion
 
         #region Events
 

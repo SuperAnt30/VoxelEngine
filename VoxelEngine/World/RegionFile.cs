@@ -5,6 +5,7 @@ namespace VoxelEngine.World
 {
     /// <summary>
     /// Объект файла региона
+    /// * Устарел
     /// </summary>
     public class RegionFile : Coords
     {

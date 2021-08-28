@@ -284,9 +284,9 @@ namespace VoxelEngine
         protected TextRender textRender;
 
         /// <summary>
-        /// Номер блока в руке
+        /// Тип блока в руке
         /// </summary>
-        public int NumberBlock { get; set; } = 1;
+        public EnumBlock NumberBlock { get; set; } = EnumBlock.Stone;
 
         public string ToStringMem()
         {

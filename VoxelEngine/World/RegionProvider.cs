@@ -16,6 +16,12 @@ namespace VoxelEngine.World
         protected RegionMap regionMapping = new RegionMap();
 
         /// <summary>
+        /// Параметр для тестов, false - сохранение не будет сохранять
+        /// TODO::TEST
+        /// </summary>
+        protected readonly bool canSave = false;
+
+        /// <summary>
         /// Сылка на объект мира
         /// </summary>
         public WorldD world { get; protected set; }
@@ -35,7 +41,7 @@ namespace VoxelEngine.World
 
             if (!regionMapping.Contains(x, z))
             {
-                RegionFile region = new RegionFile(chunkX, chunkZ);
+                RegionBinary region = new RegionBinary(chunkX, chunkZ);
                 region.ReadFile();
                 regionMapping.Set(region);
                 Debug();
@@ -50,8 +56,8 @@ namespace VoxelEngine.World
         {
             if (regionMapping.Contains(rX, rZ))
             {
-                RegionFile region = regionMapping.Get(rX, rZ);
-                region.WriteFile();
+                RegionBinary region = regionMapping.Get(rX, rZ);
+                if (canSave) region.WriteFile();
                 regionMapping.Remove(rX, rZ);
                 Debug();
             }
@@ -60,7 +66,7 @@ namespace VoxelEngine.World
         /// <summary>
         /// Получить файл региона по координатам чанка
         /// </summary>
-        public RegionFile GetRegion(int chunkX, int chunkZ)
+        public RegionBinary GetRegion(int chunkX, int chunkZ)
         {
             int x = chunkX >> 5;
             int z = chunkZ >> 5;
@@ -72,14 +78,17 @@ namespace VoxelEngine.World
         /// </summary>
         public void RegionsWrite()
         {
-            foreach(ChunkD chunk in world.ChunkPr.Values)
+            if (canSave)
             {
-                chunk.Save();
-            }
-            WorldFile.Save(); // TODO::Save
-            foreach (RegionFile region in regionMapping.Values)
-            {
-                region.WriteFile();
+                foreach (ChunkD chunk in world.ChunkPr.Values)
+                {
+                    chunk.Save();
+                }
+                WorldFile.Save();
+                foreach (RegionBinary region in regionMapping.Values)
+                {
+                    region.WriteFile();
+                }
             }
         }
 
@@ -90,7 +99,7 @@ namespace VoxelEngine.World
         public List<vec2i> KeyRegions()
         {
             List<vec2i> ls = new List<vec2i>();
-            foreach (RegionFile s in  regionMapping.Values) ls.Add(new vec2i(s.X, s.Z));
+            foreach (RegionBinary s in  regionMapping.Values) ls.Add(new vec2i(s.X, s.Z));
             return ls;
         }
 

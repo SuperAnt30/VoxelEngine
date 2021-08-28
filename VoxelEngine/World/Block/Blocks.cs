@@ -1,5 +1,4 @@
-﻿using VoxelEngine.Glm;
-using VoxelEngine.Util;
+﻿using VoxelEngine.Util;
 
 namespace VoxelEngine
 {
@@ -10,31 +9,31 @@ namespace VoxelEngine
     {
         public static Block GetBlock(Voxel voxel)
         {
-            if (voxel.IsEmpty()) return new Block();
+            if (voxel.IsEmpty) return new Block();
             Block block = new Block();
-            byte id = voxel.GetId();
-            switch (id)
+            EnumBlock eBlock = voxel.GetEBlock();
+            switch (eBlock)
             {
-                case 0: block = new BlockAir(); break;
-                case 1: block = new BlockStone(); break;
-                case 2: block = new BlockDirt(); break;
-                case 3: block = new BlockGrass(); break;            
-                case 4: block = new BlockSand(); break;
-                case 5: block = new BlockPlanks(); break;
-                case 6: block = new BlockTileGray(); break;
-                case 7: block = new BlockTileDark(); break;
-                case 8: block = new BlockTileBrown(); break;
-                case 9: block = new BlockGlass(); break;
-                case 10: block = new BlockCactus(); break;
-                case 12: block = new BlockBrol(); break;
+                case EnumBlock.Air: block = new BlockAir(); break;
+                case EnumBlock.Stone: block = new BlockStone(); break;
+                case EnumBlock.Dirt: block = new BlockDirt(); break;
+                case EnumBlock.Grass: block = new BlockGrass(); break;            
+                case EnumBlock.Sand: block = new BlockSand(); break;
+                case EnumBlock.Planks: block = new BlockPlanks(); break;
+                case EnumBlock.TileGray: block = new BlockTileGray(); break;
+                case EnumBlock.TileDark: block = new BlockTileDark(); break;
+                case EnumBlock.TileBrown: block = new BlockTileBrown(); break;
+                case EnumBlock.Glass: block = new BlockGlass(); break;
+                case EnumBlock.Cactus: block = new BlockCactus(); break;
+                case EnumBlock.Brol: block = new BlockBrol(); break;
 
-                case 11: block = new BlockWater(); break;
-                case 13: block = new BlockWaterFlowing(); break;
+                case EnumBlock.Water: block = new BlockWater(); break;
+                case EnumBlock.WaterFlowing: block = new BlockWaterFlowing(); break;
 
-                case 14: block = new BlockLog(); break;
-                case 15: block = new BlockLeaves(); break;
-                case 16: block = new BlockSapling(); break;
-                case 17: block = new BlockLeavesApple(); break;
+                case EnumBlock.Log: block = new BlockLog(); break;
+                case EnumBlock.Leaves: block = new BlockLeaves(); break;
+                case EnumBlock.Sapling: block = new BlockSapling(); break;
+                case EnumBlock.LeavesApple: block = new BlockLeavesApple(); break;
             }
             
             // тут нада id voxel-я, так-как не успевает замениться тип блока, нет света корректного
@@ -46,24 +45,17 @@ namespace VoxelEngine
         /// <summary>
         /// Блок не прозрачный
         /// </summary>
-        public static bool IsNotTransparent(byte id)
+        public static bool IsNotTransparent(EnumBlock eBlock)
         {
-            return GetBlockLightOpacity(id) > 13;
+            return GetBlockLightOpacity(eBlock) > 13;
         }
 
         /// <summary>
         /// Блок воды ли
         /// </summary>
-        public static bool IsWater(byte id)
+        public static bool IsWater(EnumBlock eBlock)
         {
-            return id == (int)EnumBlock.Water || id == (int)EnumBlock.WaterFlowing;
-        }
-        /// <summary>
-        /// Сколько света вычитается для прохождения этого блока
-        /// </summary>
-        public static byte GetBlockLightOpacity(byte id)
-        {
-            return GetBlockLightOpacity((EnumBlock)id);
+            return eBlock == EnumBlock.Water || eBlock == EnumBlock.WaterFlowing;
         }
         /// <summary>
         /// Сколько света вычитается для прохождения этого блока
@@ -91,19 +83,10 @@ namespace VoxelEngine
             return block;
         }
 
-        public static Block GetBlock(byte id, BlockPos pos)
-        {
-            Voxel voxel = new Voxel();
-            voxel.SetIdByte(id);
-            Block block = GetBlock(voxel);
-            block.SetPosition(pos);
-            return block;
-        }
-
         public static Block GetBlock(EnumBlock eBlock, BlockPos pos)
         {
             Voxel voxel = new Voxel();
-            voxel.SetIdByte((byte)eBlock);
+            voxel.SetEBlock(eBlock);
             Block block = GetBlock(voxel);
             block.SetPosition(pos);
             return block;
@@ -119,8 +102,5 @@ namespace VoxelEngine
             block.SetPosition(pos);
             return block;
         }
-
-        
-
     }
 }

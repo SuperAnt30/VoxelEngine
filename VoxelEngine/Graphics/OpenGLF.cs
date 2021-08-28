@@ -159,16 +159,7 @@ namespace VoxelEngine
             Debag.GetInstance().CountMesh = 0;
             Keyboard.GetInstance().PlCamera.Update();
 
-            if (IsLine)
-            {
-                gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
-                gl.Disable(OpenGL.GL_CULL_FACE);
-            }
-            else
-            {
-                gl.Enable(OpenGL.GL_CULL_FACE);
-                gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_FILL);
-            }
+            
             
             // Включает Буфер глубины 
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
@@ -184,7 +175,8 @@ namespace VoxelEngine
             //float ir = 0.5f;
             //float light = 0.8f;
 
-            
+            gl.Enable(OpenGL.GL_CULL_FACE);
+            gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_FILL);
 
             //Debag.GetInstance().BB = string.Format("{0:0.00} - {1:0.00} - {2:0.00}", light, light * 1.0f, light * 0f);
 
@@ -211,6 +203,11 @@ namespace VoxelEngine
 
             Sh.ShSkyBox.Unbind(gl);
 
+            if (IsLine)
+            {
+                gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
+                gl.Disable(OpenGL.GL_CULL_FACE);
+            }
 
             // VOXEL
             Sh.ShVoxel.Bind(gl);

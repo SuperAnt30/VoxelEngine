@@ -7,14 +7,13 @@ namespace VoxelEngine
     /// </summary>
     public class VoxelData : IComparable
     {
-        //public Voxel Vox { get; set; }
         public Block Block { get; set; }
 
         public float Distance { get; set; } = 0f;
-
-        //public int X { get; set; }
-        //public int Y { get; set; }
-        //public int Z { get; set; }
+        /// <summary>
+        /// Буфер сетки блока
+        /// </summary>
+        public float[] Buffer { get; set; }
 
         /// <summary>
         /// Метод для сортировки
@@ -29,7 +28,7 @@ namespace VoxelEngine
 
         public override string ToString()
         {
-            return string.Format("{0} ({1}) {2:0.00}", Block.Id, Block.Position, Distance);
+            return string.Format("{0} ({1}) {2:0.00}", Block.EBlock, Block.Position, Distance);
         }
     }
 }

@@ -304,7 +304,7 @@ namespace VoxelEngine
         {
             OpenGLF openGLF = OpenGLF.GetInstance();
             Block block = World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            if (block.Id > 0)
+            if (!block.IsAir)
             {
                 float size = 1.01f;
                 openGLF.WorldLineM.Box("cursor", iend.x + .5f, iend.y + .5f, iend.z + .5f, size, size, size, .9f, .9f, .1f, .6f);

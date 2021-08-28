@@ -57,7 +57,7 @@ namespace VoxelEngine
             //Voxel vox = WorldCache.GetInstance().RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3 norm, out vec3 iend);
             //Voxel vox = World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
             Block block = World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            if (block.Id > 0)
+            if (!block.IsAir)
             {
                 if (e.Button == MouseButtons.Left)
                 {
@@ -75,7 +75,7 @@ namespace VoxelEngine
                     if (!hitBox.IsVoxelBody(vec))
                     {
                         //OnVoxelChanged(vec, World.SetVoxelId(Blocks.GetBlock((byte)Debag.GetInstance().NumberBlock, new BlockPos(vec))));
-                        World.SetBlockState(Blocks.GetBlock((byte)Debag.GetInstance().NumberBlock, new BlockPos(vec)), true);
+                        World.SetBlockState(Blocks.GetBlock(Debag.GetInstance().NumberBlock, new BlockPos(vec)), true);
                         //(byte)Debag.GetInstance().NumberBlock));
                     }
 
