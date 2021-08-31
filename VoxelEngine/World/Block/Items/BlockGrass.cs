@@ -2,7 +2,7 @@
 using VoxelEngine.Model;
 using VoxelEngine.Util;
 
-namespace VoxelEngine
+namespace VoxelEngine.World
 {
     
     public class BlockGrass : Block

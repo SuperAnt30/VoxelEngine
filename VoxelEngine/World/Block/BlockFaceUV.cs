@@ -1,7 +1,7 @@
 ﻿using VoxelEngine.Glm;
 using VoxelEngine.Util;
 
-namespace VoxelEngine
+namespace VoxelEngine.World
 {
     /// <summary>
     /// Построение блока с разных сторон

@@ -1,6 +1,6 @@
 ﻿using VoxelEngine.Util;
 
-namespace VoxelEngine
+namespace VoxelEngine.World
 {
     /// <summary>
     /// Перечень блоков
@@ -34,6 +34,9 @@ namespace VoxelEngine
                 case EnumBlock.Leaves: block = new BlockLeaves(); break;
                 case EnumBlock.Sapling: block = new BlockSapling(); break;
                 case EnumBlock.LeavesApple: block = new BlockLeavesApple(); break;
+
+                case EnumBlock.Diorite: block = new BlockDiorite(); break;
+                case EnumBlock.Bedrock: block = new BlockBedrock(); break;
             }
             
             // тут нада id voxel-я, так-как не успевает замениться тип блока, нет света корректного

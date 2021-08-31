@@ -7,6 +7,15 @@ namespace VoxelEngine.World.Biome
     /// </summary>
     public class BiomeBase : ChunkHeir
     {
+        /// <summary>
+        /// Наличие пещер в биоме
+        /// </summary>
+        public bool IsCave { get; protected set; } = true;
+        /// <summary>
+        /// Удаление всех блоков
+        /// </summary>
+        public bool AllCave { get; protected set; } = false;
+
         public BiomeBase(ChunkD chunk) : base(chunk) { }
 
         /// <summary>
@@ -14,28 +23,26 @@ namespace VoxelEngine.World.Biome
         /// </summary>
         /// <param name="x"></param>
         /// <param name="z"></param>
-        public virtual void Column(int x, int z, float height)
+        public virtual void Column(int x, int z, float height, float wetness)
         {
-            //for (int y = 3; y < 256; y++)
-            //{
-            //    Chunk.SetBlockState(x, y, z, EnumBlock.Air);
-            //}
-            //return;
+            _Column(x, z, height, UpLayer(x, z, 4, .1f) + 4, EnumBlock.Grass, EnumBlock.Dirt);
+        }
 
-            int yh = 64 + (int)(height * 64f);
-            int yn = UpLayer(x, z, 4);
+        protected void _Column(int x, int z, float height, int depth, EnumBlock levUp, EnumBlock levDown)
+        {
+            int yh = 65 + (int)(height * 64f);
+            int yl = yh - depth;
             EnumBlock eBlock;
 
             for (int y = 3; y < 256; y++)
             {
-                if (y < yh - yn) eBlock = EnumBlock.Stone;
-                else if (y < yh) eBlock = EnumBlock.Dirt;
-                else if (y == yh) eBlock = EnumBlock.Grass;
+                if (y == yh) eBlock = levUp;
+                else if (y < yh && y >= yl) eBlock = levDown;
+                else if (y < yl) eBlock = EnumBlock.Stone;
                 else eBlock = EnumBlock.Air;
+
                 Chunk.SetBlockState(x, y, z, eBlock);
             }
-            // Пещеры
-            //Cave(x, z);
         }
 
         /// <summary>
@@ -43,12 +50,11 @@ namespace VoxelEngine.World.Biome
         /// </summary>
         /// <param name="depth">толщина слоя * 2</param>
         /// <returns>значение от 0 - толщины</returns>
-        protected int UpLayer(int x, int z, int depth)
+        protected int UpLayer(int x, int z, int depth, float scale)
         {
-            float scale = 1.0f;
             float[] noise = new float[1];
             Chunk.World.Noise.Down.GenerateNoise2d(noise, Chunk.X * 16 + x, Chunk.Z * 16 + z, 1, 1, scale, scale);
-            return 4 + (int)(noise[0] * 4f);
+            return depth + (int)(noise[0] * (float)depth);
         }
 
         /// <summary>
@@ -68,9 +74,9 @@ namespace VoxelEngine.World.Biome
                     float n = noise[count];
                     count++;
 
-                    Chunk.SetBlockState(x, 0, z, EnumBlock.TileDark);
-                    Chunk.SetBlockState(x, 1, z, n < .3 ? EnumBlock.TileDark : EnumBlock.Stone);
-                    Chunk.SetBlockState(x, 2, z, n < -.3 ? EnumBlock.TileDark : EnumBlock.Stone);
+                    Chunk.SetBlockState(x, 0, z, EnumBlock.Bedrock);
+                    Chunk.SetBlockState(x, 1, z, n < .3 ? EnumBlock.Bedrock : EnumBlock.Stone);
+                    Chunk.SetBlockState(x, 2, z, n < -.3 ? EnumBlock.Bedrock : EnumBlock.Stone);
                 }
             }
         }
@@ -78,17 +84,29 @@ namespace VoxelEngine.World.Biome
         /// <summary>
         /// Генерация пещер
         /// </summary>
-        public void Cave(int x, int z)
+        public void Cave(int x, int z, bool all)
         {
             int realX = Chunk.X * 16 + x;
             int realZ = Chunk.Z * 16 + z;
-            float[] noise = new float[64];
-            Chunk.World.Noise.Cave.GenerateNoise3d(noise, realX, 3, realZ, 1, 64, 1, .05f, .05f, .05f);
-            for (int y = 3; y < 67; y++)
+            float[] noise = new float[128];
+            Chunk.World.Noise.Cave.GenerateNoise3d(noise, realX, 3, realZ, 1, 128, 1, .06f, .06f, .06f);
+            for (int y = 3; y < 131; y++)
             {
                 if (noise[y - 3] < -1f)
                 {
-                    Chunk.SetBlockState(x, y, z, EnumBlock.Air);
+                    if (all)
+                    {
+                        Chunk.SetBlockState(x, y, z, EnumBlock.Air);
+                    }
+                    else
+                    {
+                        Voxel voxel = Chunk.GetVoxel(x, y, z);
+                        EnumBlock eBlock = voxel.GetEBlock();
+                        if (voxel.IsEmpty || eBlock == EnumBlock.Stone)
+                        {
+                            Chunk.SetBlockState(x, y, z, EnumBlock.Air);
+                        }
+                    }
                 }
             }
         }
@@ -117,6 +135,37 @@ namespace VoxelEngine.World.Biome
                             }
                             count++;
                         }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Генерация облостей
+        /// </summary>
+        public void Area(int x, int z, EnumBlock eBlock, bool big)
+        {
+            int realX = Chunk.X * 16 + x;
+            int realZ = Chunk.Z * 16 + z;
+            float[] noise = new float[128];
+            float res;
+            if (big)
+            {
+                Chunk.World.Noise.Area.GenerateNoise3d(noise, realX, 3, realZ, 1, 128, 1, .1f, .1f, .1f);
+                res = -.5f;
+            } else
+            {
+                Chunk.World.Noise.Down.GenerateNoise3d(noise, realX, 3, realZ, 1, 128, 1, .1f, .1f, .1f);
+                res = -.8f;
+            }
+            for (int y = 3; y < 131; y++)
+            {
+                if (noise[y - 3] < res)
+                {
+                    Voxel voxel = Chunk.GetVoxel(x, y, z);
+                    if (voxel.IsEmpty || voxel.GetEBlock() == EnumBlock.Stone)
+                    {
+                        Chunk.SetBlockState(x, y, z, eBlock);
                     }
                 }
             }

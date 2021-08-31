@@ -14,21 +14,9 @@ namespace VoxelEngine.World.Biome
         /// </summary>
         /// <param name="x"></param>
         /// <param name="z"></param>
-        public override void Column(int x, int z, float height)
+        public override void Column(int x, int z, float height, float wetness)
         {
-            int yh = 64 + (int)(height * 64f);
-            int yn = UpLayer(x, z, 4);
-            EnumBlock eBlock;
-
-            for (int y = 3; y < 256; y++)
-            {
-                if (y < yh - yn) eBlock = EnumBlock.Stone;
-                else if (y <= yh) eBlock = EnumBlock.Sand;
-                else eBlock = EnumBlock.Air;
-                Chunk.SetBlockState(x, y, z, eBlock);
-            }
-            // Пещеры
-            //Cave(x, z);
+            _Column(x, z, height - 0.008f, UpLayer(x, z, 6, .1f) + 1, EnumBlock.Sand, EnumBlock.Sand);
         }
     }
 }

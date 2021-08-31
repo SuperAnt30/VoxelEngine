@@ -1,4 +1,4 @@
-﻿namespace VoxelEngine
+﻿namespace VoxelEngine.World
 {
     /// <summary>
     /// Тип блока
@@ -76,6 +76,15 @@
         /// <summary>
         /// Листва с яблоком
         /// </summary>
-        LeavesApple = 17
+        LeavesApple = 17,
+        /// <summary>
+        /// Диорит
+        /// </summary>
+        Diorite = 18,
+        /// <summary>
+        /// Коренная порода
+        /// </summary>
+        Bedrock = 19
+
     }
 }

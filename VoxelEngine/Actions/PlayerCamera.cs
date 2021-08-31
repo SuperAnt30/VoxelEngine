@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
+using VoxelEngine.World;
 
 namespace VoxelEngine
 {
@@ -286,7 +287,7 @@ namespace VoxelEngine
             float v2 = (float)_vertical * v;
             float h2 = (float)_horizontal * h;
 
-            StrDebug =string.Format("j: {0:0.00}\r\nv: {1:0.00}\r\nh: {2:0.00} {3}{4}{5}{6}{7}",
+            StrDebug =string.Format("j: {0:0.0} v: {1:0.0} h: {2:0.0} {3}{4}{5}{6}{7}",
                 j, v2, h2, _onGround ? "__" : "",
                 IsEyesWater ? "[E]" : "", IsBodyWater ? "[B]" : "", IsLegsWater ? "[L]" : "", flow != Pole.Down ? flow.ToString() : "");
 

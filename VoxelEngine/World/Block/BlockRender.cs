@@ -2,9 +2,10 @@
 using VoxelEngine.Glm;
 using VoxelEngine.Model;
 using VoxelEngine.Util;
+using VoxelEngine.World.Biome;
 using VoxelEngine.World.Chunk;
 
-namespace VoxelEngine
+namespace VoxelEngine.World
 {
     /// <summary>
     /// Объект рендера блока
@@ -24,6 +25,7 @@ namespace VoxelEngine
         {
             ChunkRend = chunkRender;
             Blk = block;
+            
             // позиция блока в чанке
             posChunk = new vec3i(Blk.Position.X & 15, Blk.Position.Y, Blk.Position.Z & 15);
         }
@@ -274,7 +276,30 @@ namespace VoxelEngine
         {
             float u1 = (_face.NumberTexture % 16) * VE.UV_SIZE;
             float v2 = _face.NumberTexture / 16 * VE.UV_SIZE;
-            vec4 color = _face.IsColor ? Blk.Color : new vec4(1f);
+            vec4 color = new vec4(1f);
+            if (_face.IsColor)
+            {
+                if (Blk.EBlock == EnumBlock.Grass)
+                {
+                    EnumBiome biome = ChunkRend.Chunk.GetBiome(Blk.Position);
+                    color = BlockColorBiome.Grass(biome);
+                }
+                else if (Blk.IsLeaves)
+                {
+                    EnumBiome biome = ChunkRend.Chunk.GetBiome(Blk.Position);
+                    color = BlockColorBiome.Leaves(biome);
+                }
+                else if (Blk.IsWater)
+                {
+                    EnumBiome biome = ChunkRend.Chunk.GetBiome(Blk.Position);
+                    color = BlockColorBiome.Water(biome);
+                }
+                else
+                {
+                    color = Blk.Color;
+                }
+            }
+            //_face.IsColor ? Blk.Color : new vec4(1f);
             float l = 1f - _LightPole(_side);
             color.x -= l; if (color.x < 0) color.x = 0;
             color.y -= l; if (color.y < 0) color.y = 0;

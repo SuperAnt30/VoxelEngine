@@ -1,6 +1,6 @@
 ﻿using VoxelEngine.Model;
 
-namespace VoxelEngine
+namespace VoxelEngine.World
 {
     /// <summary>
     /// Блок воздуха, пустота

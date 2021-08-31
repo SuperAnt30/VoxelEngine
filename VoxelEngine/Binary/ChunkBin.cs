@@ -15,5 +15,9 @@ namespace VoxelEngine.Binary
         /// 4 бита неба, 4 бита блоков
         /// </summary>
         public byte[,,] Light { get; set; } = new byte[16, 256, 16];
+        /// <summary>
+        /// Биомы в чанке, столбцы
+        /// </summary>
+        public byte[,] Biome { get; set; } = new byte[16, 16];
     }
 }

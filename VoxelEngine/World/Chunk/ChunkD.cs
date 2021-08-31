@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using VoxelEngine.Gen;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
+using VoxelEngine.World.Biome;
 
 namespace VoxelEngine.World.Chunk
 {
@@ -35,6 +36,10 @@ namespace VoxelEngine.World.Chunk
         /// Для записи в файл
         /// </summary>
         protected ChunkBinary chunkBinary;
+        /// <summary>
+        /// Столбцы биомов
+        /// </summary>
+        protected EnumBiome[,] eBiomes = new EnumBiome[16, 16];
 
         protected ChunkD() { }
         public ChunkD(WorldD worldIn, int x, int z)
@@ -48,8 +53,39 @@ namespace VoxelEngine.World.Chunk
             X = x;
             Z = z;
             for (int i = 0; i < StorageArrays.Length; i++) StorageArrays[i] = new ChunkStorage();
+            //for (int x = 0; x < 16; x++)
+            //{
+            //    for (int z = 0; z < 16; z++)
+            //    {
+            //        eBiomes[x, z]
+            //    }
+            //}
             chunkBinary = new ChunkBinary(this);
         }
+
+        /// <summary>
+        /// Задать биом
+        /// </summary>
+        public void SetBiome(int x, int z, EnumBiome biome)
+        {
+            eBiomes[x, z] = biome;
+        }
+        /// <summary>
+        /// Получить биом по локальным координатам
+        /// </summary>
+        public EnumBiome GetBiome(int x, int z)
+        {
+            return eBiomes[x, z];
+        }
+
+        /// <summary>
+        /// Получить биом глобальным координатам блока
+        /// </summary>
+        public EnumBiome GetBiome(BlockPos pos)
+        {
+            return eBiomes[pos.X & 15, pos.Z & 15];
+        }
+
 
         #region Block Storage
 
@@ -194,9 +230,9 @@ namespace VoxelEngine.World.Chunk
             {
                 // Если его нет, то генерируем
                 Generation();
-                GenerateHeightMap();
+                //GenerateHeightMap();
                 // TODO::TEST
-                //GenerateSkylightMap();
+                GenerateSkylightMap();
                 //StartRecheckGaps(); 
                 //func_177441_y();
                 // и сразу же записываем
@@ -513,28 +549,31 @@ namespace VoxelEngine.World.Chunk
 
 
 
-            if (isTick && block.EBlock == EnumBlock.Water)
+            if (isTick)
             {
+                if (block.EBlock == EnumBlock.Water)
+                {
 
-                AddTicks(liquidTicks, new BlockTick(block.Position, EnumBlock.Water, VE.TICK_WATER));
-                //liquidTicks.Add(new BlockTick(block, 10));
-                //tickBlock.Add(block);
-            }
-            else if (isTick && block.EBlock == EnumBlock.Sapling)
-            {
-                // саженец проростает
-                AddTicks(liquidTicks, new BlockTick(block.Position, EnumBlock.Sapling, VE.TICK_TREE_TIME)); // TODO::рандом
-            }
-            else if (isTick && blockOld.EBlock == EnumBlock.LeavesApple)
-            {
-                // Яблоко вырастает заного
-                AddTicks(liquidTicks, new BlockTick(block.Position, EnumBlock.LeavesApple, VE.TICK_TREE_TIME)); // TODO::рандом
-            }
-            else if (isTick)
-            {
-                // проверка соседних блоков на воду
-                AddTicks(liquidTicks, SetBlockTicks(block.Position, blockOld.EBlock));
-                //liquidTicks.AddRange(SetBlockLiquidTicks(block));
+                    AddTicks(liquidTicks, new BlockTick(block.Position, EnumBlock.Water, VE.TICK_WATER));
+                    //liquidTicks.Add(new BlockTick(block, 10));
+                    //tickBlock.Add(block);
+                }
+                else if (block.EBlock == EnumBlock.Sapling)
+                {
+                    // саженец проростает
+                    AddTicks(liquidTicks, new BlockTick(block.Position, EnumBlock.Sapling, VE.TICK_TREE_TIME)); // TODO::рандом
+                }
+                else if (blockOld.EBlock == EnumBlock.LeavesApple)
+                {
+                    // Яблоко вырастает заного
+                    AddTicks(liquidTicks, new BlockTick(block.Position, EnumBlock.LeavesApple, VE.TICK_TREE_TIME)); // TODO::рандом
+                }
+                else
+                {
+                    // проверка соседних блоков на воду
+                    AddTicks(liquidTicks, SetBlockTicks(block.Position, EnumBlock.Water));// blockOld.EBlock));
+                    //liquidTicks.AddRange(SetBlockLiquidTicks(block));
+                }
             }
 
             if (var12)

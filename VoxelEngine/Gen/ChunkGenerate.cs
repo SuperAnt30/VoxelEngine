@@ -1,4 +1,5 @@
 ﻿using System;
+using VoxelEngine.World;
 using VoxelEngine.World.Biome;
 using VoxelEngine.World.Chunk;
 
@@ -59,8 +60,16 @@ namespace VoxelEngine.Gen
                     float w = wetnessNoise[count] / 132f;
                     float h = heightNoise[count] / 132f;
                     EnumBiome eBiome = DefineBiome(h, w);
+                    Chunk.SetBiome(x, z, eBiome);
                     BiomeBase biome = BiomeObject(eBiome);
-                    biome.Column(x, z, -h);
+                    biome.Column(x, z, -h, w);
+                    // Пещеры
+                    if (biome.IsCave)
+                    {
+                        biome.Cave(x, z, biome.AllCave);
+                    }
+                    biome.Area(x, z, EnumBlock.Dirt, true);
+                    biome.Area(x, z, EnumBlock.Sand, false);
                     //if (eBiome == EnumBiome.Water)
                     //{
                     //    water.Column(x, z, h);
@@ -122,21 +131,23 @@ namespace VoxelEngine.Gen
                 if (w < -.22f) return EnumBiome.MountainsDesert; // горы в пустыне
                 return EnumBiome.Mountains; // горы каменные
             }
+            if (h > -.1f && h < .1f && w >= .2f)
+            {
+                return EnumBiome.Swamp; // болото
+            }
             if (h < 0f)
             {
                 // средняя местность по высоте
                 if (w < -.22f) return EnumBiome.Desert; // пустыня
                 if (w < .1f) return EnumBiome.GreenPlain; // ровнина
-                if (w < .42f) return EnumBiome.Forest; // лес
-                return EnumBiome.Swamp; // болото
+                return EnumBiome.Forest; // лес
             }
             if (h < 0.02f)
             {
                 // Пляжная высота
                 if (w < -.22f) return EnumBiome.Desert; // пустыня
                 if (w < .1f) return EnumBiome.Beach; // пляж
-                if (w < .42f) return EnumBiome.Forest; // лес
-                return EnumBiome.Swamp; // болото
+                return EnumBiome.Forest; // лес
             }
             // вода
             return EnumBiome.Water;

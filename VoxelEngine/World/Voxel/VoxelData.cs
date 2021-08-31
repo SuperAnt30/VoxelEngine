@@ -1,4 +1,5 @@
 ﻿using System;
+using VoxelEngine.World;
 
 namespace VoxelEngine
 {

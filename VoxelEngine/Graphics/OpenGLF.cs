@@ -209,6 +209,13 @@ namespace VoxelEngine
                 gl.Disable(OpenGL.GL_CULL_FACE);
             }
 
+            // LINE
+            Sh.ShLine.Bind(gl);
+            Sh.ShLine.SetUniformMatrix4(gl, "projection", Cam.Projection);
+            Sh.ShLine.SetUniformMatrix4(gl, "lookat", Cam.LookAt);
+            WorldLineM.Draw();
+            Sh.ShLine.Unbind(gl);
+
             // VOXEL
             Sh.ShVoxel.Bind(gl);
             Sh.ShVoxel.SetUniformMatrix4(gl, "projection", Cam.Projection);
@@ -229,12 +236,7 @@ namespace VoxelEngine
             WorldM.DrawAlpha();
             Sh.ShVoxel.Unbind(gl);
 
-            // LINE
-            Sh.ShLine.Bind(gl);
-            Sh.ShLine.SetUniformMatrix4(gl, "projection", Cam.Projection);
-            Sh.ShLine.SetUniformMatrix4(gl, "lookat", Cam.LookAt);
-            WorldLineM.Draw();
-            Sh.ShLine.Unbind(gl);
+            
 
 
             if (IsLine)

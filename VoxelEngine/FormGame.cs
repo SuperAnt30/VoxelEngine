@@ -2,6 +2,7 @@
 using System;
 using System.Windows.Forms;
 using VoxelEngine.Util;
+using VoxelEngine.World;
 
 namespace VoxelEngine
 {
@@ -304,17 +305,18 @@ namespace VoxelEngine
         {
             OpenGLF openGLF = OpenGLF.GetInstance();
             Block block = World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            if (!block.IsAir)
+            if (block != null && !block.IsAir)
             {
                 float size = 1.01f;
                 openGLF.WorldLineM.Box("cursor", iend.x + .5f, iend.y + .5f, iend.z + .5f, size, size, size, .9f, .9f, .1f, .6f);
+                Debag.GetInstance().RayCastBlockUp = World.GetBlock(new BlockPos(block.Position.X, block.Position.Y + 1f, block.Position.Z));
             }
             else
             {
                 openGLF.WorldLineM.Remove("cursor");
+                Debag.GetInstance().RayCastBlockUp = null;
             }
             Debag.GetInstance().RayCastBlock = block;
-            Debag.GetInstance().RayCastBlockUp = World.GetBlock(new BlockPos(block.Position.X, block.Position.Y + 1f, block.Position.Z));
         }
 
         /// <summary>

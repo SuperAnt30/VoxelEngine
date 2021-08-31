@@ -1,6 +1,6 @@
 ﻿using VoxelEngine.Model;
 
-namespace VoxelEngine
+namespace VoxelEngine.World
 {
     
     public class BlockTileDark : Block

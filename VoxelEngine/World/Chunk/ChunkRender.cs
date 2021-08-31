@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using VoxelEngine.Util;
 using VoxelEngine.World.Chunk;
 using System;
+using VoxelEngine.World;
 
 namespace VoxelEngine
 {

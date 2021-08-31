@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using VoxelEngine.Util;
 using VoxelEngine.World;
+using VoxelEngine.World.Chunk;
 
 namespace VoxelEngine
 {
@@ -104,61 +105,6 @@ namespace VoxelEngine
         /// Количество кадров за секунду
         /// </summary>
         public long CountFrame { get; set; } = 0;
-
-
-
-        /// <summary>
-        /// Вернуть строку TPS FPS
-        /// </summary>
-        public string ToStringTpsFps()
-        {
-            //SpeedFrame = Fps == 0 ? 0 : (float)CountFrame / ((float)Fps * 1000f);
-            //CountFrame = 0;
-            return string.Format("Speed: {1} tps {0} fps {2:0.00} mc", Fps, Tps, SpeedFrame);
-        }
-
-        public string ToStringPosCam()
-        {
-            Camera cam = OpenGLF.GetInstance().Cam;
-            vec3i block = cam.ToPositionBlock();
-            return string.Format("XYZ: {0} Block: {1}", cam.Position, block);
-        }
-
-        public string ToStringRegionChunk()
-        {
-            Camera cam = OpenGLF.GetInstance().Cam;
-            vec2i chunk = cam.ToPositionChunk();
-            vec2i region = cam.ToPositionRegion();
-            return string.Format("Chunk: {0} {1} Region: {2} {3}",
-                chunk.x, chunk.y, region.x, region.y);
-        }
-
-
-        public string ToStringFrontCam()
-        {
-            return string.Format("CamFront XYZ: {0} Angle YP: ({1:0.00} | {2:0.00}) {3}",
-                OpenGLF.GetInstance().Cam.Front,
-                OpenGLF.GetInstance().Cam.AngleYaw(),
-                OpenGLF.GetInstance().Cam.AnglePitch(),
-                EnumFacing.FromAngle(OpenGLF.GetInstance().Cam.AngleYaw())
-                );
-        }
-
-        public string ToStringRightCam()
-        {
-            return string.Format("CamRight XYZ: {0}", OpenGLF.GetInstance().Cam.Right);
-        }
-
-        public string ToStringInfo()
-        {
-            OpenGL gl = OpenGLF.GetInstance().gl;
-            return string.Format("OpenGL version {0}",//\r\nVendor: {1}\r\nRenderer: {2}",
-                gl.GetString(OpenGL.GL_VERSION),
-                gl.GetString(OpenGL.GL_VENDOR),
-                gl.GetString(OpenGL.GL_RENDERER)
-                );
-        }
-
         /// <summary>
         /// Куда смотрит курсор
         /// </summary>
@@ -167,60 +113,8 @@ namespace VoxelEngine
         /// Куда смотрит курсор блок сверху
         /// </summary>
         public Block RayCastBlockUp { get; set; }
-        /// <summary>
-        /// Куда смотрит курсор
-        /// </summary>
-        public string ToStringRayCast()
-        {
-            string s1 = "Курсор: ";
-            string s2 = "Курсор Y+1: ";
-
-            if (RayCastBlock != null && RayCastBlock.EBlock != EnumBlock.Air)
-            {
-                s1 += string.Format("{0} [{1:0.00}] b: {2}",
-                RayCastBlock.Position, RayCastBlock.Voxel.GetLightFor(EnumSkyBlock.Block),
-                RayCastBlock.Voxel.ToString()
-                );
-            }
-            if (RayCastBlockUp != null && RayCastBlockUp.EBlock != EnumBlock.Air)
-            {
-                s2 += string.Format("{0} [{1:0.00}] b: {2}",
-                RayCastBlockUp.Position, RayCastBlockUp.Voxel.GetLightFor(EnumSkyBlock.Block),
-                RayCastBlockUp.Voxel.ToString()
-                );
-            }
-
-            return s1 + "\r\n" + s2;
-        }
-
-        public string ToStringCountsMeshs()
-        {
-            return string.Format("Количество мешей, All: {0}  M: {1}  L: {2}", CountMesh, CountMeshChunk, CountMeshLine);
-        }
-
-        public string LoadingChunk = "";
-
-        public string ToStringCunckCache()
-        {
-            return "Количество чанков в потоках: " + LoadingChunk;
-            //WorldCache wc = WorldCache.GetInstance();
-            //return string.Format("Количество чанков в кэше: {0} / {1} ",
-            //    wc.Count,
-            //    wc.CountMax
-            //);
-        }
 
         public long TickCount { get; set; } = 0;
-
-
-        public string ToStringTime()
-        {
-            int h = Mth.Floor(TickCount / 72000f);
-            int m = Mth.Floor((TickCount - h * 72000f) / 1200f);
-            int s = (int)(TickCount - h * 72000f - m * 1200f);
-            return string.Format("Время {0}:{1}:{2:0}", h, m, s / 20f);
-            //return string.Format("Время {0:0.00}", TickCount / 20f);
-        }
 
         /// <summary>
         /// Выводить ли на экран
@@ -288,57 +182,120 @@ namespace VoxelEngine
         /// </summary>
         public EnumBlock NumberBlock { get; set; } = EnumBlock.Stone;
 
-        public string ToStringMem()
+        protected string ToStringInfo()
+        {
+            OpenGL gl = OpenGLF.GetInstance().gl;
+            return string.Format("OpenGL version {0}",//\r\nVendor: {1}\r\nRenderer: {2}",
+                gl.GetString(OpenGL.GL_VERSION),
+                gl.GetString(OpenGL.GL_VENDOR),
+                gl.GetString(OpenGL.GL_RENDERER)
+                );
+        }
+
+        protected string ToStringTime()
+        {
+            int h = Mth.Floor(TickCount / 72000f);
+            int m = Mth.Floor((TickCount - h * 72000f) / 1200f);
+            int s = (int)(TickCount - h * 72000f - m * 1200f);
+            return string.Format("Time {0}:{1}:{2:0}", h, m, s / 20f);
+            //return string.Format("Время {0:0.00}", TickCount / 20f);
+        }
+
+        protected string ToStringMem()
         {
             float memRegion = CacheRegionMem / 1048576f;
             float memChunk = CacheChunk * 0.2500762f;// ((16 * 16 * 256 + 20) * 4 / 1024) 20 хз может от того что массив [,,]
             float memMesh = CountPoligonChunk * 0.0001171875f;  // 0.00010299 (3 + 2 + 4) * 12 / 1024
 
-            return string.Format("Память: R {0:0.00} + C {1:0.00} + M {2:0.00} = {3:0.00} Mb",
+            return string.Format("Mem: R {0:0.00} + C {1:0.00} + M {2:0.00} = {3:0.00} Mb",
                 memRegion, memChunk, memMesh,
                 memRegion + memChunk + memMesh
                 );
+        }
+
+        protected string ToRayCast(Block block)
+        {
+            return block == null ? "" : string.Format("{0} light SB: {1}-{2} b: {3}",
+                block.Position,
+                block.Voxel.GetLightFor(EnumSkyBlock.Sky),
+                block.Voxel.GetLightFor(EnumSkyBlock.Block),
+                block.Voxel.ToString()
+                );
+        }
+
+        protected string ToStringAll()
+        {
+            Camera cam = OpenGLF.GetInstance().Cam;
+            
+            string strHeader = string.Format(
+                "Voxel Engine v{3}\r\n{4}\r\n{0} tps {1} fps {2:0.00} mc",
+                Tps, Fps, SpeedFrame, "0.0.3", ToStringTime()
+            );
+
+            vec2i posChunk = cam.ToPositionChunk();
+            vec3i posBlock = cam.ToPositionBlock();
+            ChunkD chunk = World.GetChunk(posChunk.x, posChunk.y);
+            
+            string strPosition = string.Format(
+@"XYZ: {0}
+Block: {1}
+Chunk: {2} Region: {3}
+Angle YP: ({4:0.0} | {5:0.0}) {6}
+Biome: {7}
+Move {8}",
+                    cam.Position,
+                    posBlock,
+                    posChunk, cam.ToPositionRegion(),
+                    cam.AngleYaw(), cam.AnglePitch(), EnumFacing.FromAngle(cam.AngleYaw()),
+                    chunk == null ? "-" : chunk.GetBiome(posBlock.x & 15, posBlock.z & 15).ToString(),
+                    Keyboard.GetInstance().PlCamera.StrDebug);
+
+            string strCursor = string.Format(
+                "Cursor: {0}\r\n" +
+                "CursUp: {1}",
+                ToRayCast(RayCastBlock),
+                ToRayCast(RayCastBlockUp)
+            );
+
+            string strChunck = string.Format(
+                "Chunk LT: {0}, Ah: {1}",
+                ChunkLiquidTicks,
+                ChunkAlpheBlock
+            );
+
+            string strMeshMem = string.Format(
+                @"Mesh All: {0} M: {1} L: {2}
+Cache Ch: {3} Rg: {4}
+PoligonsCh: {5}",
+                CountMesh, CountMeshChunk, CountMeshLine,
+                CacheChunk, CacheRegion,
+                CountPoligonChunk,
+                ToStringMem());
+
+            string strAnother = string.Format(
+                "В руке: {0}\r\nBB: {1} CT: {2} CT2: {3}",
+                NumberBlock, BB, CountTest, CountTest2
+            );
+
+            return strHeader + "\r\n\r\n" 
+                + strMeshMem + "\r\n"
+                + strChunck + "\r\n\r\n" 
+                + strPosition + "\r\n" 
+                + strCursor + "\r\n"
+                + strAnother;
         }
 
         public void RenderDebug()
         {
             if (IsDraw)
             {
-                // CountMesh++;
-                string s = ToStringTpsFps() + "\r\n"
-                    + ToStringPosCam() + "\r\n"
-                    + ToStringFrontCam() + "\r\n"
-                    + ToStringRayCast() + "\r\n"
-                    //+ ToStringRightCam() + "\r\n"
-                    + ToStringRegionChunk() + "\r\n"
-                    //+ "Чанк " + OpenGLF.GetInstance().Cam.ToPositionChunk() + "\r\n"
-                    + ToStringCountsMeshs() + "\r\n"
-                    + "Количество отрендереных чанков: " + RenderChunk.ToString() + "\r\n"
-                    + "Количество кэш чанков: " + CacheChunk.ToString() + "\r\n"
-                    + "Количество кэш регионов: " + CacheRegion.ToString() + "\r\n"
-                    + "Количество полигонов в чанках: " + CountPoligonChunk.ToString() + "\r\n"
-                    + "Режим перемещения: " + VEC.GetInstance().Moving.ToString() + "" 
-                        + (Keyboard.GetInstance().PlCamera.IsSpeed ? " - Speed" : "") 
-                        + (OpenGLF.GetInstance().Cam.IsSneaking ? " - Sneaking" : "") + "\r\n"
-                    + ToStringCunckCache() + "\r\n\r\n"
-                    + ToStringTime() + "\r\n"
-                    + "Жидкести tick чанк: " + ChunkLiquidTicks + "\r\n"
-                    + "Альфа блоков в чанке: " + ChunkAlpheBlock + "\r\n"
-                    + "Время загрузки первых чанков: " + _stime.TotalSeconds.ToString() + "  загрузки: " + _stimeLoad.TotalSeconds.ToString() + "\r\n"
-                    + ToStringMem() + "\r\n"
-                    + Keyboard.GetInstance().PlCamera.StrDebug + "\r\n"
-                    + "BB: " + BB + " CT: " + CountTest + " CT2: " + CountTest2 + "\r\n"
-                    //+ Keyboard.GetInstance().PlCamera._time + "\r\n\r\n"
-                    + "В руке: " + NumberBlock;
-                    //+ ToStringInfo();
-
                 if (textRender == null)
                 {
-                    textRender = new TextRender(2, 3, s, new vec4(1f, 1f, .8f, 0.8f));
+                    textRender = new TextRender(2, 3, ToStringAll(), new vec4(1f, 1f, .8f, 0.8f));
                 }
                 else
                 {
-                    textRender.Render(s);
+                    textRender.Render(ToStringAll());
                 }
             }
         }

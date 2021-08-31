@@ -1,7 +1,7 @@
 ﻿using VoxelEngine.Glm;
 using VoxelEngine.Model;
 
-namespace VoxelEngine
+namespace VoxelEngine.World
 {
     public class BlockLeaves : Block
     {
@@ -14,6 +14,7 @@ namespace VoxelEngine
 
             Color = new vec4(0.56f, 0.73f, 0.35f, 1f);
             AllDrawing = true;
+            IsLeaves = true;
         }
     }
 }

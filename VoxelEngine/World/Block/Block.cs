@@ -2,7 +2,7 @@
 using VoxelEngine.Model;
 using VoxelEngine.Util;
 
-namespace VoxelEngine
+namespace VoxelEngine.World
 {
     /// <summary>
     /// Объект Блока
@@ -38,6 +38,10 @@ namespace VoxelEngine
         /// Вода ли это
         /// </summary>
         public bool IsWater { get; protected set; } = false;
+        /// <summary>
+        /// Листва ли это
+        /// </summary>
+        public bool IsLeaves { get; protected set; } = false;
         /// <summary>
         /// Явлыется ли блок небом
         /// </summary>

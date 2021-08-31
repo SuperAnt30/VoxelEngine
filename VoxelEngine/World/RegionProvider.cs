@@ -17,7 +17,7 @@ namespace VoxelEngine.World
 
         /// <summary>
         /// Параметр для тестов, false - сохранение не будет сохранять
-        /// TODO::TEST
+        /// TODO::TEST SAVE 
         /// </summary>
         protected readonly bool canSave = false;
 

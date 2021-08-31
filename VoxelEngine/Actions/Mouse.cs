@@ -57,7 +57,7 @@ namespace VoxelEngine
             //Voxel vox = WorldCache.GetInstance().RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3 norm, out vec3 iend);
             //Voxel vox = World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
             Block block = World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            if (!block.IsAir)
+            if (block != null && !block.IsAir)
             {
                 if (e.Button == MouseButtons.Left)
                 {

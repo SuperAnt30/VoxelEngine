@@ -24,9 +24,14 @@ namespace VoxelEngine
         /// octave = 5 d = 19.2f
         /// octave = 6 d = 38.4f
         /// octave = 7 d = 76.8f
-        /// octave = 8 d = 128.0f
+        /// octave = 8 d = 160.0f
+        /// octave = 12 d = 2300.0f
         /// </summary>
-        public float dl = 160f;
+        public float dl = 160f; // 160
+        public int oc = 8; //8
+        public float sc = .6f; //0.8f (game 0.2f)
+        protected float delitel = 14f;//14f;
+
         public float scale = 0.8f;//0.01f;
 
 
@@ -54,8 +59,8 @@ namespace VoxelEngine
             {
                 FormTest form1 = new FormTest
                 {
-                    octave = 8, // 4
-                    scale = 0.8f,// .08
+                    octave = oc, // 4
+                    scale = sc,// .08
                     begin = false,
                     name = "Первый",
                     plus = 2f,
@@ -66,8 +71,8 @@ namespace VoxelEngine
                 ar1 = form1.ar;
                 FormTest form2 = new FormTest
                 {
-                    octave = 8,
-                    scale = 0.8f,
+                    octave = oc,
+                    scale = sc,
                     begin = false,
                     name = "Второй",
                     plus = 2f,
@@ -128,8 +133,8 @@ namespace VoxelEngine
 
         protected Color biome(float e, float m)
         {
-            e /= 14f;
-            m /= 14f;
+            e /= delitel;
+            m /= delitel;
             // e высота
             // m влажность
             if (e < -3.8f)
@@ -138,20 +143,22 @@ namespace VoxelEngine
                 if (m < -2f) return Color.Orange; // горы в пустыне
                 return Color.LightGray; // горы каменные
             }
+            if (e > -1.0f && e < 0.8f && m >= 3f)
+            {
+                return Color.Gray; // болото
+            }
             if (e < 0f)
             {
                 // средняя местность по высоте
                 if (m < -2f) return Color.Yellow; // пустыня
                 if (m < 1f) return Color.Green; // ровнина
-                if (m < 4f) return Color.DarkGreen; // лес
-                return Color.Gray; // болото
+                return Color.DarkGreen; // лес
             }
             if (e < 0.1f)
             {
                 if (m < -2f) return Color.Yellow; // пустыня
                 if (m < 1f) return Color.White; // пляж
-                if (m < 4f) return Color.DarkGreen; // лес
-                return Color.Gray; // болото
+                return Color.DarkGreen; // лес
             }
             // вода
             return Color.Blue;
@@ -209,7 +216,7 @@ namespace VoxelEngine
         protected void Test()
         {
             
-            Random random = new Random(2);// влажность
+            //Random random = new Random(2);// влажность
             //Random random = new Random(3);// высоты
             int w = pictureBox1.Width;
             int h = pictureBox1.Height;
@@ -220,8 +227,10 @@ namespace VoxelEngine
             stopwatch.Restart();
 
             SetPerlin1();
-
-
+            Text = string.Format(name + " [{0:0.00}; {1:0.00}]",
+                fmin, fmax
+            );
+            //return;
             //Perlin noise = new Perlin();
             //noise.Perlin2D(2);
             //float size = 0.01f;

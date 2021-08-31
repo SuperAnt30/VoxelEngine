@@ -20,6 +20,7 @@ namespace VoxelEngine.Gen
             WetnessBiome = new NoiseGeneratorPerlin(new Random(World.Seed + 8), 8);
             Cave = new NoiseGeneratorPerlin(new Random(World.Seed + 2), 2);
             Down = new NoiseGeneratorPerlin(new Random(World.Seed), 1);
+            Area = new NoiseGeneratorPerlin(new Random(World.Seed + 2), 1);
         }
 
         /// <summary>
@@ -34,6 +35,10 @@ namespace VoxelEngine.Gen
         /// Шум пещер
         /// </summary>
         public NoiseGeneratorPerlin Cave { get; protected set; }
+        /// <summary>
+        /// Шум облостей
+        /// </summary>
+        public NoiseGeneratorPerlin Area { get; protected set; }
         /// <summary>
         /// Шум нижнего слоя
         /// </summary>

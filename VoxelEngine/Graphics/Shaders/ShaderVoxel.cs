@@ -40,9 +40,9 @@ void main()
     //light2 = light * v_color.a + 0.2;
     if (light2 > 1.0) light2 = 1.0;
 // TODO::TEST
-    a_color.r = v_color.r;// * light2;
-    a_color.g = v_color.g;// * light2;
-    a_color.b = v_color.b;// * light2;
+    a_color.r = v_color.r * light2;
+    a_color.g = v_color.g * light2;
+    a_color.b = v_color.b * light2;
     a_color.a = 1.0;
     a_texCoord = v_texCoord;
     gl_Position = a_position;

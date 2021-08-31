@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using VoxelEngine.Binary;
+using VoxelEngine.World.Biome;
 
 namespace VoxelEngine.World.Chunk
 {
@@ -19,15 +20,16 @@ namespace VoxelEngine.World.Chunk
             ChunkBin chunk = Deserialize(buffer);
             for (int x = 0; x < 16; x++)
             {
-                for (int y = 0; y < 256; y++)
+                for (int z = 0; z < 16; z++)
                 {
-                    for (int z = 0; z < 16; z++)
+                    for (int y = 0; y < 256; y++)
                     {
                         Voxel voxel = Chunk.GetVoxel(x, y, z);
                         voxel.SetVoxelData(chunk.Voxel[x, y, z]);
                         voxel.SetLightsFor(chunk.Light[x, y, z]);
                         Chunk.SetVoxel(x, y, z, voxel);
                     }
+                    Chunk.SetBiome(x, z, (EnumBiome)chunk.Biome[x, z]);
                 }
             }
             //Chunk.SetChunkModified();
@@ -50,14 +52,15 @@ namespace VoxelEngine.World.Chunk
             ChunkBin chunk = new ChunkBin();
             for (int x = 0; x < 16; x++)
             {
-                for (int y = 0; y < 256; y++)
+                for (int z = 0; z < 16; z++)
                 {
-                    for (int z = 0; z < 16; z++)
+                    for (int y = 0; y < 256; y++)
                     {
                         Voxel voxel = Chunk.GetVoxel(x, y, z);
                         chunk.Voxel[x, y, z] = voxel.GetVoxelData();
                         chunk.Light[x, y, z] = voxel.GetLightsFor();
                     }
+                    chunk.Biome[x, z] = (byte)Chunk.GetBiome(x, z);
                 }
             }
 

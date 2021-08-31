@@ -131,8 +131,11 @@ namespace VoxelEngine.World
         {
             if (IsChunk(x, z)) return true;
 
-            ChunkPr.LoadChunk(x, z);
-            Debag.GetInstance().CacheChunk = ChunkPr.Count();
+          //  Task.Factory.StartNew(() => {
+                ChunkPr.LoadChunk(x, z);
+                Debag.GetInstance().CacheChunk = ChunkPr.Count();
+            //});
+            
             return false;
         }
 
@@ -201,6 +204,7 @@ namespace VoxelEngine.World
 
         /// <summary>
         /// TODO::#
+        /// Не используется
         /// </summary>
         public BlockPos GetHorizon(BlockPos pos)
         {
@@ -222,7 +226,8 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
-        /// Получает наименьшую высоту участка, на который падает прямой солнечный свет. 
+        /// Получает наименьшую высоту участка, на который падает прямой солнечный свет.
+        /// Не используется
         /// </summary>
         public int GetChunksLowestHorizon(int x, int z)
         {
@@ -791,7 +796,7 @@ namespace VoxelEngine.World
             end.y = py + t * dy;
             end.z = pz + t * dz;
             norm.x = norm.y = norm.z = 0;
-            return new Block();
+            return null;// new Block();
         }
 
         
