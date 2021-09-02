@@ -34,6 +34,8 @@ namespace VoxelEngine.World.Biome
             int yl = yh - depth;
             EnumBlock eBlock;
 
+            
+
             for (int y = 3; y < 256; y++)
             {
                 if (y == yh) eBlock = levUp;
@@ -42,6 +44,23 @@ namespace VoxelEngine.World.Biome
                 else eBlock = EnumBlock.Air;
 
                 Chunk.SetBlockState(x, y, z, eBlock);
+
+                if (y == yh && levUp == EnumBlock.Grass)// && Grass(x, z, .1f))
+                {
+                    float k = Grass(x, z);
+                    if (k > .56f)
+                    {
+                        y++; Chunk.SetBlockState(x, y, z, EnumBlock.Dandelion);
+                    }
+                    else if(k > .5f)
+                    {
+                        y++; Chunk.SetBlockState(x, y, z, EnumBlock.Poppy);
+                    }
+                    else if (k > .1f)
+                    {
+                        y++; Chunk.SetBlockState(x, y, z, EnumBlock.TallGrass);
+                    }
+                }
             }
         }
 
@@ -55,6 +74,25 @@ namespace VoxelEngine.World.Biome
             float[] noise = new float[1];
             Chunk.World.Noise.Down.GenerateNoise2d(noise, Chunk.X * 16 + x, Chunk.Z * 16 + z, 1, 1, scale, scale);
             return depth + (int)(noise[0] * (float)depth);
+        }
+
+        /// <summary>
+        /// Слой для генерации Травы
+        /// </summary>
+        public bool Grass(int x, int z, float k)
+        {
+            return Grass(x, z) > k;
+        }
+
+        /// <summary>
+        /// Слой для генерации Травы
+        /// </summary>
+        public float Grass(int x, int z)
+        {
+            float scale = .5f;
+            float[] noise = new float[1];
+            Chunk.World.Noise.Down.GenerateNoise2d(noise, Chunk.X * 16 + x, Chunk.Z * 16 + z, 1, 1, scale, scale);
+            return noise[0];
         }
 
         /// <summary>

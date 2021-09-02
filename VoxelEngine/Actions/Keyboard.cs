@@ -152,7 +152,7 @@ namespace VoxelEngine
                     chunk = World.GetChunk(ch.x, ch.y);
 
                     ///World.CheckLight(blk.Position);
-                    chunk.StartRecheckGaps();
+                    chunk.StartRecheckGaps(true);
                     //chunk.RecheckGaps();
                     //chunk.GenerateSkylightMap();
                     //World.MarkBlocksDirtyVertical(blk.Position.X, blk.Position.Z, 0, 120);
@@ -193,6 +193,10 @@ namespace VoxelEngine
                     //        new vec2i(-1, 1), new vec2i(-1, 0), new vec2i(-1, -1),
                     //        new vec2i(0, -1), new vec2i(1, -1)});
                     ////OnVoxelChanged(bl, new vec2i[0]);
+                    break;
+                case Keys.T:
+                    // Плюс четверть дня
+                    Debag.GetInstance().TickCount += VE.COUNT_TICE_DAY / 4;
                     break;
                 case Keys.Space:
                     PlCamera.StepJamp();

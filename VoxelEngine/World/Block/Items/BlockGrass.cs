@@ -36,9 +36,8 @@ namespace VoxelEngine.World
                     }
                 }
             };
-            Color = new vec4(0.56f, 0.73f, 0.35f, 1f);
-            //Color = new vec4(0.96f, 0.73f, 0.35f, 1f);
-            //Color = new vec4(0.86f, 0.33f, 0.25f, 1f);
+
+            IsGrass = true;
         }
     }
 }

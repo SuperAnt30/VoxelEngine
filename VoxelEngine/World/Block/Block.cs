@@ -22,11 +22,6 @@ namespace VoxelEngine.World
         /// </summary>
         public bool IsAlphe { get; protected set; } = false;
         /// <summary>
-        /// Цвет блока
-        /// </summary>
-        public vec4 Color { get; protected set; } = new vec4(1f, 1f, 1f, 1f);
-        
-        /// <summary>
         /// Есть ли столкновение
         /// </summary>
         public bool IsCollision { get; protected set; } = true;
@@ -43,9 +38,17 @@ namespace VoxelEngine.World
         /// </summary>
         public bool IsLeaves { get; protected set; } = false;
         /// <summary>
+        /// Трава ли это
+        /// </summary>
+        public bool IsGrass { get; protected set; } = false;
+        /// <summary>
         /// Явлыется ли блок небом
         /// </summary>
         public bool IsAir { get { return EBlock == EnumBlock.Air; } }
+        /// <summary>
+        /// Освещение от себя, типа травы
+        /// </summary>
+        public bool LightingYourself { get; protected set; } = false;
 
         /// <summary>
         /// Получить тип блока

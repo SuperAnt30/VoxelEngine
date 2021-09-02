@@ -127,17 +127,16 @@ namespace VoxelEngine.World
         /// <summary>
         /// Загружен ли чанк, если нет тут же загружаем
         /// </summary>
-        public bool IsChunkLoaded(int x, int z)
-        {
-            if (IsChunk(x, z)) return true;
+        //public bool IsChunkLoaded(int x, int z)
+        //{
+        //    if (IsChunk(x, z)) return true;
 
-          //  Task.Factory.StartNew(() => {
-                ChunkPr.LoadChunk(x, z);
-                Debag.GetInstance().CacheChunk = ChunkPr.Count();
-            //});
-            
-            return false;
-        }
+        //    var outer = Task.Factory.StartNew(() => { ChunkPr.LoadChunk(x, z); });
+        //    //ChunkPr.LoadChunk(x, z);
+        //    //Debag.GetInstance().CacheChunk = ChunkPr.Count();
+        //    outer.Wait();
+        //    return false;
+        //}
 
         /// <summary>
         /// загружен ли чанк
@@ -148,48 +147,26 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
-        /// Проверка облости загрузки чанков
+        /// Загрузка области чанков 3*3
         /// </summary>
-        protected bool IsAreaLoaded(int x0, int y0, int z0, int x1, int y1, int z1, bool isLoad)
+        public void AreaLoaded(vec2i pos)
         {
-            if (y0 >= 0 && y1 < 256)
-            {
-                if (!isLoad)
-                {
-                    x0 >>= 4;
-                    z0 >>= 4;
-                    x1 >>= 4;
-                    z1 >>= 4;
-                }
+            int x0 = pos.x - 1;
+            int x1 = pos.x + 1;
+            int z0 = pos.y - 1;
+            int z1 = pos.y + 1;
 
-                for (int x = x0; x <= x1; x++)
+            for (int x = x0; x <= x1; x++)
+            {
+                for (int z = z0; z <= z1; z++)
                 {
-                    for (int z = z0; z <= z1; z++)
+                    RegionPr.RegionSet(x, z);
+                    if (!IsChunk(x, z))
                     {
-                        if (isLoad)
-                        {
-                            if (!IsChunkLoaded(x, z)) return false;
-                        }
-                        else
-                        {
-                            if (!IsChunk(x, z)) return false;
-                        }
+                        ChunkPr.LoadChunk(x, z);
                     }
                 }
-                return true;
-
             }
-            return false;
-        }
-
-        /// <summary>
-        /// Проверка облости загрузки чанков с её загрузкой
-        /// </summary>
-        public bool IsAreaLoaded(vec2i pos, int radius)
-        {
-            return IsAreaLoaded(
-                pos.x - radius, 64, pos.y - radius,
-                pos.x + radius, 64, pos.y + radius, true);
         }
 
         /// <summary>
@@ -197,49 +174,81 @@ namespace VoxelEngine.World
         /// </summary>
         public bool IsArea(BlockPos pos, int radius)
         {
-            return IsAreaLoaded(
-                pos.X - radius, pos.Y - radius, pos.Z - radius,
-                pos.X + radius, pos.Y + radius, pos.Z + radius, false);
+            int x0 = (pos.X - radius) >> 4;
+            int x1 = (pos.X + radius) >> 4;
+            int z0 = (pos.Z - radius) >> 4;
+            int z1 = (pos.Z + radius) >> 4;
+
+            if (pos.Y < 1 || pos.Y > 255) return false;
+
+            for (int x = x0; x <= x1; x++)
+            {
+                for (int z = z0; z <= z1; z++)
+                {
+                    if (!IsChunk(x, z)) return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Проверка облости загрузки чанков
+        /// </summary>
+        public bool IsArea(vec2i ch, int radius)
+        {
+            int x0 = ch.x - radius;
+            int x1 = ch.x + radius;
+            int z0 = ch.y - radius;
+            int z1 = ch.y + radius;
+
+            for (int x = x0; x <= x1; x++)
+            {
+                for (int z = z0; z <= z1; z++)
+                {
+                    if (!IsChunk(x, z)) return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>
         /// TODO::#
         /// Не используется
         /// </summary>
-        public BlockPos GetHorizon(BlockPos pos)
-        {
-            int y = 0;
+        //public BlockPos GetHorizon(BlockPos pos)
+        //{
+        //    int y = 0;
 
-            if (pos.X >= -30000000 && pos.Z >= -30000000 && pos.X < 30000000 && pos.Z < 30000000)
-            {
-                if (IsChunkLoaded(pos.X >> 4, pos.Z >> 4))
-                {
-                    y = GetChunk(pos.X >> 4, pos.Z >> 4).GetHeight(pos.X & 15, pos.Z & 15);
-                }
-            }
-            else
-            {
-                y = 64;
-            }
+        //    if (pos.X >= -30000000 && pos.Z >= -30000000 && pos.X < 30000000 && pos.Z < 30000000)
+        //    {
+        //        if (IsChunkLoaded(pos.X >> 4, pos.Z >> 4))
+        //        {
+        //            y = GetChunk(pos.X >> 4, pos.Z >> 4).GetHeight(pos.X & 15, pos.Z & 15);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        y = 64;
+        //    }
 
-            return new BlockPos(pos.X, y, pos.Z);
-        }
+        //    return new BlockPos(pos.X, y, pos.Z);
+        //}
 
-        /// <summary>
-        /// Получает наименьшую высоту участка, на который падает прямой солнечный свет.
-        /// Не используется
-        /// </summary>
-        public int GetChunksLowestHorizon(int x, int z)
-        {
-            if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000)
-            {
-                if (!IsChunkLoaded(x >> 4, z >> 4))
-                {
-                    return GetChunk(x >> 4, z >> 4).GetLowestHeight();
-                }
-            }
-            return 64;
-        }
+        ///// <summary>
+        ///// Получает наименьшую высоту участка, на который падает прямой солнечный свет.
+        ///// Не используется
+        ///// </summary>
+        //public int GetChunksLowestHorizon(int x, int z)
+        //{
+        //    if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000)
+        //    {
+        //        if (!IsChunkLoaded(x >> 4, z >> 4))
+        //        {
+        //            return GetChunk(x >> 4, z >> 4).GetLowestHeight();
+        //        }
+        //    }
+        //    return 64;
+        //}
 
 
         /// <summary>

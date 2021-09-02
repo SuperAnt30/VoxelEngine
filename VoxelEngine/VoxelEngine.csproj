@@ -81,6 +81,7 @@
     <Compile Include="FormTest.Designer.cs">
       <DependentUpon>FormTest.cs</DependentUpon>
     </Compile>
+    <Compile Include="Gen\EnumGeterationStatus.cs" />
     <Compile Include="Gen\NoiseStorge.cs" />
     <Compile Include="Gen\ChunkGenerate.cs" />
     <Compile Include="Gen\NoiseGeneratorSimplex.cs" />
@@ -127,7 +128,10 @@
     <Compile Include="World\Block\BlockColorBiome.cs" />
     <Compile Include="World\Block\Items\BlockAir.cs" />
     <Compile Include="World\Block\Items\BlockBedrock.cs" />
+    <Compile Include="World\Block\Items\BlockPoppy.cs" />
     <Compile Include="World\Block\Items\BlockLeavesApple.cs" />
+    <Compile Include="World\Block\Items\BlockDandelion.cs" />
+    <Compile Include="World\Block\Items\BlockTallGrass.cs" />
     <Compile Include="World\Block\Items\BlockSapling.cs" />
     <Compile Include="World\Block\Items\BlockLeaves.cs" />
     <Compile Include="World\Block\Items\BlockLog.cs" />

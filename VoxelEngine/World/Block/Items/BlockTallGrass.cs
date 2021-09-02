@@ -4,16 +4,14 @@ using VoxelEngine.Util;
 
 namespace VoxelEngine.World
 {
-    public class BlockLeavesApple : Block
+    public class BlockTallGrass : Block
     {
         /// <summary>
-        /// Блок листвы с яблоком
+        /// Блок высокой травы
         /// </summary>
-        public BlockLeavesApple()
+        public BlockTallGrass()
         {
-            Boxes = new Box[]
-            {
-                new Box(34, true),
+            Boxes = new Box[] {
                 new Box()
                 {
                     From = new vec3(0, 0, .5f),
@@ -21,8 +19,8 @@ namespace VoxelEngine.World
                     RotateYaw = glm.pi45,
                     Faces = new Face[]
                     {
-                        new Face(Pole.North, 36),
-                        new Face(Pole.South, 36),
+                        new Face(Pole.North, 37, true),
+                        new Face(Pole.South, 37, true),
                     }
                 },
                 new Box()
@@ -32,14 +30,17 @@ namespace VoxelEngine.World
                     RotateYaw = glm.pi45,
                     Faces = new Face[]
                     {
-                        new Face(Pole.East, 36),
-                        new Face(Pole.West, 36)
+                        new Face(Pole.East, 37, true),
+                        new Face(Pole.West, 37, true)
                     }
                 }
             };
 
-            AllDrawing = true;
             IsLeaves = true;
+            IsCollision = false;
+            AllDrawing = true;
+            IsGrass = true;
+            LightingYourself = true;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using VoxelEngine.Binary;
+using VoxelEngine.Gen;
 using VoxelEngine.World.Biome;
 
 namespace VoxelEngine.World.Chunk
@@ -32,6 +33,8 @@ namespace VoxelEngine.World.Chunk
                     Chunk.SetBiome(x, z, (EnumBiome)chunk.Biome[x, z]);
                 }
             }
+            Chunk.GeterationStatus = (EnumGeterationStatus)chunk.GeterationStatus;
+            //Chunk.GeterationStatus = EnumGeterationStatus.Chunk;
             //Chunk.SetChunkModified();
         }
 
@@ -63,7 +66,7 @@ namespace VoxelEngine.World.Chunk
                     chunk.Biome[x, z] = (byte)Chunk.GetBiome(x, z);
                 }
             }
-
+            chunk.GeterationStatus = (byte)Chunk.GeterationStatus;
             return Serialize(chunk);
         }
 

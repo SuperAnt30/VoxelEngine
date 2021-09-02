@@ -11,7 +11,7 @@ namespace VoxelEngine
         /// <summary>
         /// Изменён чанк, для перегенерации альфа цвета
         /// </summary>
-        public int ChunckChanged { get; set; } = 0;
+        public int ChunckChanged { get; set; } = -1;
 
         /// <summary>
         /// Запуск рендер паета
@@ -58,7 +58,7 @@ namespace VoxelEngine
         /// </summary>
         public ChunkRender GetChunkRender(int x, int z)
         {
-            if (IsChunkLoaded(x, z))
+            if (IsChunk(x, z))
             {
                 ChunkD chunk = GetChunk(x, z);
                 if (chunk != null)
@@ -79,46 +79,52 @@ namespace VoxelEngine
         protected void Render()
         {
             vec2i chunkPos = OpenGLF.GetInstance().Cam.ToPositionChunk();
-            int count = 0;
             // Получить массив сектора
             ChunkLoading[] chunkLoading = VES.GetInstance().DistSqrtYaw(OpenGLF.GetInstance().Cam.Yaw);
+
             // собираем новые, и удаляем в старье если они есть
             for (int i = 0; i < chunkLoading.Length; i++)
             {
                 int x = chunkLoading[i].X + chunkPos.x;
                 int z = chunkLoading[i].Z + chunkPos.y;
-                // Открываем нужные регион файлы
-                RegionPr.RegionSet(x, z);
 
-                ChunkRender cr = GetChunkRender(x, z);
-                if (cr == null) 
+                // Загрузка облости в отдельных потоках
+                AreaLoaded(new vec2i(x, z));
+
+                // Проверка облости на один чанк в округе, для рендера чанка
+                // кэш соседних чанков обязателен!
+                if (IsArea(new vec2i(x, z), 1))
                 {
-                    // если нет чанка, включаем счётчик
-                    count++;
-                }
-                else
-                {
-                    // Если чанк есть и не отрендерин
-                    if (!cr.Chunk.IsChunkLoaded)
+                    ChunkRender cr = GetChunkRender(x, z);
+                    if (cr.Chunk.GeterationStatus != Gen.EnumGeterationStatus.Area)
                     {
-                        // Если у чанка нет данных, загружаем (перегружаем)
-                        cr.Chunk.OnChunkLoad();
+                        // Если у генерации чанка не было 
+                        cr.Chunk.GenerationArea();
                     }
-                    else if (!cr.IsRender())
+                    if (!cr.IsRender())
                     {
                         // Рендер чанка, если норм то выходим с массива
                         if (ChunkRender(cr, false)) break;
                     }
-                    else if (i < ChunckChanged)
+                    else if (i <= ChunckChanged)
                     {
                         // Рендер алфа блоков, без выхода с цикла
                         ChunkRender(cr, true);
+                        if (ChunckChanged == i)
+                        {
+                            ChunckChanged = -1;
+                        }
                     }
                 }
-                // Количество чанков без данных, выходим с цыкла
-                if (count >= 2) break;
+                else
+                {
+                    // Если облости не готовы, нет смысла расматривать дальнейшие чанки
+                    // скорее всего просто была подгрузка кэш чанков
+                    break;
+                }
             }
-            System.Threading.Thread.Sleep(1); // ЭТОТ    СЛИП чтоб не подвисал проц. И для перехода других потоков.
+            // ЭТОТ СЛИП чтоб не подвисал проц. И для перехода других потоков.
+            System.Threading.Thread.Sleep(1); 
             OnRendered();
         }
 
@@ -127,15 +133,22 @@ namespace VoxelEngine
         /// </summary>
         protected bool ChunkRender(ChunkRender chunkR, bool isAlphe)
         {
-            if (IsAreaLoaded(new vec2i(chunkR.Chunk.X, chunkR.Chunk.Z), 1))
+            // Нужна проверка облости в один соседний чанк, типа IsAreaLoaded(new vec2i(X, Z), 1)
+            // Но этот метод вызывается всегда после этой проверки, по этому не повторяем бесмысленную проверку
+            if (chunkR.Chunk.IsChunkLoaded)
             {
-                if (chunkR.Chunk.IsChunkLoaded)
+                if (isAlphe)
                 {
-                    OnChunkDone(isAlphe
-                        ? new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, chunkR.RenderAlpha())
-                        : new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, chunkR.Render(), chunkR.RenderAlpha()));
-                    return true;
+                    float[] ba = chunkR.RenderAlpha();
+                    if (ba.Length > 0)
+                    {
+                        OnChunkDone(new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, ba));
+                    }
+                } else
+                {
+                    OnChunkDone(new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, chunkR.Render(), chunkR.RenderAlpha()));
                 }
+                return true;
             }
             return false;
         }

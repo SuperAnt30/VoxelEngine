@@ -43,6 +43,7 @@ namespace VoxelEngine.World
             };
             //LightOpacity = 1;
             AllDrawing = true;
+            LightingYourself = true;
             //IsAlphe = true;
         }
     }

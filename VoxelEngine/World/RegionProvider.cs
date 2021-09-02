@@ -19,7 +19,7 @@ namespace VoxelEngine.World
         /// Параметр для тестов, false - сохранение не будет сохранять
         /// TODO::TEST SAVE 
         /// </summary>
-        protected readonly bool canSave = false;
+        protected readonly bool canSave = true;
 
         /// <summary>
         /// Сылка на объект мира

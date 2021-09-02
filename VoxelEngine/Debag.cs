@@ -98,6 +98,14 @@ namespace VoxelEngine
         /// </summary>
         public int Tps { get; set; } = 0;
         /// <summary>
+        /// Рендер чанков в секунду
+        /// </summary>
+        public int Rc { get; set; } = 0;
+        /// <summary>
+        /// Рендер чанков альфа в секунду
+        /// </summary>
+        public int Rca { get; set; } = 0;
+        /// <summary>
         /// Скорость кадра 
         /// </summary>
         public float SpeedFrame { get; set; } = 0;
@@ -237,12 +245,12 @@ namespace VoxelEngine
             ChunkD chunk = World.GetChunk(posChunk.x, posChunk.y);
             
             string strPosition = string.Format(
-@"XYZ: {0}
-Block: {1}
-Chunk: {2} Region: {3}
-Angle YP: ({4:0.0} | {5:0.0}) {6}
-Biome: {7}
-Move {8}",
+                "XYZ: {0}\r\n" +
+                "Block: {1}\r\n" +
+                "Chunk: {2} Region: {3}\r\n" +
+                "Angle YP: ({4:0.0} | {5:0.0}) {6}\r\n" +
+                "Biome: {7}\r\n" +
+                "Move {8}",
                     cam.Position,
                     posBlock,
                     posChunk, cam.ToPositionRegion(),
@@ -258,15 +266,16 @@ Move {8}",
             );
 
             string strChunck = string.Format(
-                "Chunk LT: {0}, Ah: {1}",
+                "Chunk LT: {0} Ah: {1} Rc: {2} Rca: {3}",
                 ChunkLiquidTicks,
-                ChunkAlpheBlock
+                ChunkAlpheBlock,
+                Rc, Rca
             );
 
             string strMeshMem = string.Format(
-                @"Mesh All: {0} M: {1} L: {2}
-Cache Ch: {3} Rg: {4}
-PoligonsCh: {5}",
+                "Mesh All: {0} M: {1} L: {2}\r\n" +
+                "Cache Ch: {3} Rg: {4}\r\n" +
+                "PoligonsCh: {5}",
                 CountMesh, CountMeshChunk, CountMeshLine,
                 CacheChunk, CacheRegion,
                 CountPoligonChunk,

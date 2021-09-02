@@ -8,7 +8,7 @@
         /// <summary>
         /// Сколько чанков видим
         /// </summary>
-        public const int CHUNK_VISIBILITY = 32;
+        public const int CHUNK_VISIBILITY = 12;
         /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// Количество общее число по спирале
@@ -23,6 +23,11 @@
         /// Скольк чанков вблизи камеры активны к тику 49 это 7*7 где чанк где камеры и 3 дистанция
         /// </summary>
         public const int CHUNKS_TICK = 49;
+
+        /// <summary>
+        /// Количество тиков в сутках
+        /// </summary>
+        public const int COUNT_TICE_DAY = 24000;
 
         /// <summary>
         /// 1/16 часть, для тестуры
@@ -66,7 +71,11 @@
         /// <summary>
         /// Скорость авто прыжка и когда встаём из положения сидя
         /// </summary>
-        public const float SPEED_AUTOJAMP = 12f; //9
+        public const float SPEED_AUTOJAMP = 10f; //9
+        /// <summary>
+        /// Константа для авто прыжка чтоб встать
+        /// </summary>
+        public const float SPEED_UPING = 7f; 
         /// <summary>
         /// Скорость падения если нет блоков под нагами
         /// Чем больше тем быстрее падает

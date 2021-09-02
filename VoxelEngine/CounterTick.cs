@@ -28,10 +28,15 @@ namespace VoxelEngine
             lastTime = stopwatch.ElapsedTicks;
         }
 
+        public void CalculateFrameRate()
+        {
+            CalculateFrameRate(true);
+        }
+
         /// <summary>
         /// Эта функция рассчитывает FPS и выводит их
         /// </summary>
-        public void CalculateFrameRate()
+        public void CalculateFrameRate(bool plus)
         {
             //Ниже мы создадим несколько статичных переменных, т.к. хотим, чтобы они сохраняли своё
             //значение после завершения работы ф-ии. Мы могли бы сделать их глобальными, но это будет
@@ -41,7 +46,7 @@ namespace VoxelEngine
             long currentTime = stopwatch.ElapsedTicks;
 
             //Увеличиваем счетчик кадров
-            framesPerSecond++;
+            if (plus) framesPerSecond++;
 
             //Теперь вычтем из текущего времени последнее запомненное время. Если результат больше единицы,
             //это значит, что секунда прошла и нужно вывести новый FPS.

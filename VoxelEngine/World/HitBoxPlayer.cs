@@ -99,6 +99,10 @@ namespace VoxelEngine
             {
                 SetPos(new vec3(Position.x, Position.y + vec.y, Position.z));
             }
+            else if (onGround == EnumCollisionBody.CollisionDown)
+            {
+                SetPos(new vec3(Position.x, Position.y - vec.y, Position.z));
+            }
 
             return onGround == EnumCollisionBody.CollisionDown;
         }

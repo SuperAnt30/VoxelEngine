@@ -16,7 +16,33 @@ namespace VoxelEngine.World.Biome
         /// <param name="z"></param>
         public override void Column(int x, int z, float height, float wetness)
         {
-            _Column(x, z, height, UpLayer(x, z, 6, .1f) + 2, EnumBlock.Sand, EnumBlock.Sand);
+            int yh = 65 + (int)(height * 64f);
+            int yl = yh - UpLayer(x, z, 6, .1f) + 2;
+            EnumBlock eBlock;
+
+            for (int y = 3; y < 256; y++)
+            {
+                if (y <= yh && y >= yl) eBlock = EnumBlock.Sand;
+                else if (y < yl) eBlock = EnumBlock.Stone;
+                else eBlock = EnumBlock.Air;
+
+                Chunk.SetBlockState(x, y, z, eBlock);
+
+                if (y == yh && Grass(x, z, .6f))
+                {
+                    y++; Chunk.SetBlockState(x, y, z, EnumBlock.Cactus);
+                    y++; Chunk.SetBlockState(x, y, z, EnumBlock.Cactus);
+                    if (Grass(x, z, .65f))
+                    {
+                        y++; Chunk.SetBlockState(x, y, z, EnumBlock.Cactus);
+                        y++; Chunk.SetBlockState(x, y, z, EnumBlock.Cactus);
+                        if (Grass(x, z, .7f))
+                        {
+                            y++; Chunk.SetBlockState(x, y, z, EnumBlock.Cactus);
+                        }
+                    }
+                }
+            }
         }
     }
 }

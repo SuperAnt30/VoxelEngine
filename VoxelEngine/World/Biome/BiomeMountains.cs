@@ -31,6 +31,12 @@ namespace VoxelEngine.World.Biome
                 else eBlock = EnumBlock.Air;
 
                 Chunk.SetBlockState(x, y, z, eBlock);
+
+                if (y == yh && eBlock == EnumBlock.Grass && Grass(x, z, .2f))
+                {
+                    y++;
+                    Chunk.SetBlockState(x, y, z, EnumBlock.TallGrass);
+                }
             }
         }
     }

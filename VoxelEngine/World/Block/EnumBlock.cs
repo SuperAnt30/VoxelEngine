@@ -84,7 +84,19 @@
         /// <summary>
         /// Коренная порода
         /// </summary>
-        Bedrock = 19
-
+        Bedrock = 19,
+        /// <summary>
+        /// Высокая трава
+        /// </summary>
+        TallGrass = 20,
+        /// <summary>
+        /// Мак
+        /// </summary>
+        Poppy = 21,
+        /// <summary>
+        /// Одуванчик
+        /// </summary>
+        Dandelion = 22
+        
     }
 }

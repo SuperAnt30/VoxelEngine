@@ -25,43 +25,22 @@ namespace VoxelEngine.World
         protected vec4 l = new vec4(0f);
 
         protected vec2 leg = new vec2();
+        /// <summary>
+        /// Позиция центра блока, для вращения
+        /// </summary>
+        protected vec3 pos;
 
         /// <summary>
         /// сторона прямоугольник ли
         /// </summary>
         protected bool isRectangle = true;
 
-        public BlockFaceUV(vec3 vec1, vec3 vec2, vec2 uv1, vec2 uv2, vec3 color, vec4 lg, vec2 leght)
-        {
-            v1 = vec1;
-            v2 = vec2;
-            u1 = uv1;
-            u2 = uv2;
-            c = color;
-            l = lg;
-            leg = leght;
-        }
-        public BlockFaceUV(vec3 vec1, vec3 vec2, vec3 vec3, vec3 vec4, vec2 uv1, vec2 uv2, vec2 uv3, vec2 uv4, vec3 color, vec4 lg, vec2 leght)
-        {
-            isRectangle = false;
-            v1 = vec1;
-            v2 = vec2;
-            v3 = vec3;
-            v4 = vec4;
-            u1 = uv1;
-            u2 = uv2;
-            u3 = uv3;
-            u4 = uv4;
-            c = color;
-            l = lg;
-            leg = leght;
-        }
-
-        public BlockFaceUV(vec3 color, vec4 lg, vec2 leght)
+        public BlockFaceUV(vec3 color, vec4 lg, vec2 leght, vec3 pos)
         {
             c = color;
             l = lg;
             leg = leght;
+            this.pos = pos + .5f;
         }
 
         public void SetVecUV(vec3 vec1, vec3 vec2, vec2 uv1, vec2 uv2)
@@ -90,6 +69,23 @@ namespace VoxelEngine.World
             u4 = uv4;
         }
 
+        protected float radY = 0f;
+        /// <summary>
+        /// Указываем вращение блока по оси Y в радианах
+        /// </summary>
+        public void RotateYaw(float rad)
+        {
+            radY = rad;
+        }
+        protected float radP = 0f;
+        /// <summary>
+        /// Указываем вращение блока по оси X в радианах
+        /// </summary>
+        public void RotatePitch(float rad)
+        {
+            radP = rad;
+        }
+
         ///// <summary>
         ///// Соседняя сторона по индексу
         ///// </summary>
@@ -108,6 +104,8 @@ namespace VoxelEngine.World
         //    return new vec3i(0, 1, 0);
         //}
 
+
+
         /// <summary>
         /// Ввернуть сторону по индексу
         /// </summary>
@@ -118,17 +116,37 @@ namespace VoxelEngine.World
             //vec4 l = new vec4(1f);
             if (isRectangle)
             {
+                float[] f;
                 switch (pole)
                 {
-                    case Pole.Down: return Down();
-                    case Pole.East: return East();
-                    case Pole.West: return West();
-                    case Pole.North: return North();
-                    case Pole.South: return South();
+                    case Pole.Down: f = Down(); break;
+                    case Pole.East: f = East(); break;
+                    case Pole.West: f = West(); break;
+                    case Pole.North: f = North(); break;
+                    case Pole.South: f = South(); break;
+                    default: f = Up(); break;
                 }
-                return Up();
+                return Rotate(f);
             }
             return NotRectangle();
+        }
+
+        protected float[] Rotate(float[] f)
+        {
+            if (radY == 0f && radP == 0f) return f;
+            vec3 vY = new vec3(0, 1f, 0);
+            vec3 vP = new vec3(1f, 0, 0);
+            for (int i = 0; i < 60; i += 10)
+            {
+                vec3 r = new vec3(f[i], f[i + 1], f[i + 2]) - pos;
+                if (radP != 0f) r = glm.rotate(r, radP, vP);
+                if (radY != 0f) r = glm.rotate(r, radY, vY);
+                r += pos;
+                f[i] = r.x;
+                f[i + 1] = r.y;
+                f[i + 2] = r.z;
+            }
+            return f;
         }
 
         public float[] NotRectangle()

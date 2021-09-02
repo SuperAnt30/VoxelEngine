@@ -38,9 +38,7 @@ namespace VoxelEngine.World
                     }
                 }
             };
-            //LightOpacity = 14;
             IsAlphe = true;
-            Color = new vec4(0.24f, 0.45f, 0.88f, 1f);
             IsAction = false;
             IsCollision = false;
             IsWater = true;

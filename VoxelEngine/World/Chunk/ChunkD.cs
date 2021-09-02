@@ -26,6 +26,10 @@ namespace VoxelEngine.World.Chunk
         /// Загружен ли чанк
         /// </summary>
         public bool IsChunkLoaded { get; protected set; } = false;
+        /// <summary>
+        /// Генерация чанка
+        /// </summary>
+        public EnumGeterationStatus GeterationStatus { get; set; } = EnumGeterationStatus.None;
 
         /// <summary>
         /// Прячем при необходимости чанк рендера
@@ -218,7 +222,12 @@ namespace VoxelEngine.World.Chunk
         public bool LoadinData()
         {
             RegionBinary region = World.RegionPr.GetRegion(X, Z);
-            if (region == null) return false;
+            if (region == null)
+            {
+                // Если региона нет, мы его загружаем но выдаём не загруженный данные, для повторных проверок
+                //World.RegionPr.RegionSet(X, Z);
+                return false;
+            }
             byte[] b = region.GetChunk(X, Z);
             if (b != null)
             {
@@ -316,17 +325,40 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         public void Regen()
         {
+            // TODO:: пробежаться по блокам и убрать блоки с освещением и после этого генерацию
+
             Generation();
-            GenerateSkylightMap();
+            GenerationArea();
+            //GenerateSkylightMap();
             
             RegionBinary region = World.RegionPr.GetRegion(X, Z);
             region.SetChunk(X, Z, chunkBinary.Write());
         }
 
+        /// <summary>
+        /// Генерация тикущего чанка без соседних
+        /// </summary>
         public void Generation()
         {
             ChunkGenerate chunkGenerate = new ChunkGenerate(this);
             chunkGenerate.Generation();
+            GeterationStatus = EnumGeterationStatus.Chunk;
+        }
+
+        /// <summary>
+        /// Генерация с соседними чанками, деревья освещение
+        /// </summary>
+        public void GenerationArea()
+        {
+            // Генерация деревьев
+            ChunkGenerate chunkGenerate = new ChunkGenerate(this);
+            chunkGenerate.GenerationArea();
+
+            // Проверка освещения
+            StartRecheckGaps(true);
+
+            GeterationStatus = EnumGeterationStatus.Area;
+            SetChunkModified();
         }
 
         /// <summary>
@@ -524,7 +556,7 @@ namespace VoxelEngine.World.Chunk
             {
                 block = Blocks.GetBlock(EnumBlock.Leaves, block.Position);
             }
-            if (block.EBlock == EnumBlock.Sapling)
+            if (block.EBlock == EnumBlock.Sapling || block.EBlock == EnumBlock.TallGrass)
             {
                 // проверка что на землю садим
                 Block blockNew = GetBlock(block.Position.OffsetDown());
@@ -571,7 +603,7 @@ namespace VoxelEngine.World.Chunk
                 else
                 {
                     // проверка соседних блоков на воду
-                    AddTicks(liquidTicks, SetBlockTicks(block.Position, EnumBlock.Water));// blockOld.EBlock));
+                    AddTicks(liquidTicks, SetBlockTicks(block.Position, blockOld.EBlock));
                     //liquidTicks.AddRange(SetBlockLiquidTicks(block));
                 }
             }
@@ -625,7 +657,7 @@ namespace VoxelEngine.World.Chunk
                 Block b = GetBlock(bpos.ToVec3i());
 
                 // вода
-                if ((eBlock == EnumBlock.Water || eBlock == EnumBlock.WaterFlowing) && b.IsWater)
+                if (/*(eBlock == EnumBlock.Water || eBlock == EnumBlock.WaterFlowing) && */b.IsWater)
                 {
                     bt.Add(new BlockTick(b.Position, b.EBlock, VE.TICK_WATER_DRY));
                 }
@@ -901,8 +933,10 @@ namespace VoxelEngine.World.Chunk
         /// <summary>
         /// Запуск проверки бокового небесного освещения
         /// </summary>
-        public void StartRecheckGaps()
+        public void StartRecheckGaps(bool isHeight)
         {
+            if (isHeight) GenerateHeightMap();
+
             for (int x = 0; x < 16; x++)
             {
                 for (int z = 0; z < 16; z++)
@@ -919,7 +953,7 @@ namespace VoxelEngine.World.Chunk
         /// </summary>
         /// <param name="x"></param>
         /// <param name="z"></param>
-        protected void PropagateSkylightOcclusion(int x, int z)
+        public void PropagateSkylightOcclusion(int x, int z)
         {
             updateSkylightColumns[x, z] = true;
             isGapLightingUpdated = true;

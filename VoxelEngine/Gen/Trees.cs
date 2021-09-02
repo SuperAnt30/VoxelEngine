@@ -2,6 +2,7 @@
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
 using VoxelEngine.World;
+using VoxelEngine.World.Chunk;
 
 namespace VoxelEngine.Gen
 {
@@ -68,6 +69,10 @@ namespace VoxelEngine.Gen
         /// высота дерева (8-12)
         /// </summary>
         protected int ht = 8;
+        /// <summary>
+        /// Массив чанков используемых в генерации
+        /// </summary>
+        protected ChunkMap chunks = new ChunkMap();
 
         /// <summary>
         /// Сгенерировать дерево
@@ -81,6 +86,7 @@ namespace VoxelEngine.Gen
             wl += random.Next(3);
             hl += random.Next(3);
             ht = (int)((float)h * 1.6f);
+            chunks.Clear();
 
             if (pos.Y < 1 || pos.Y > 200) return false;
 
@@ -138,7 +144,8 @@ namespace VoxelEngine.Gen
 
                                 if (block2.EBlock == EnumBlock.Air || block2.EBlock == EnumBlock.Leaves || block2.EBlock == EnumBlock.LeavesApple)
                                 {
-                                    SetBlock(block2.Position, eblock, metaLeaves);
+                                    SetBlockState(block2.Position, eblock);
+                                    //SetBlock(block2.Position, eblock);
                                 }
                             }
                         }
@@ -152,11 +159,15 @@ namespace VoxelEngine.Gen
 
                     if (var21.EBlock == EnumBlock.Air || var21.EBlock == EnumBlock.Leaves || var21.EBlock == EnumBlock.Sapling)
                     {
-                        SetBlock(pos.OffsetUp(y), EnumBlock.Log, metaWood);
+                        //SetBlock(pos.OffsetUp(y), EnumBlock.Log);
+                        SetBlockState(pos.OffsetUp(y), EnumBlock.Log);
                     }
                 }
 
-                
+                RecheckGaps();
+                //SetBlock(pos, EnumBlock.Log);
+
+
                 return true;
             }
 
@@ -342,6 +353,40 @@ namespace VoxelEngine.Gen
                 SetBlock(pos, EnumBlock.Dirt);
             }
         }
+
+        protected void RecheckGaps()
+        {
+            foreach(ChunkD chunk in chunks.Values)
+            {
+                //chunk.StartRecheckGaps(true);
+                chunk.RecheckGaps();
+                chunk.SetChunkModified();
+            }
+        }
+
+        /// <summary>
+        /// Задать блок на прямую к вокселю
+        /// </summary>
+        protected void SetBlockState(BlockPos pos, EnumBlock eBlock)
+        {
+            int vx = pos.X & 15;
+            int vz = pos.Z & 15;
+            int cx = pos.X >> 4;
+            int cz = pos.Z >> 4;
+            
+            if (World.IsChunk(cx, cz))
+            {
+                ChunkD chunk = World.GetChunk(cx, cz);
+                if (pos.Y > chunk.GetHeight(vx, vz))
+                {
+                    chunk.SetUpBlock(vx, pos.Y, vz);
+                    chunk.PropagateSkylightOcclusion(vx, vz);
+                }
+                chunks.Set(chunk);
+                chunk.SetBlockState(vx, pos.Y, vz, eBlock);
+            }
+        }
+
 
         /// <summary>
         /// Задать блок

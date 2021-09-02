@@ -246,11 +246,19 @@ namespace VoxelEngine
                 }
                 if (IsLegsWater && !IsEyesWater)
                 {
-                    if (_height == Key.Plus && IsBodyWater)
+                    if (_height == Key.Plus)
                     {
-                        _onGround = false;
-                        j = VE.SPEED_JAMP * .24f;
-                    }
+                        if (IsBodyWater)
+                        {
+                            _onGround = false;
+                            j = VE.SPEED_JAMP * .12f;
+                        } 
+                        else if(_onGround)
+                        {
+                            _onGround = false;
+                            j = VE.SPEED_JAMP * .6f;
+                        }
+                    } 
 
                     // Если в воде то замедляем в 2 раза
                     h *= .5f;
@@ -287,9 +295,10 @@ namespace VoxelEngine
             float v2 = (float)_vertical * v;
             float h2 = (float)_horizontal * h;
 
-            StrDebug =string.Format("j: {0:0.0} v: {1:0.0} h: {2:0.0} {3}{4}{5}{6}{7}",
+            StrDebug =string.Format("j: {0:0.0}{8}{9} v: {1:0.0} h: {2:0.0} {3}{4}{5}{6}{7}",
                 j, v2, h2, _onGround ? "__" : "",
-                IsEyesWater ? "[E]" : "", IsBodyWater ? "[B]" : "", IsLegsWater ? "[L]" : "", flow != Pole.Down ? flow.ToString() : "");
+                IsEyesWater ? "[E]" : "", IsBodyWater ? "[B]" : "", IsLegsWater ? "[L]" : "", flow != Pole.Down ? flow.ToString() : "",
+                IsSpeed ? "[Sp]" : "", _isSneaking == 1 ? "[Sn]" : "");
 
             _move.y = j;
             _move.x = glm.sin(cam.Yaw + 1.570796f) * h2;
@@ -315,7 +324,8 @@ namespace VoxelEngine
         {
             if (_move.y == 0 && _onGround)
             {
-                _move.y = VE.SPEED_AUTOJAMP;
+                _move.y = VE.SPEED_UPING;
+                //if (IsLegsWater) _move.y *= 2f;
                 _isUping = true;
             }
         }
@@ -438,6 +448,8 @@ namespace VoxelEngine
                 if (hitBox.CollisionBodyY(move))
                 {
                     _onGround = true;
+                    // надо упереться в блок, чтоб не падать
+                    hitBox.SetPos(new vec3(hitBox.Position.x, Mth.Floor(hitBox.Position.y), hitBox.Position.z)); 
                     _move.y = 0;
                 }
 

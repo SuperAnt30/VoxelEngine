@@ -43,30 +43,41 @@ namespace VoxelEngine.Glm
 
         public vec3(vec3 v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
+            x = v.x;
+            y = v.y;
+            z = v.z;
         }
 
         public vec3(vec3i v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
+            x = v.x;
+            y = v.y;
+            z = v.z;
         }
 
         public vec3(vec4 v)
         {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
+            x = v.x;
+            y = v.y;
+            z = v.z;
         }
 
         public vec3(vec2 xy, float z)
         {
-            this.x = xy.x;
-            this.y = xy.y;
+            x = xy.x;
+            y = xy.y;
             this.z = z;
+        }
+
+        /// <summary>
+        /// Получить точку из матрици перемещения, вращения
+        /// </summary>
+        /// <param name="m4"></param>
+        public vec3(mat4 m4)
+        {
+            x = m4[3][0];
+            y = m4[3][1];
+            z = m4[3][2];
         }
 
         /// <summary>

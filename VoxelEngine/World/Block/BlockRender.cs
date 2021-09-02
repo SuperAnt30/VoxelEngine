@@ -279,7 +279,7 @@ namespace VoxelEngine.World
             vec4 color = new vec4(1f);
             if (_face.IsColor)
             {
-                if (Blk.EBlock == EnumBlock.Grass)
+                if (Blk.IsGrass)
                 {
                     EnumBiome biome = ChunkRend.Chunk.GetBiome(Blk.Position);
                     color = BlockColorBiome.Grass(biome);
@@ -294,10 +294,6 @@ namespace VoxelEngine.World
                     EnumBiome biome = ChunkRend.Chunk.GetBiome(Blk.Position);
                     color = BlockColorBiome.Water(biome);
                 }
-                else
-                {
-                    color = Blk.Color;
-                }
             }
             //_face.IsColor ? Blk.Color : new vec4(1f);
             float l = 1f - _LightPole(_side);
@@ -305,7 +301,18 @@ namespace VoxelEngine.World
             color.y -= l; if (color.y < 0) color.y = 0;
             color.z -= l; if (color.z < 0) color.z = 0;
             vec3 col = new vec3(color.x, color.y, color.z);
-            vec2 leg = new vec2(((float)_br.LightBlock) / 15f, ((float)_br.LightSky) / 15f);
+            vec2 leg;
+            if (Blk.LightingYourself)
+            {
+                // Яркость освещения от себя
+                leg = new vec2(((float)Blk.Voxel.GetLightFor(EnumSkyBlock.Block)) / 15f,
+                    ((float)Blk.Voxel.GetLightFor(EnumSkyBlock.Sky)) / 15f);
+            }
+            else
+            {
+                // Яркость освещения от соседнего блока
+                leg = new vec2(((float)_br.LightBlock) / 15f, ((float)_br.LightSky) / 15f);
+            }
             //color.w = _br.Light;
             //color.w = (((float)Blk.Voxel.GetLightFor(EnumSkyBlock.Sky)) / 15f);
             //color.w =((float)Mth.Max(_br.LightBlock, _br.LightSky) / 15f);
@@ -313,7 +320,8 @@ namespace VoxelEngine.World
             //color.w = (((float)_br.LightSky) / 15f);
             //color.w = ((float)_lightValue / 15f);
             //color.w = 1f;
-            BlockFaceUV blockUV = new BlockFaceUV(col, lg, leg);
+            vec3 pos = Blk.Position.ToVec3();
+            BlockFaceUV blockUV = new BlockFaceUV(col, lg, leg, pos);
             if (Blk.EBlock == EnumBlock.WaterFlowing && _side != Pole.Down)
             {
                 vec4 vw = HeightWater() * VE.WATER_LEVEL;
@@ -322,12 +330,21 @@ namespace VoxelEngine.World
             }
             else
             {
+                
                 blockUV.SetVecUV(
-                    new vec3(Blk.Position.X + _box.From.x, Blk.Position.Y + _box.From.y, Blk.Position.Z + _box.From.z),
-                    new vec3(Blk.Position.X + _box.To.x, Blk.Position.Y + _box.To.y, Blk.Position.Z + _box.To.z),
+                    pos + _box.From,
+                    pos + _box.To,
                     new vec2(u1, v2 + VE.UV_SIZE),
                     new vec2(u1 + VE.UV_SIZE, v2)
                 );
+
+                blockUV.RotateYaw(_box.RotateYaw);
+                blockUV.RotatePitch(_box.RotatePitch);
+                //if (_box.RotateYaw != 0) 
+                //if (Blk.EBlock == EnumBlock.TallGrass)
+                //{
+                //    blockUV.RotateYaw(_box.RotateYaw);
+                //}
             }
             if (_face.IsTwoSides)
             {
@@ -439,7 +456,7 @@ namespace VoxelEngine.World
         {
             Voxel v = GetVoxel(x, y, z);
             if (v.IsEmpty) return true;
-            return v.GetEBlock() != 0 && Blocks.IsNotTransparent(v.GetEBlock());
+            return v.GetEBlock() != EnumBlock.Air && Blocks.IsNotTransparent(v.GetEBlock());
         }
 
         /// <summary>

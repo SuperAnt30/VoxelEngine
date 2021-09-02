@@ -21,6 +21,15 @@ namespace VoxelEngine.Model
         /// </summary>
         public Face[] Faces { get; set; } = new Face[] { new Face(Pole.All, 0) };
 
+        /// <summary>
+        /// Указываем вращение блока по оси Y в радианах
+        /// </summary>
+        public float RotateYaw { get; set; } = 0;
+        /// <summary>
+        /// Указываем вращение блока по оси X в радианах
+        /// </summary>
+        public float RotatePitch { get; set; } = 0;
+
         public Box() { }
 
         public Box(int numberTexture)

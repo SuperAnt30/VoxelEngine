@@ -85,6 +85,11 @@ namespace VoxelEngine
 
         public TextureAnimation textureAnimation;
 
+        /// <summary>
+        /// Обзор тумана
+        /// </summary>
+        protected float lengthFog;
+
         public void Initialized(OpenGL openGL)
         {
             stopwatch.Start();
@@ -125,6 +130,8 @@ namespace VoxelEngine
             SkyBoxSun = new SkyBoxMesh(0.9f);
             // worldM.Render();
 
+            lengthFog = VE.CHUNK_VISIBILITY * 16f - 16f;
+
             //Thread myThread = new Thread(new ThreadStart(worldR.BeginLoading));
             //myThread.Start();
             //worldR.BeginLoading();
@@ -164,11 +171,11 @@ namespace VoxelEngine
             // Включает Буфер глубины 
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
 
-            int t = 24000;
+            float t = VE.COUNT_TICE_DAY;
             long tc = Debag.GetInstance().TickCount;
-            long it = tc / t;
-            float ir = (float)(tc - it * t) / ((float)t / 6.283185f);
-            float light = (float)(tc - it * t) / (float)t * 2f;
+            long it = tc / VE.COUNT_TICE_DAY;
+            float ir = (float)(tc - it * t) / (t / 6.283185f);
+            float light = (float)(tc - it * t) / t * 2f;
             if (light > 1f) light = 2f - light;
             light = 1f - light;
 
@@ -221,6 +228,7 @@ namespace VoxelEngine
             Sh.ShVoxel.SetUniformMatrix4(gl, "projection", Cam.Projection);
             Sh.ShVoxel.SetUniformMatrix4(gl, "lookat", Cam.LookAt);
             Sh.ShVoxel.SetUniform1(gl, "light", light);
+            Sh.ShVoxel.SetUniform1(gl, "length", lengthFog);
             // Рендер мира
 
 

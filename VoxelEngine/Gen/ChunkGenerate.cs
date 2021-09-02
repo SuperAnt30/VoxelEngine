@@ -1,4 +1,5 @@
 ﻿using System;
+using VoxelEngine.Util;
 using VoxelEngine.World;
 using VoxelEngine.World.Biome;
 using VoxelEngine.World.Chunk;
@@ -32,7 +33,10 @@ namespace VoxelEngine.Gen
             forest = new BiomeForest(chunk);
             mountainsDesert = new BiomeMountainsDesert(chunk);
         }
-        
+
+        /// <summary>
+        /// Генерация тикущего чанка без соседних
+        /// </summary>
         public void Generation()
         {
             Map();
@@ -40,6 +44,65 @@ namespace VoxelEngine.Gen
             //biomeBase.Cave();
             //GenerationOld();
         }
+
+        /// <summary>
+        /// Генерация с соседними чанками, деревья освещение
+        /// </summary>
+        public void GenerationArea()
+        {
+            Tree();
+            //Map();
+            //ReliefHeight();
+            //biomeBase.Cave();
+            //GenerationOld();
+        }
+
+        protected void Tree()
+        {
+            for (int x = 0; x < 16; x++)
+            {
+                for (int z = 0; z < 16; z++)
+                {
+                    EnumBiome eBiome = Chunk.GetBiome(x, z);
+                    if (eBiome == EnumBiome.Forest)
+                    {
+                        Tree(x, z, eBiome, .46f);
+                    }
+                    else if (eBiome == EnumBiome.GreenPlain)
+                    {
+                        Tree(x, z, eBiome, .7f);
+                    }
+                    else if (eBiome == EnumBiome.Swamp)
+                    {
+                        Tree(x, z, eBiome, .58f);
+                    }
+                    else if (eBiome == EnumBiome.Mountains)
+                    {
+                        Tree(x, z, eBiome, .6f);
+                    }
+                }
+            }
+        }
+
+        protected void Tree(int x, int z, EnumBiome eBiome, float k)
+        {
+            BiomeBase biome = BiomeObject(eBiome);
+            if (biome.Grass(x, z, k))
+            {
+                for (int y = 64; y < 128; y++)
+                {
+                    EnumBlock eBlock = Chunk.GetBlockState(new BlockPos(x, y, z));
+                    if (eBlock == EnumBlock.TallGrass || eBlock == EnumBlock.Dandelion)
+                    {
+                        Chunk.SetBlockState(x, y, z, EnumBlock.Air);
+                        Trees trees = new Trees(Chunk.World);
+                        trees.Generate(new BlockPos(Chunk.X * 16 + x, y, Chunk.Z * 16 + z));
+                        break;
+                    }
+                }
+            }
+        }
+
 
         protected void Map()
         {

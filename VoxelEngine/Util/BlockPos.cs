@@ -97,6 +97,11 @@ namespace VoxelEngine.Util
             return new vec3i(X, Y, Z);
         }
 
+        public vec3 ToVec3()
+        {
+            return new vec3(X, Y, Z);
+        }
+
         #region ToString support
 
         public override string ToString()

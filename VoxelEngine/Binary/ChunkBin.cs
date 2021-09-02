@@ -19,5 +19,9 @@ namespace VoxelEngine.Binary
         /// Биомы в чанке, столбцы
         /// </summary>
         public byte[,] Biome { get; set; } = new byte[16, 16];
+        /// <summary>
+        /// Статус генерации чанка
+        /// </summary>
+        public byte GeterationStatus { get; set; }
     }
 }

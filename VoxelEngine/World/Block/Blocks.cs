@@ -37,6 +37,9 @@ namespace VoxelEngine.World
 
                 case EnumBlock.Diorite: block = new BlockDiorite(); break;
                 case EnumBlock.Bedrock: block = new BlockBedrock(); break;
+                case EnumBlock.TallGrass: block = new BlockTallGrass(); break;
+                case EnumBlock.Poppy: block = new BlockPoppy(); break;
+                case EnumBlock.Dandelion: block = new BlockDandelion(); break;
             }
             
             // тут нада id voxel-я, так-как не успевает замениться тип блока, нет света корректного
@@ -69,12 +72,15 @@ namespace VoxelEngine.World
             {
                 case EnumBlock.Air: return 0;
                 case EnumBlock.Glass: return 2;
-                case EnumBlock.Cactus: return 3;
+                case EnumBlock.Cactus: return 0;
                 case EnumBlock.Water: return 3;
                 case EnumBlock.WaterFlowing: return 3;
                 case EnumBlock.Leaves: return 3;
                 case EnumBlock.Sapling: return 0;
                 case EnumBlock.LeavesApple: return 4;
+                case EnumBlock.TallGrass: return 0;
+                case EnumBlock.Poppy: return 0;
+                case EnumBlock.Dandelion: return 0;
             }
             return 15;
         }

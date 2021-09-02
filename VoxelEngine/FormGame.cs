@@ -21,6 +21,14 @@ namespace VoxelEngine
         /// </summary>
         private CounterTick counterTps = new CounterTick();
         /// <summary>
+        /// Счётчик Рендер чанков
+        /// </summary>
+        private CounterTick counterRc = new CounterTick();
+        /// <summary>
+        /// Счётчик Рендер чанков альфа
+        /// </summary>
+        private CounterTick counterRca = new CounterTick();
+        /// <summary>
         /// Отдельный поток FPS
         /// </summary>
         //private ThreadTick threadFps = new ThreadTick();
@@ -294,6 +302,8 @@ namespace VoxelEngine
             Debag d = Debag.GetInstance();
             d.Fps = counterFps.CountTick;
             d.Tps = counterTps.CountTick;
+            d.Rc = counterRc.CountTick;
+            d.Rca = counterRca.CountTick;
             d.SpeedFrame = d.Fps == 0 ? 0 : d.CountFrame / ((float)d.Fps * System.Diagnostics.Stopwatch.Frequency / 1000f);
             d.CountFrame = 0;
         }
@@ -339,9 +349,12 @@ namespace VoxelEngine
                 {
                     // Если пометка не альфа, то сетка твёрдых блоков
                     OpenGLF.GetInstance().WorldM.RenderChank(e.ChunkPos.x, e.ChunkPos.y, e.Buffer);
+                    counterRc.CalculateFrameRate();
                 }
                 // Генерация альфы всегда есть
                 OpenGLF.GetInstance().WorldM.RenderChankAlpha(e.ChunkPos.x, e.ChunkPos.y, e.BufferAlpha);
+                counterRca.CalculateFrameRate();
+                Debag.GetInstance().CountTest++;
             }
         }
 
@@ -378,6 +391,8 @@ namespace VoxelEngine
                     {
                         World.PackageRender();
                     }
+                    counterRc.CalculateFrameRate(false);
+                    counterRca.CalculateFrameRate(false);
                 }
             }
         }

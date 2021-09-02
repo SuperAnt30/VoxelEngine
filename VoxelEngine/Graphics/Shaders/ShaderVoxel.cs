@@ -17,13 +17,16 @@ layout(location = 3) in vec2 v_light;
 out vec4 a_color;
 out vec2 a_texCoord;
 out vec4 a_position;
+out float a_length;
 
 uniform mat4 projection;
 uniform mat4 lookat;
 uniform float light;
+uniform float length;
 
 float light2;
 float lightS;
+
 
 void main()
 {
@@ -32,6 +35,7 @@ void main()
     //lb = ((a_color.a & 0xF0) >> 4) / 15.0;
     //lb = a_color.a / 15.0;
     a_position = projection * lookat * vec4(v_position, 1.0);
+    //a_l = projection.y;
     
     lightS = v_light.y * light;
     //light2 = light * v_color.a;
@@ -46,6 +50,7 @@ void main()
     a_color.a = 1.0;
     a_texCoord = v_texCoord;
     gl_Position = a_position;
+    a_length = length;
 }";
         //0.3f
         protected override string _FragmentShaderSource { get; } = @"#version 330 core
@@ -53,16 +58,22 @@ void main()
 in vec4 a_color;
 in vec4 a_position;
 in vec2 a_texCoord;
+in float a_length;
+
 out vec4 f_color;
 
 uniform sampler2D u_texture0;
+
 
 void main(){
 	vec4 tex_color = texture(u_texture0, a_texCoord);
 	if (tex_color.a < 0.1) 
 	discard;
     vec4 color = a_color * tex_color;
-    if (a_position.z > 0) {
+    float l = length(a_position);
+    float l2 = a_length * 0.1;
+    float l3 = a_length - l2;
+    if (l < l3) {
       //  color.rgb *= 1.0 - (a_position.z - 64) * 0.01;
         //if (f_color.r >= 0.3 && color.r < 0.3) color.r = 0.3;
         //if (f_color.g >= 0.3 && color.g < 0.3) color.g = 0.3;
@@ -73,8 +84,19 @@ void main(){
         //f_color.r = 0.3;
         //f_color.g = 0.3;
         //f_color.b = 0.3;
+        f_color = color;
+    } else { //if (l < a_length) {
+        f_color = color;
+
+        //f_color.rgb *= 1.0 - ((l - l3) / (a_length - l3));
+        //if (f_color.r >= 0.3 && color.r < 0.3) color.r = 0.3;
+        //if (f_color.g >= 0.3 && color.g < 0.3) color.g = 0.3;
+        //if (f_color.b >= 0.3 && color.b < 0.3) color.b = 0.3;
+        f_color.a = 1.0 - ((l - l3) / (a_length - l3));
     }
     f_color = color;
+        
+    
 }";
     }
 }

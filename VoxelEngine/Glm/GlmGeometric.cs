@@ -48,5 +48,18 @@ namespace VoxelEngine.Glm
             float sqr = v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w;
             return v * (1.0f / Mth.Sqrt(sqr));
         }
+
+        /// <summary>
+        /// Вращение точки вокруг оси координат вокруг вектора
+        /// </summary>
+        /// <param name="pos">позиция точки</param>
+        /// <param name="angle">угол</param>
+        /// <param name="vec">вектор</param>
+        public static vec3 rotate(vec3 pos, float angle, vec3 vec)
+        {
+            mat4 rotat = rotate(new mat4(1.0f), angle, vec);
+            mat4 res = translate(rotat, pos);
+            return new vec3(res);
+        }
     }
 }
