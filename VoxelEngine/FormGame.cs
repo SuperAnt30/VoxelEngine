@@ -314,10 +314,11 @@ namespace VoxelEngine
         private void FormGame_MoveChanged(object sender, EventArgs e)
         {
             OpenGLF openGLF = OpenGLF.GetInstance();
-            Block block = World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
+            Block block = World.RayCast(openGLF.Cam.PosPlus(), openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
             if (block != null && !block.IsAir)
             {
                 float size = 1.01f;
+                // Y .5 => 0.3
                 openGLF.WorldLineM.Box("cursor", iend.x + .5f, iend.y + .5f, iend.z + .5f, size, size, size, .9f, .9f, .1f, .6f);
                 Debag.GetInstance().RayCastBlockUp = World.GetBlock(new BlockPos(block.Position.X, block.Position.Y + 1f, block.Position.Z));
             }

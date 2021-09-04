@@ -5,6 +5,7 @@ namespace VoxelEngine.Glm
     /// <summary>
     /// Представляет трехмерный вектор
     /// </summary>
+    [Serializable]
     public struct vec3
     {
         public float x;

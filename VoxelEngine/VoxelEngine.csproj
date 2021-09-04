@@ -73,6 +73,7 @@
     <Compile Include="Actions\Keyboard.cs" />
     <Compile Include="Actions\Mouse.cs" />
     <Compile Include="Actions\PlayerCamera.cs" />
+    <Compile Include="Binary\BlockTickBin.cs" />
     <Compile Include="Binary\ChunkBin.cs" />
     <Compile Include="Binary\RegionBin.cs" />
     <Compile Include="FormTest.cs">

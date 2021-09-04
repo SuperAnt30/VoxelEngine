@@ -73,6 +73,10 @@
         /// </summary>
         public const float SPEED_AUTOJAMP = 10f; //9
         /// <summary>
+        /// Скорость авто прыжка и когда встаём из положения сидя в воде
+        /// </summary>
+        public const float SPEED_WATER_AUTOJAMP = 4f; //9
+        /// <summary>
         /// Константа для авто прыжка чтоб встать
         /// </summary>
         public const float SPEED_UPING = 7f; 

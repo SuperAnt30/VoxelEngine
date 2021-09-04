@@ -306,7 +306,7 @@ namespace VoxelEngine.Gen
 
                                         if (block.EBlock == EnumBlock.Air || block.EBlock == EnumBlock.Leaves)
                                         {
-                                            SetBlock(block.Position, EnumBlock.Leaves, metaLeaves);
+                                            SetBlockState(block.Position, EnumBlock.Leaves);// metaLeaves);
                                         }
                                     }
                                 }
@@ -320,7 +320,7 @@ namespace VoxelEngine.Gen
 
                             if (var21.EBlock == EnumBlock.Air || var21.EBlock == EnumBlock.Leaves || var21.EBlock == EnumBlock.Sapling)
                             {
-                                SetBlock(pos.OffsetUp(y), EnumBlock.Log, metaWood);
+                                SetBlockState(pos.OffsetUp(y), EnumBlock.Log);//, metaWood);
                             }
                         }
 
@@ -350,7 +350,7 @@ namespace VoxelEngine.Gen
         {
             if (World.GetBlock(pos).EBlock != EnumBlock.Dirt)
             {
-                SetBlock(pos, EnumBlock.Dirt);
+                SetBlockState(pos, EnumBlock.Dirt);
             }
         }
 
@@ -377,13 +377,13 @@ namespace VoxelEngine.Gen
             if (World.IsChunk(cx, cz))
             {
                 ChunkD chunk = World.GetChunk(cx, cz);
+                chunk.SetBlockState(vx, pos.Y, vz, eBlock);
                 if (pos.Y > chunk.GetHeight(vx, vz))
                 {
                     chunk.SetUpBlock(vx, pos.Y, vz);
                     chunk.PropagateSkylightOcclusion(vx, vz);
                 }
                 chunks.Set(chunk);
-                chunk.SetBlockState(vx, pos.Y, vz, eBlock);
             }
         }
 
@@ -391,21 +391,21 @@ namespace VoxelEngine.Gen
         /// <summary>
         /// Задать блок
         /// </summary>
-        protected void SetBlock(BlockPos pos, EnumBlock eBlock)
-        {
-            Block blockNew = Blocks.GetBlock(eBlock, pos);
-            World.SetBlockState(blockNew, false);
-        }
+        //protected void SetBlock(BlockPos pos, EnumBlock eBlock)
+        //{
+        //    Block blockNew = Blocks.GetBlock(eBlock, pos);
+        //    World.SetBlockState(blockNew, false);
+        //}
 
-        /// <summary>
-        /// Задать блок
-        /// </summary>
-        protected void SetBlock(BlockPos pos, EnumBlock eBlock, int properties)
-        {
-            Block blockNew = Blocks.GetBlock(eBlock, pos);
-            blockNew.Properties = (byte)properties;
-            World.SetBlockState(blockNew, false);
-        }
+        ///// <summary>
+        ///// Задать блок
+        ///// </summary>
+        //protected void SetBlock(BlockPos pos, EnumBlock eBlock, int properties)
+        //{
+        //    Block blockNew = Blocks.GetBlock(eBlock, pos);
+        //    blockNew.Properties = (byte)properties;
+        //    World.SetBlockState(blockNew, false);
+        //}
 
         /// <summary>
         /// Проверим есть ли рядом блок древесины

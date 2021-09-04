@@ -23,5 +23,9 @@ namespace VoxelEngine.Binary
         /// Статус генерации чанка
         /// </summary>
         public byte GeterationStatus { get; set; }
+        /// <summary>
+        /// Массив задачь тиков на блоки
+        /// </summary>
+        public BlockTickBin[] BlockTickBins { get; set; }
     }
 }

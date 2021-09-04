@@ -1,4 +1,5 @@
-﻿using VoxelEngine.Util;
+﻿using VoxelEngine.Binary;
+using VoxelEngine.Util;
 
 namespace VoxelEngine.World
 {
@@ -18,23 +19,33 @@ namespace VoxelEngine.World
         /// <summary>
         /// Количество тиков ещё
         /// </summary>
-        protected int _countTick;
+        public int CountTick { get; protected set; }
 
         public BlockTick(BlockPos pos, EnumBlock eBlock, int countTick)
         {
             Position = pos;
             EBlock = eBlock;
-            _countTick = countTick;
+            CountTick = countTick;
+        }
+
+        public BlockTickBin Get()
+        {
+            return new BlockTickBin()
+            {
+                EBlock = (ushort)this.EBlock,
+                CountTick = this.CountTick,
+                Position = this.Position.ToVec3()
+            };
         }
 
         public void Tick()
         {
-            _countTick--;
+            CountTick--;
         }
 
         public bool IsAction()
         {
-            return _countTick <= 0;
+            return CountTick <= 0;
         }
     }
 }

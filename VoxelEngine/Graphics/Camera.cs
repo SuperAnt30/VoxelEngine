@@ -104,6 +104,16 @@ namespace VoxelEngine
                 }
             }
         }
+
+        /// <summary>
+        /// Рост персонажа, камера + 0,5 блока
+        /// </summary>
+        public vec3 PosPlus()
+        {
+            // TODO:: Рост + 0,5
+            return Position + new vec3(0, .5f, 0);
+        }
+
         
              
         /// <summary>
@@ -167,9 +177,10 @@ namespace VoxelEngine
         /// </summary>
         public void ReplacePosition()
         {
-            mat4 lookAt = glm.lookAt(Position, Position + Front, Up);
+            vec3 pos = PosPlus();
+            mat4 lookAt = glm.lookAt(pos, pos + Front, Up);
             LookAt = lookAt.to_array();
-            PositionView = glm.translate(new mat4(1.0f), Position).to_array();
+            PositionView = glm.translate(new mat4(1.0f), pos).to_array();
             ProjectionLookAt = (glm.perspective(Fov, _aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f)
                 * lookAt).to_array();
 
@@ -346,8 +357,6 @@ namespace VoxelEngine
         {
             return new vec3i(pos);
         }
-
-        public bool IsSneaking { get; protected set; } = false;
         /// <summary>
         /// Верхняя точка +++
         /// </summary>
@@ -364,7 +373,6 @@ namespace VoxelEngine
         {
             _vecUp = new vec2(.6f, .5f);
             _vecDown = new vec2(-.6f, -3.0f);
-            IsSneaking = false;
         }
         /// <summary>
         /// Сидит
@@ -373,7 +381,14 @@ namespace VoxelEngine
         {
             _vecUp = new vec2(.6f, .5f);
             _vecDown = new vec2(-.6f, -2.0f);
-            IsSneaking = true;
+        }
+        /// <summary>
+        /// Плывём
+        /// </summary>
+        public void Sailing()
+        {
+            _vecUp = new vec2(.6f, 0.5f);
+            _vecDown = new vec2(-.6f, -1.0f);
         }
 
         /// <summary>

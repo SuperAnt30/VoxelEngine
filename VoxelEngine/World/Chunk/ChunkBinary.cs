@@ -34,6 +34,7 @@ namespace VoxelEngine.World.Chunk
                 }
             }
             Chunk.GeterationStatus = (EnumGeterationStatus)chunk.GeterationStatus;
+            Chunk.SetBlockTickBins(chunk.BlockTickBins);
             //Chunk.GeterationStatus = EnumGeterationStatus.Chunk;
             //Chunk.SetChunkModified();
         }
@@ -67,6 +68,7 @@ namespace VoxelEngine.World.Chunk
                 }
             }
             chunk.GeterationStatus = (byte)Chunk.GeterationStatus;
+            chunk.BlockTickBins = Chunk.GetBlockTickBins();
             return Serialize(chunk);
         }
 

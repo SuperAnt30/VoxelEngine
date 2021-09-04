@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using VoxelEngine.Binary;
 using VoxelEngine.Gen;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
@@ -506,6 +507,15 @@ namespace VoxelEngine.World.Chunk
         {
             return heightMap[x, z];
         }
+
+        /// <summary>
+        /// Обновить высоту если это надо
+        /// </summary>
+        public void UpdateHeight(int x, int y, int z)
+        {
+            if (heightMap[x, z] < y) heightMap[x, z] = y;
+            if (heightMapMaximum < y) heightMapMaximum = y;
+        }
         /// <summary>
         /// Карта высот по чанку, XZ
         /// </summary>
@@ -680,6 +690,7 @@ namespace VoxelEngine.World.Chunk
         public void SetUpBlock(int x, int y, int z)
         {
             heightMap[x, z] = y;
+            if (heightMapMaximum < y) heightMapMaximum = y;
         }
 
         /// <summary>
@@ -1010,6 +1021,36 @@ namespace VoxelEngine.World.Chunk
         /// TODO:: 2021-07-17 научиться сохранять и считывать
         /// </summary>
         protected Hashtable liquidTicks = new Hashtable();
+
+        /// <summary>
+        /// Вернуть массив задач
+        /// </summary>
+        public BlockTickBin[] GetBlockTickBins()
+        {
+            List<BlockTickBin> btbs = new List<BlockTickBin>();
+            foreach (BlockTick bt in liquidTicks.Values)
+            {
+                btbs.Add(bt.Get());
+            }
+            return btbs.ToArray();
+        }
+        /// <summary>
+        /// Задать массив задачь
+        /// </summary>
+        /// <param name="blockTickBins"></param>
+        public void SetBlockTickBins(BlockTickBin[] blockTickBins)
+        {
+            if (blockTickBins != null && blockTickBins.Length > 0)
+            {
+                foreach (BlockTickBin btb in blockTickBins)
+                {
+                    if (btb != null)
+                    {
+                        AddTicks(liquidTicks, new BlockTick(new BlockPos(btb.Position), (EnumBlock)btb.EBlock, btb.CountTick));
+                    }
+                }
+            }
+        }
 
 
         protected void AddTicks(Hashtable lt, BlockTick blockTick)

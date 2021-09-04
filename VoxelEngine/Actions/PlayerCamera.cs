@@ -258,7 +258,8 @@ namespace VoxelEngine
                             _onGround = false;
                             j = VE.SPEED_JAMP * .6f;
                         }
-                    } 
+                    }
+                    //OpenGLF.GetInstance().Cam.Sailing();
 
                     // Если в воде то замедляем в 2 раза
                     h *= .5f;
@@ -422,20 +423,25 @@ namespace VoxelEngine
                 // Коллизия для векторов поверхности
                 if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
                 {
-                    if (IsLegsWater)
-                    {
-                        cam.Sneaking();
-                        hitBox = cam.GetHitBox();
-                        hitBox.CollisionBodyXZ(move);
-                        cam.Worth();
-                    }
-                    else
+                    //if (IsLegsWater)
+                    //{
+                    //    //cam.Sneaking();
+                    //    if (!hitBox.CollisionBodyXZ(move))
+                    //    {
+                    //        cam.Sneaking();
+                    //        hitBox = cam.GetHitBox();
+                    //        hitBox.CollisionBodyXZ(move);
+                    //        cam.Worth();
+                    //    }
+                    //    //
+                    //}
+                    //else
                     {
                         bool isAutoJump = hitBox.CollisionBodyXZ(move);
                         
                         if (isAutoJump && _onGround)
                         {
-                            _move.y = VE.SPEED_AUTOJAMP;
+                            _move.y = IsLegsWater ? VE.SPEED_WATER_AUTOJAMP : VE.SPEED_AUTOJAMP;
                             move.y = _move.y * time;  // под вопросом
                         }
                     }

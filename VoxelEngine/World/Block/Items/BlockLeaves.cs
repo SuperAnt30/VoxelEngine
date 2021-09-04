@@ -12,6 +12,7 @@ namespace VoxelEngine.World
         {
             Boxes = new Box[] { new Box(34, true) };
 
+            IsCollision = false;
             AllDrawing = true;
             IsLeaves = true;
         }

@@ -320,7 +320,7 @@ namespace VoxelEngine.World
             //color.w = (((float)_br.LightSky) / 15f);
             //color.w = ((float)_lightValue / 15f);
             //color.w = 1f;
-            vec3 pos = Blk.Position.ToVec3();
+            vec3 pos = Blk.Position.ToVec3();// + new vec3(0, -0.2f, 0);
             BlockFaceUV blockUV = new BlockFaceUV(col, lg, leg, pos);
             if (Blk.EBlock == EnumBlock.WaterFlowing && _side != Pole.Down)
             {
@@ -351,8 +351,8 @@ namespace VoxelEngine.World
                 // Слой воды чтоб увидеть снизу
                 List<float> ar = new List<float>(blockUV.Side(_side));
                 blockUV.SetVecUV(
-                    new vec3(Blk.Position.X + _box.From.x, Blk.Position.Y + _box.To.y, Blk.Position.Z + _box.From.z),
-                    new vec3(Blk.Position.X + _box.To.x, Blk.Position.Y + _box.To.y, Blk.Position.Z + _box.To.z),
+                    new vec3(pos.x + _box.From.x, pos.y + _box.To.y, pos.z + _box.From.z),
+                    new vec3(pos.x + _box.To.x, pos.y + _box.To.y, pos.z + _box.To.z),
                     new vec2(u1, v2 + VE.UV_SIZE),
                     new vec2(u1 + VE.UV_SIZE, v2)
                 );
