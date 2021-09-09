@@ -3,7 +3,7 @@ using System.Collections;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace VoxelEngine
+namespace VoxelEngine.Graphics
 {
     /// <summary>
     /// Объект одиночка текстуры
@@ -21,11 +21,12 @@ namespace VoxelEngine
         public void Initialize()
         {
             SetTexture("gui", @"textures\guiicons.png");
+            SetTexture("chicken", @"textures\chicken.png");
             // Текстурный атлас 
-           // SetTexture("test128", @"textures\128.png");
+            // SetTexture("test128", @"textures\128.png");
             //Texture("test512", @"textures\512.png");
             //SetTexture("test256", @"textures\256.png");
-            
+
             SetTextureSkyBox();
             SetTextureSkyBox2();
 

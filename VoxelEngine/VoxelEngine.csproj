@@ -11,6 +11,7 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -23,7 +24,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -45,6 +45,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="SharpGL, Version=3.1.1.0, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
@@ -70,12 +71,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\EnumSneaking.cs" />
     <Compile Include="Actions\Keyboard.cs" />
     <Compile Include="Actions\Mouse.cs" />
     <Compile Include="Actions\PlayerCamera.cs" />
     <Compile Include="Binary\BlockTickBin.cs" />
     <Compile Include="Binary\ChunkBin.cs" />
     <Compile Include="Binary\RegionBin.cs" />
+    <Compile Include="Entity\EntityBase.cs" />
+    <Compile Include="Entity\EntityChicken.cs" />
     <Compile Include="FormTest.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -87,16 +91,25 @@
     <Compile Include="Gen\ChunkGenerate.cs" />
     <Compile Include="Gen\NoiseGeneratorSimplex.cs" />
     <Compile Include="Gen\NoiseGeneratorPerlin.cs" />
-    <Compile Include="Gen\Trees.cs" />
+    <Compile Include="Gen\GenTrees.cs" />
+    <Compile Include="Graphics\Shader\ShaderEntity.cs" />
+    <Compile Include="Models\ModelBase.cs" />
+    <Compile Include="Models\ModelBox.cs" />
+    <Compile Include="Models\ModelChicken.cs" />
+    <Compile Include="Models\TextureVertex.cs" />
+    <Compile Include="Models\TexturedQuad.cs" />
+    <Compile Include="Renderer\Entity\EntityMesh.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Util\BlockPos.cs" />
+    <Compile Include="Util\BufferHeir.cs" />
     <Compile Include="Util\CoordEvent.cs" />
     <Compile Include="Util\EnumFacing.cs" />
     <Compile Include="Util\EnumSkyBlock.cs" />
     <Compile Include="Util\Gzip.cs" />
+    <Compile Include="Util\HitBoxSize.cs" />
     <Compile Include="Util\Map.cs" />
     <Compile Include="Util\Mth.cs" />
-    <Compile Include="Graphics\Shaders\ShaderSkyBox.cs" />
+    <Compile Include="Graphics\Shader\ShaderSkyBox.cs" />
     <Compile Include="Util\WinApi.cs" />
     <Compile Include="VEC.cs" />
     <Compile Include="Glm\GlmGeometric.cs" />
@@ -112,8 +125,9 @@
     <Compile Include="Glm\vec3.cs" />
     <Compile Include="Glm\vec4.cs" />
     <Compile Include="Util\Pole.cs" />
-    <Compile Include="Graphics\Shaders\ShaderLine.cs" />
+    <Compile Include="Graphics\Shader\ShaderLine.cs" />
     <Compile Include="Graphics\TextureAnimation.cs" />
+    <Compile Include="VEMoving.cs" />
     <Compile Include="VES.cs" />
     <Compile Include="World\Biome\BiomeBase.cs" />
     <Compile Include="World\Biome\BiomeMountainsDesert.cs" />
@@ -125,94 +139,96 @@
     <Compile Include="World\Biome\BiomeGreenPlain.cs" />
     <Compile Include="World\Biome\BiomeWater.cs" />
     <Compile Include="World\Biome\EnumBiome.cs" />
-    <Compile Include="World\Block\Block.cs" />
-    <Compile Include="World\Block\BlockColorBiome.cs" />
-    <Compile Include="World\Block\Items\BlockAir.cs" />
-    <Compile Include="World\Block\Items\BlockBedrock.cs" />
-    <Compile Include="World\Block\Items\BlockPoppy.cs" />
-    <Compile Include="World\Block\Items\BlockLeavesApple.cs" />
-    <Compile Include="World\Block\Items\BlockDandelion.cs" />
-    <Compile Include="World\Block\Items\BlockTallGrass.cs" />
-    <Compile Include="World\Block\Items\BlockSapling.cs" />
-    <Compile Include="World\Block\Items\BlockLeaves.cs" />
-    <Compile Include="World\Block\Items\BlockLog.cs" />
-    <Compile Include="World\Block\Items\BlockBrol.cs" />
-    <Compile Include="World\Block\BlockFaceLiquid.cs" />
-    <Compile Include="World\Block\BlockRender.cs" />
-    <Compile Include="World\Block\BlockTick.cs" />
-    <Compile Include="World\Block\Items\BlockDiorite.cs" />
-    <Compile Include="World\Block\Items\BlockTileBrown.cs" />
-    <Compile Include="World\Block\Items\BlockTileDark.cs" />
-    <Compile Include="World\Block\Items\BlockTileGray.cs" />
-    <Compile Include="World\Block\Items\BlockSand.cs" />
-    <Compile Include="World\Block\Items\BlockPlanks.cs" />
-    <Compile Include="World\Block\Items\BlockGlass.cs" />
-    <Compile Include="World\Block\Items\BlockDirt.cs" />
-    <Compile Include="World\Block\Items\BlockWaterFlowing.cs" />
-    <Compile Include="World\Block\Items\BlockWater.cs" />
-    <Compile Include="World\Block\Items\BlockCactus.cs" />
-    <Compile Include="World\Block\Items\BlockGrass.cs" />
-    <Compile Include="World\Block\Blocks.cs" />
-    <Compile Include="World\Block\Items\BlockStone.cs" />
-    <Compile Include="World\Block\EnumBlock.cs" />
-    <Compile Include="World\Block\Model\Box.cs" />
-    <Compile Include="World\Block\Model\Face.cs" />
-    <Compile Include="World\Chunk\ChunkBinary.cs" />
-    <Compile Include="World\Chunk\ChunkBuffer.cs" />
-    <Compile Include="World\Chunk\ChunkD.cs" />
-    <Compile Include="World\Chunk\BufferEvent.cs" />
-    <Compile Include="World\Chunk\ChunkHeir.cs" />
-    <Compile Include="World\Chunk\ChunkMap.cs" />
-    <Compile Include="World\Chunk\ChunkMeshs.cs" />
-    <Compile Include="World\Chunk\ChunkProvider.cs" />
-    <Compile Include="World\Chunk\ChunkStorage.cs" />
-    <Compile Include="World\Coords.cs" />
-    <Compile Include="World\GuiWater.cs" />
+    <Compile Include="World\Blk\Block.cs" />
+    <Compile Include="Renderer\Blk\BlockColorBiome.cs" />
+    <Compile Include="World\Blk\Items\BlockAir.cs" />
+    <Compile Include="World\Blk\Items\BlockBedrock.cs" />
+    <Compile Include="World\Blk\Items\BlockPoppy.cs" />
+    <Compile Include="World\Blk\Items\BlockLeavesApple.cs" />
+    <Compile Include="World\Blk\Items\BlockDandelion.cs" />
+    <Compile Include="World\Blk\Items\BlockTallGrass.cs" />
+    <Compile Include="World\Blk\Items\BlockSapling.cs" />
+    <Compile Include="World\Blk\Items\BlockLeaves.cs" />
+    <Compile Include="World\Blk\Items\BlockLog.cs" />
+    <Compile Include="World\Blk\Items\BlockBrol.cs" />
+    <Compile Include="Renderer\Blk\BlockFaceLiquid.cs" />
+    <Compile Include="Renderer\Blk\BlockRender.cs" />
+    <Compile Include="World\Blk\BlockTick.cs" />
+    <Compile Include="World\Blk\Items\BlockDiorite.cs" />
+    <Compile Include="World\Blk\Items\BlockTileBrown.cs" />
+    <Compile Include="World\Blk\Items\BlockTileDark.cs" />
+    <Compile Include="World\Blk\Items\BlockTileGray.cs" />
+    <Compile Include="World\Blk\Items\BlockSand.cs" />
+    <Compile Include="World\Blk\Items\BlockPlanks.cs" />
+    <Compile Include="World\Blk\Items\BlockGlass.cs" />
+    <Compile Include="World\Blk\Items\BlockDirt.cs" />
+    <Compile Include="World\Blk\Items\BlockWaterFlowing.cs" />
+    <Compile Include="World\Blk\Items\BlockWater.cs" />
+    <Compile Include="World\Blk\Items\BlockCactus.cs" />
+    <Compile Include="World\Blk\Items\BlockGrass.cs" />
+    <Compile Include="World\Blk\Blocks.cs" />
+    <Compile Include="World\Blk\Items\BlockStone.cs" />
+    <Compile Include="World\Blk\EnumBlock.cs" />
+    <Compile Include="World\Blk\Model\Box.cs" />
+    <Compile Include="World\Blk\Model\Face.cs" />
+    <Compile Include="World\WorldHeirSet.cs" />
+    <Compile Include="World\WorldHeir.cs" />
+    <Compile Include="World\Chk\ChunkBinary.cs" />
+    <Compile Include="World\Chk\ChunkBuffer.cs" />
+    <Compile Include="World\Chk\ChunkBase.cs" />
+    <Compile Include="Renderer\Chk\BufferEvent.cs" />
+    <Compile Include="World\Chk\ChunkHeir.cs" />
+    <Compile Include="World\Chk\ChunkMap.cs" />
+    <Compile Include="Renderer\Chk\ChunkMeshs.cs" />
+    <Compile Include="World\Chk\ChunkProvider.cs" />
+    <Compile Include="World\Chk\ChunkStorage.cs" />
+    <Compile Include="Util\Coords.cs" />
+    <Compile Include="Renderer\GuiWater.cs" />
     <Compile Include="World\RegionBinary.cs" />
     <Compile Include="World\RegionMap.cs" />
     <Compile Include="World\RegionProvider.cs" />
     <Compile Include="World\HitBoxPlayer.cs" />
-    <Compile Include="World\LineMesh.cs" />
-    <Compile Include="World\GuiCursor.cs" />
-    <Compile Include="Graphics\Render.cs" />
-    <Compile Include="Graphics\Shaders\ShaderVoxel.cs" />
+    <Compile Include="Renderer\LineMesh.cs" />
+    <Compile Include="Renderer\GuiCursor.cs" />
+    <Compile Include="Graphics\RenderMesh.cs" />
+    <Compile Include="Graphics\Shader\ShaderVoxel.cs" />
     <Compile Include="Threads\ThreadTick.cs" />
     <Compile Include="Threads\ThreadObject.cs" />
-    <Compile Include="World\Chunk\ChunkMesh.cs" />
-    <Compile Include="World\LineRender.cs" />
-    <Compile Include="World\SkyBoxMesh.cs" />
-    <Compile Include="World\Voxel\VoxelEvent.cs" />
-    <Compile Include="World\WorldD.cs" />
+    <Compile Include="Renderer\Chk\ChunkMesh.cs" />
+    <Compile Include="Renderer\LineRender.cs" />
+    <Compile Include="Renderer\SkyBoxMesh.cs" />
+    <Compile Include="World\Vxl\VoxelEvent.cs" />
+    <Compile Include="World\WorldBase.cs" />
     <Compile Include="World\WorldFile.cs" />
-    <Compile Include="World\WorldLineMesh.cs" />
-    <Compile Include="World\WorldMesh.cs" />
-    <Compile Include="World\Block\BlockFaceUV.cs" />
-    <Compile Include="World\Chunk\ChunkRender.cs" />
+    <Compile Include="Renderer\WorldLineMesh.cs" />
+    <Compile Include="Renderer\WorldMesh.cs" />
+    <Compile Include="Renderer\Blk\BlockFaceUV.cs" />
+    <Compile Include="Renderer\Chk\ChunkRender.cs" />
     <Compile Include="Graphics\Camera.cs" />
     <Compile Include="CounterTick.cs" />
-    <Compile Include="Debag.cs" />
+    <Compile Include="Debug.cs" />
     <Compile Include="FormGame.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormGame.designer.cs">
       <DependentUpon>FormGame.cs</DependentUpon>
     </Compile>
-    <Compile Include="Graphics\Fonts\FontAdvance.cs" />
-    <Compile Include="Graphics\Fonts\Symbol.cs" />
-    <Compile Include="Graphics\Fonts\TextRender.cs" />
+    <Compile Include="Graphics\Font\FontAdvance.cs" />
+    <Compile Include="Graphics\Font\Symbol.cs" />
+    <Compile Include="Graphics\Font\TextRender.cs" />
     <Compile Include="Graphics\OpenGLF.cs" />
-    <Compile Include="Graphics\Shaders\ShaderFont.cs" />
-    <Compile Include="Graphics\Shaders\Shaders.cs" />
-    <Compile Include="Graphics\Shaders\ShaderVE.cs" />
+    <Compile Include="Graphics\Shader\ShaderFont.cs" />
+    <Compile Include="Graphics\Shader\Shaders.cs" />
+    <Compile Include="Graphics\Shader\ShaderVE.cs" />
     <Compile Include="Graphics\Texture.cs" />
     <Compile Include="Graphics\Mesh.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VE.cs" />
-    <Compile Include="World\Voxel\Voxel.cs" />
-    <Compile Include="World\Chunk\ChunkLoading.cs" />
-    <Compile Include="World\Voxel\VoxelData.cs" />
-    <Compile Include="World\WorldRender.cs" />
+    <Compile Include="World\Vxl\Voxel.cs" />
+    <Compile Include="World\Chk\ChunkLoading.cs" />
+    <Compile Include="World\Vxl\VoxelData.cs" />
+    <Compile Include="Renderer\WorldRender.cs" />
     <Compile Include="World\RegionFile.cs" />
     <EmbeddedResource Include="FormGame.resx">
       <DependentUpon>FormGame.cs</DependentUpon>

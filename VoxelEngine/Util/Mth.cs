@@ -11,7 +11,6 @@ namespace VoxelEngine.Util
         {
             int i = (int)d;
             return d < i ? i - 1 : i;
-            //return (int)Math.Floor(d);
         }
 
         /// <summary>

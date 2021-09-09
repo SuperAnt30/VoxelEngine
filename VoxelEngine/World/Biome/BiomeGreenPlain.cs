@@ -1,4 +1,4 @@
-﻿using VoxelEngine.World.Chunk;
+﻿using VoxelEngine.World.Chk;
 
 namespace VoxelEngine.World.Biome
 {
@@ -7,6 +7,6 @@ namespace VoxelEngine.World.Biome
     /// </summary>
     public class BiomeGreenPlain : BiomeBase
     {
-        public BiomeGreenPlain(ChunkD chunk) : base(chunk) { }
+        public BiomeGreenPlain(ChunkBase chunk) : base(chunk) { }
     }
 }

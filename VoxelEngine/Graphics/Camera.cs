@@ -1,8 +1,8 @@
-﻿using VoxelEngine.Glm;
-using System;
+﻿using System;
+using VoxelEngine.Glm;
 using VoxelEngine.Util;
 
-namespace VoxelEngine
+namespace VoxelEngine.Graphics
 {
     /// <summary>
     /// Объект камеры
@@ -19,7 +19,6 @@ namespace VoxelEngine
                 {
                     _front = value;
                     ReplacePosition();
-                    OnLookAtChanged();
                 }
                 else _front = value;
             }
@@ -35,7 +34,6 @@ namespace VoxelEngine
                 {
                     _up = value;
                     ReplacePosition();
-                    OnLookAtChanged();
                 }
                 else _up = value;
             }
@@ -96,8 +94,8 @@ namespace VoxelEngine
                     {
                         _position = value;
                     }
+                    HitBox.SetPos(_position);
                     ReplacePosition();
-                    OnLookAtChanged();
                 } else
                 {
                     _position = value;
@@ -106,15 +104,18 @@ namespace VoxelEngine
         }
 
         /// <summary>
+        /// Получить хит бокс игрока
+        /// </summary>
+        public HitBoxPlayer HitBox { get; protected set; } 
+
+        /// <summary>
         /// Рост персонажа, камера + 0,5 блока
         /// </summary>
         public vec3 PosPlus()
         {
             // TODO:: Рост + 0,5
-            return Position + new vec3(0, .5f, 0);
+            return HitBox == null ? Position : Position + new vec3(0, HitBox.Size.Eyes, 0);
         }
-
-        
              
         /// <summary>
         /// Угол обзора
@@ -134,12 +135,21 @@ namespace VoxelEngine
 
         public Camera(vec3 position, float fov)
         {
+            HitBox = new HitBoxPlayer();
+            HitBox.Size.LookAtChanged += SizeLookAtChanged;
+            Worth();
             Position = position;
             Fov = fov;
             Rotation = new mat4(1.0f);
             _UpdateVectors();
             //Sitting();
-            Worth();
+            
+        }
+
+        private void SizeLookAtChanged(object sender, EventArgs e)
+        {
+            ReplacePosition();
+            //OnLookAtChanged();
         }
 
         protected void _UpdateVectors()
@@ -180,10 +190,13 @@ namespace VoxelEngine
             vec3 pos = PosPlus();
             mat4 lookAt = glm.lookAt(pos, pos + Front, Up);
             LookAt = lookAt.to_array();
+
+            // Для скайбокса позицию камеры не смещаем
+            pos = Position;
+            lookAt = glm.lookAt(pos, pos + Front, Up);
             PositionView = glm.translate(new mat4(1.0f), pos).to_array();
             ProjectionLookAt = (glm.perspective(Fov, _aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f)
                 * lookAt).to_array();
-
         }
 
         /// <summary>
@@ -206,40 +219,6 @@ namespace VoxelEngine
         /// массив матрицы позиции камеры
         /// </summary>
         public float[] PositionView { get; protected set; }
-
-        //public void SetSize()
-
-        /// <summary>
-        /// Получить матрицу перспективу камеры 3D
-        /// </summary>
-        /// <returns></returns>
-        //public mat4 GetProjection()
-        //{
-        //    // VE.CHUNK_VISIBILITY * 22.624 длинна зависит от видимости чанков, где 22.6 = 1.414 * 16
-        //    //return glm.perspective(Fov, _aspect, 0.001f, 256f);
-        //    return glm.perspective(Fov, _aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f);
-        //}
-
-        /// <summary>
-        /// Получить матрицу расположения камеры в пространстве
-        /// </summary>
-        //public mat4 GetLookAt()
-        //{
-        //    return glm.lookAt(Position, Position + Front, Up);
-        //}
-
-        //public mat4 GetView()
-        //{
-        //    return glm.translate(new mat4(1.0f), Position);
-        //}
-
-        /// <summary>
-        /// Получить матрицу проекцию камеры 2D
-        /// </summary>
-        //public mat4 GetOrtho2D()
-        //{
-        //    return glm.ortho(0, Width, Height, 0);
-        //}
 
         /// <summary>
         /// Угол по горизонтали в радианах
@@ -270,8 +249,6 @@ namespace VoxelEngine
         public float AnglePitch()
         {
             return glm.degrees(Pitch);
-            //if (Rotation[0, 0] == 1f || Rotation[0, 0] == -1f) return 0f;
-            //return glm.atan(-Rotation[2, 1], Rotation[1, 1]) * 57.32484f;
         }
 
         /// <summary>
@@ -280,12 +257,8 @@ namespace VoxelEngine
         public Pole GetPole()
         {
             return EnumFacing.FromAngle(AngleYaw());
-            //float yaw = AngleYaw();
-            //if (yaw >= -45f && yaw <= 45f) return Pole.South;
-            //if (yaw > 45f && yaw < 135f) return Pole.West;
-            //if (yaw < -45f && yaw > -135f) return Pole.East;
-            //return Pole.North;
         }
+
         /// <summary>
         /// Растояние до объекта
         /// </summary>
@@ -333,11 +306,6 @@ namespace VoxelEngine
         public static vec2i ToPositionChunk(vec3i pos)
         {
             return new vec2i((pos.x) >> 4, (pos.z) >> 4);
-            //int x = (int)(pos.x / VE.CHUNK_WIDTH);
-            //if (pos.x < 0) x--;
-            //int y = (int)(pos.z / VE.CHUNK_WIDTH);
-            //if (pos.z < 0) y--;
-            //return new Point(x, y);
         }
 
         /// <summary>
@@ -348,8 +316,6 @@ namespace VoxelEngine
             return ToPositionBlock(Position);
         }
 
-        
-
         /// <summary>
         /// Определить блок по позиции камеры
         /// </summary>
@@ -357,57 +323,31 @@ namespace VoxelEngine
         {
             return new vec3i(pos);
         }
-        /// <summary>
-        /// Верхняя точка +++
-        /// </summary>
-        protected vec2 _vecUp;
-        /// <summary>
-        /// Нижняя точка ---
-        /// </summary>
-        protected vec2 _vecDown;
 
         /// <summary>
         /// Стоит
         /// </summary>
         public void Worth()
         {
-            _vecUp = new vec2(.6f, .5f);
-            _vecDown = new vec2(-.6f, -3.0f);
+            HitBox.Size.SetSize(.6f, 3.7f);
+            HitBox.Size.SetEyes(3.4f, 16);
         }
         /// <summary>
         /// Сидит
         /// </summary>
         public void Sneaking()
         {
-            _vecUp = new vec2(.6f, .5f);
-            _vecDown = new vec2(-.6f, -2.0f);
+            HitBox.Size.SetSize(.6f, 2.6f);
+            HitBox.Size.SetEyes(2.4f, 16);
         }
         /// <summary>
         /// Плывём
         /// </summary>
         public void Sailing()
         {
-            _vecUp = new vec2(.6f, 0.5f);
-            _vecDown = new vec2(-.6f, -1.0f);
+            HitBox.Size.SetSize(.6f, 1.8f);
+            HitBox.Size.SetEyes(1.5f, 10);
         }
-
-        /// <summary>
-        /// Получить хитбокс игрока масштаб блока 0,5 метра
-        /// </summary>
-        public HitBoxPlayer GetHitBox()
-        {
-            return new HitBoxPlayer(Position, _vecUp, _vecDown);
-        }
-
-        /// <summary>
-        /// Получить хитбокс игрока масштаб блока 1 метр
-        /// </summary>
-        //public HitBoxPlayer GetHitBoxMeter()
-        //{
-        //       return new HitBoxPlayer(Position, new vec2(.3f, .2f), new vec2(-.3f, -1.5f));
-        //}
-
-
 
         #region Event
 
@@ -435,19 +375,6 @@ namespace VoxelEngine
         protected void OnPositionChunkChanged()
         {
             PositionChunkChanged?.Invoke(this, new EventArgs());
-        }
-
-        /// <summary>
-        /// Событие изменена позиция камеры
-        /// </summary>
-        public event EventHandler LookAtChanged;
-
-        /// <summary>
-        /// Изменена позиция камеры
-        /// </summary>
-        protected void OnLookAtChanged()
-        {
-            LookAtChanged?.Invoke(this, new EventArgs());
         }
 
         #endregion

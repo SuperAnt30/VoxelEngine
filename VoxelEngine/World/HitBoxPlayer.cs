@@ -1,4 +1,7 @@
-﻿using VoxelEngine.Glm;
+﻿using VoxelEngine.Actions;
+using VoxelEngine.Glm;
+using VoxelEngine.Graphics;
+using VoxelEngine.Util;
 
 namespace VoxelEngine
 { 
@@ -8,36 +11,15 @@ namespace VoxelEngine
     public class HitBoxPlayer
     {
         /// <summary>
-        /// Верхняя точка +++
+        /// Размер
         /// </summary>
-        public vec2 VecUp { get; protected set; }
-        /// <summary>
-        /// Нижняя точка ---
-        /// </summary>
-        public vec2 VecDown { get; protected set; }
+        public HitBoxSize Size { get; protected set; } = new HitBoxSize();
         /// <summary>
         /// Положение камеры
         /// </summary>
         public vec3 Position { get; protected set; }
-        /// <summary>
-        /// Размер
-        /// </summary>
-        public vec2 Size
-        {
-            get { return VecUp - VecDown; }
-        }
 
-        public vec3 _SumVec3Vec2(vec3 v3, vec2 v2)
-        {
-            return new vec3(v3.x + v2.x, v3.y + v2.y, v3.z + v2.x);
-        }
-
-        public HitBoxPlayer(vec3 pos, vec2 vecUp, vec2 vecDown)
-        {
-            Position = pos;
-            VecUp = vecUp;
-            VecDown = vecDown;
-        }
+        public HitBoxPlayer() { }
 
         public void SetPos(vec3 pos)
         {
@@ -78,7 +60,7 @@ namespace VoxelEngine
                         // TODO:: определить по какой стороне идём можно по Yaw углу
                         SetPos(new vec3(Position.x + vec.x, Position.y, Position.z));
                     }
-                    else if (cz == 0)
+                    else if (cz == EnumCollisionBody.None)
                     {
                         SetPos(new vec3(Position.x, Position.y, Position.z + vec.z));
                     }
@@ -110,13 +92,15 @@ namespace VoxelEngine
         /// Проверяем коллизию тела c блоками
         /// </summary>
         /// <param name="vec">координата позиции</param>
-        /// 
         protected EnumCollisionBody _IsCollisionBody(vec3 vec)
         {
             vec3 pos = Position + vec;
-            vec3i vd = new vec3i(_SumVec3Vec2(pos, VecDown));
-            vec3i vu = new vec3i(_SumVec3Vec2(pos, VecUp));
 
+            HitBoxSizeUD hbs = SizeUD(pos);
+            vec3i vd = hbs.vdi;
+            vec3i vu = hbs.vui;
+
+            //int y = vd.y;
             for (int y = vd.y; y <= vu.y; y++)
             {
                 for (int x = vd.x; x <= vu.x; x++)
@@ -125,17 +109,11 @@ namespace VoxelEngine
                     {
                         if (Mouse.GetInstance().World.GetBlock(new vec3i(x, y, z)).IsCollision)
                         {
-                            //if (vec.x > 0) SetPos(new vec3(vd.x, Position.y, Position.z));
-                            //if (vec.x < 0) SetPos(new vec3(vu.x, Position.y, Position.z));
-                            //if (vec.y > 0) SetPos(new vec3(Position.x, vd.y, Position.z));
                             if (vec.y < 0)
                             {
-                                SetPos(new vec3(Position.x, vu.y, Position.z));
+                              //  SetPos(new vec3(Position.x, vu.y, Position.z));
                                 return EnumCollisionBody.CollisionDown;
                             }
-                            //if (vec.z > 0) SetPos(new vec3(Position.x, Position.y, vd.z));
-                            //if (vec.z < 0) SetPos(new vec3(Position.x, Position.y, vu.z));
-
                             return EnumCollisionBody.Collision;
                         }
                             
@@ -151,8 +129,9 @@ namespace VoxelEngine
         public bool IsCollisionBody(vec3 vec)
         {
             vec3 pos = Position + vec;
-            vec3i vd = new vec3i(_SumVec3Vec2(pos, VecDown));
-            vec3i vu = new vec3i(_SumVec3Vec2(pos, VecUp));
+            HitBoxSizeUD hbs = SizeUD(pos);
+            vec3i vd = hbs.vdi;
+            vec3i vu = hbs.vui;
 
             for (int y = vd.y; y <= vu.y; y++)
             {
@@ -190,12 +169,13 @@ namespace VoxelEngine
         /// <summary>
         /// Проверяем коллизию под ногами
         /// </summary>
-        public bool IsCollisionDown(vec3 p)
+        public bool IsCollisionDown(vec3 pos)
         {
-            vec3 vd = _SumVec3Vec2(p, VecDown);
-            vec3 vu = _SumVec3Vec2(p, VecUp);
-            vd.y -= 0.01f;
-            vu.y = vd.y;
+            HitBoxSizeUD hbs = SizeUD(pos);
+            vec3 vd = hbs.vd;
+            vec3 vu = hbs.vu;
+            vd.y -= .01f;
+            //vu.y = vd.y;
             vec3i d = new vec3i(vd);
             vec3i d2 = new vec3i(vu);
 
@@ -221,10 +201,11 @@ namespace VoxelEngine
         /// <summary>
         /// Проверяем колизию блоков над головой
         /// </summary>
-        protected bool IsCollisionUp(vec3 p, float addY)
+        protected bool IsCollisionUp(vec3 pos, float addY)
         {
-            vec3 vd = _SumVec3Vec2(p, VecDown);
-            vec3 vu = _SumVec3Vec2(p, VecUp);
+            HitBoxSizeUD hbs = SizeUD(pos);
+            vec3 vd = hbs.vd;
+            vec3 vu = hbs.vu;
             vu.y += addY;
             vd.y = vu.y;
             vec3i d = new vec3i(vd);
@@ -248,8 +229,9 @@ namespace VoxelEngine
         /// <param name="pos">координата проверки колизии</param>
         public bool IsVoxelBody(vec3i pos)
         {
-            vec3i vd = new vec3i(_SumVec3Vec2(Position, VecDown));
-            vec3i vu = new vec3i(_SumVec3Vec2(Position, VecUp));
+            HitBoxSizeUD hbs = SizeUD(Position);
+            vec3i vd = hbs.vdi;
+            vec3i vu = hbs.vui;
 
             for (int y = vd.y; y <= vu.y; y++)
             {
@@ -271,12 +253,33 @@ namespace VoxelEngine
         public void DrawHitBox()
         {
             // HitBox игрока
-            vec3 vd = _SumVec3Vec2(Position, VecDown);
-            vec3 vu = _SumVec3Vec2(Position, VecUp);
-            // Position.y += VecDown.y - 0.01f;
-            vec2 size = Size;
+            HitBoxSizeUD hbs = SizeUD(Position);
+            vec3 vd = hbs.vd;
+            vec2 size = new vec2(Size.Width, Size.Heigth);
             OpenGLF.GetInstance().WorldLineM.Box("HitBoxPlayer",
-                    vd.x + size.x / 2f, vd.y + size.y * 0.5f, vd.z + size.x / 2f, size.x, size.y - 0.1f, size.x, .0f, .9f, .9f, 1f);
+                    vd.x + size.x, vd.y + size.y / 2f, vd.z + size.x, size.x * 2f, size.y, size.x * 2f, .0f, .9f, .9f, 1f);
+        }
+
+        protected HitBoxSizeUD SizeUD(vec3 pos)
+        {
+            return new HitBoxSizeUD(pos, Size);
+        }
+
+        protected class HitBoxSizeUD
+        {
+            public vec3 vd { get; protected set; } = new vec3();
+            public vec3 vu { get; protected set; } = new vec3();
+            public vec3i vdi { get { return new vec3i(vd); } }
+            public vec3i vui { get { return new vec3i(vu); } }
+
+            public HitBoxSizeUD(vec3 pos, HitBoxSize size)
+            {
+                float w = size.Width;
+                float h = size.Heigth;
+
+                vd = new vec3(pos.x - w, pos.y, pos.z - w);
+                vu = new vec3(pos.x + w, pos.y + h, pos.z + w);
+            }
         }
     }
 }

@@ -1,16 +1,17 @@
 ﻿using System;
-using System.IO;
 using System.Windows.Forms;
 using VoxelEngine.Glm;
+using VoxelEngine.Graphics;
 using VoxelEngine.World;
-using VoxelEngine.World.Chunk;
+using VoxelEngine.World.Blk;
+using VoxelEngine.World.Chk;
 
-namespace VoxelEngine
+namespace VoxelEngine.Actions
 {
     /// <summary>
     /// Объект одиночка клавиатуры
     /// </summary>
-    public class Keyboard
+    public class Keyboard : WorldHeirSet
     {
         #region Instance
 
@@ -29,11 +30,6 @@ namespace VoxelEngine
 
         #endregion
 
-        /// <summary>
-        /// Объект мира
-        /// </summary>
-        public WorldD World { get; set; }
-
         public PlayerCamera PlCamera { get; protected set; } = new PlayerCamera();
 
         public void PreviewKeyDown(Keys keys)
@@ -41,31 +37,31 @@ namespace VoxelEngine
             switch (keys)
             {
                 case Keys.F3:
-                    Debag.GetInstance().IsDraw = !Debag.GetInstance().IsDraw;
+                    Debug.GetInstance().IsDraw = !Debug.GetInstance().IsDraw;
                     break;
                 case Keys.F4:
-                    VEC.GetInstance().Moving = VEC.VEMoving.FreeFlight;
+                    VEC.GetInstance().Moving = VEMoving.FreeFlight;
                     break;
                 case Keys.F5:
-                    VEC.GetInstance().Moving = VEC.VEMoving.ObstacleFlight;
+                    VEC.GetInstance().Moving = VEMoving.ObstacleFlight;
                     // save
                     //File.WriteAllBytes("map.dat", OpenGLF.GetInstance().ChunkItems.Write());
                     break;
                 case Keys.F6:
-                    VEC.GetInstance().Moving = VEC.VEMoving.Survival;
+                    VEC.GetInstance().Moving = VEMoving.Survival;
                     // load
                     //OpenGLF.GetInstance().ChunkItems.Read(File.ReadAllBytes("map.dat"));
                     break;
                 case Keys.F7:
-                    Debag.GetInstance().IsDrawChunk = !Debag.GetInstance().IsDrawChunk;
-                    if (!Debag.GetInstance().IsDrawChunk)
+                    Debug.GetInstance().IsDrawChunk = !Debug.GetInstance().IsDrawChunk;
+                    if (!Debug.GetInstance().IsDrawChunk)
                         OpenGLF.GetInstance().WorldLineM.Remove("chunk");
                     else
                         OpenGLF.GetInstance().WorldLineM.Chunk();
                     break;
                 case Keys.F8:
-                    Debag.GetInstance().IsDrawCollisium = !Debag.GetInstance().IsDrawCollisium;
-                    if (!Debag.GetInstance().IsDrawCollisium)
+                    Debug.GetInstance().IsDrawCollisium = !Debug.GetInstance().IsDrawCollisium;
+                    if (!Debug.GetInstance().IsDrawCollisium)
                     {
                         OpenGLF.GetInstance().WorldLineM.Remove("HitBoxPlayer");
                     }
@@ -122,15 +118,19 @@ namespace VoxelEngine
             vec2i ch;
             vec3i bl;
             //Block blk;
-            ChunkD chunk;
+            ChunkBase chunk;
             //Debag.Log("LogKey", keys.ToString());
             switch (keys)
             {
                 case Keys.E:
-                    OpenGLF.GetInstance().DrawLine();
+                    OpenGLF.GetInstance().LineOn();
+                    break;
+                case Keys.Z:
+                    VEC.GetInstance().Zoom = VEC.GetInstance().Zoom == 1 ? 2 : 1;
+                    Debug.GetInstance().CountTest2 = VEC.GetInstance().Zoom;
                     break;
                 case Keys.B:
-                    //isDone = !isDone;
+                    World.AddEntity();
                     break;
                 case Keys.P:
                     // Перегенерация
@@ -196,7 +196,7 @@ namespace VoxelEngine
                     break;
                 case Keys.T:
                     // Плюс четверть дня
-                    Debag.GetInstance().TickCount += VE.COUNT_TICE_DAY / 4;
+                    VEC.GetInstance().AddQuarterTick();
                     break;
                 case Keys.Space:
                     PlCamera.StepJamp();
@@ -222,16 +222,16 @@ namespace VoxelEngine
                     PlCamera.StepBack();
                     OnMoveChanged();
                     break;
-                case Keys.D1: Debag.GetInstance().NumberBlock = EnumBlock.Stone; break;
-                case Keys.D2: Debag.GetInstance().NumberBlock = EnumBlock.Dirt; break;
-                case Keys.D3: Debag.GetInstance().NumberBlock = EnumBlock.Sand; break;
-                case Keys.D4: Debag.GetInstance().NumberBlock = EnumBlock.Planks; break;
-                case Keys.D5: Debag.GetInstance().NumberBlock = EnumBlock.Log; break; // 6
-                case Keys.D6: Debag.GetInstance().NumberBlock = EnumBlock.Water; break; // 7
-                case Keys.D7: Debag.GetInstance().NumberBlock = EnumBlock.Glass; break; // 8
-                case Keys.D8: Debag.GetInstance().NumberBlock = EnumBlock.Sapling; break; // 9
-                case Keys.D9: Debag.GetInstance().NumberBlock = EnumBlock.Cactus; break;
-                case Keys.D0: Debag.GetInstance().NumberBlock = EnumBlock.Brol; break;
+                case Keys.D1: Debug.GetInstance().NumberBlock = EnumBlock.Stone; break;
+                case Keys.D2: Debug.GetInstance().NumberBlock = EnumBlock.Dirt; break;
+                case Keys.D3: Debug.GetInstance().NumberBlock = EnumBlock.Sand; break;
+                case Keys.D4: Debug.GetInstance().NumberBlock = EnumBlock.Planks; break;
+                case Keys.D5: Debug.GetInstance().NumberBlock = EnumBlock.Log; break; // 6
+                case Keys.D6: Debug.GetInstance().NumberBlock = EnumBlock.Water; break; // 7
+                case Keys.D7: Debug.GetInstance().NumberBlock = EnumBlock.Glass; break; // 8
+                case Keys.D8: Debug.GetInstance().NumberBlock = EnumBlock.Sapling; break; // 9
+                case Keys.D9: Debug.GetInstance().NumberBlock = EnumBlock.Cactus; break;
+                case Keys.D0: Debug.GetInstance().NumberBlock = EnumBlock.Brol; break;
 
             }
         }

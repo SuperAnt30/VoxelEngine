@@ -6,16 +6,10 @@ namespace VoxelEngine.Gen
     /// <summary>
     /// Объект хранение шумов
     /// </summary>
-    public class NoiseStorge
+    public class NoiseStorge : WorldHeir
     {
-        /// <summary>
-        /// Сылка на объект мира
-        /// </summary>
-        public WorldD World { get; protected set; }
-
-        public NoiseStorge(WorldD worldIn)
+        public NoiseStorge(WorldBase worldIn) : base(worldIn)
         {
-            World = worldIn;
             HeightBiome = new NoiseGeneratorPerlin(new Random(World.Seed), 8);
             WetnessBiome = new NoiseGeneratorPerlin(new Random(World.Seed + 8), 8);
             Cave = new NoiseGeneratorPerlin(new Random(World.Seed + 2), 2);

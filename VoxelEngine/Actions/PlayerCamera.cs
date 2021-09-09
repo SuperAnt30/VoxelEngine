@@ -1,9 +1,13 @@
 ﻿using System.Diagnostics;
 using VoxelEngine.Glm;
+using VoxelEngine.Graphics;
+using VoxelEngine.Renderer;
+using VoxelEngine.Renderer.Blk;
+using VoxelEngine.Renderer.Chk;
 using VoxelEngine.Util;
-using VoxelEngine.World;
+using VoxelEngine.World.Blk;
 
-namespace VoxelEngine
+namespace VoxelEngine.Actions
 {
     /// <summary>
     /// Управление камерой
@@ -33,7 +37,7 @@ namespace VoxelEngine
         /// <summary>
         /// Игрок присел?
         /// </summary>
-        protected int _isSneaking = 0;
+        protected EnumSneaking _isSneaking = 0;
         /// <summary>
         /// Объект для точного замера времени
         /// </summary>
@@ -49,13 +53,13 @@ namespace VoxelEngine
         /// </summary>
         public bool IsEyesWater { get; protected set; } = false;
         /// <summary>
-        /// Находиться ли тело игрока в воде
-        /// </summary>
-        public bool IsBodyWater { get; protected set; } = false;
-        /// <summary>
-        /// Находиться ли ноги игрок в воде (-1 блок над глазами)
+        /// Находиться ли ноги игрок в воде
         /// </summary>
         public bool IsLegsWater { get; protected set; } = false;
+        /// <summary>
+        /// Находиться ли под ногами вода
+        /// </summary>
+        public bool IsDownWater { get; protected set; } = false;
 
         /// <summary>
         /// Строка для дебага
@@ -201,16 +205,16 @@ namespace VoxelEngine
                 _Refrash();
             }
 
-            if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
+            if (VEC.GetInstance().Moving == VEMoving.Survival)
             {
                 // Встать
                 // Проверка на возможность встать
-                HitBoxPlayer hitBox = OpenGLF.GetInstance().Cam.GetHitBox();
-                _isSneaking = 2;
+                HitBoxPlayer hitBox = OpenGLF.GetInstance().Cam.HitBox;
+                _isSneaking = EnumSneaking.GetUp;
                 if (hitBox.IsCollisionUp())
                 {
                     // Встать не можем
-                    _isSneaking = 2;
+                    _isSneaking = EnumSneaking.GetUp;
                 }
                 else
                 {
@@ -229,44 +233,52 @@ namespace VoxelEngine
         protected void _Refrash()
         {
             float h, v, j;
-            if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
+            if (VEC.GetInstance().Moving == VEMoving.Survival)
             {
-                if (_height == Key.Minus)
+                // ВЫЖИВАНИЕ
+
+                h = _isSneaking != EnumSneaking.DonSit ? VE.SPEED_SNEAKING : VE.SPEED_STEP;
+                v = h;
+                j = _move.y;
+
+                if (_height == Key.Minus && _onGround && _isSneaking != EnumSneaking.Sit)
                 {
                     // Присел
                     OpenGLF.GetInstance().Cam.Sneaking();
-                    _isSneaking = 1;
+                    _isSneaking = EnumSneaking.Sit;
                 }
-                h = IsLegsWater ? VE.SPEED_STEP : _isSneaking != 0 ? VE.SPEED_SNEAKING : VE.SPEED_STEP;
-                v = h;
-                j = _move.y;
-                if (_vertical > 0 && IsSpeed)
+
+                if (_vertical > 0 && IsSpeed && _isSneaking == EnumSneaking.DonSit)
                 {
                     v = VE.SPEED_RUN;
                 }
-                if (IsLegsWater && !IsEyesWater)
+                if ((IsDownWater || IsLegsWater) && !IsEyesWater)
                 {
+                    // Игрок над водой или частично в воде
                     if (_height == Key.Plus)
                     {
-                        if (IsBodyWater)
+                        if (IsLegsWater)
                         {
+                            // Ноги в воде но нет под ногами дна
+                            // скорее всего плывёт
                             _onGround = false;
-                            j = VE.SPEED_JAMP * .12f;
-                        } 
-                        else if(_onGround)
+                            j = VE.SPEED_SWIM;
+                        }
+                        else
+                        if (_onGround)
                         {
+                            // мы на земле но рядом блок под нами с водой
                             _onGround = false;
-                            j = VE.SPEED_JAMP * .6f;
+                            j = VE.SPEED_JAMP;
                         }
                     }
-                    //OpenGLF.GetInstance().Cam.Sailing();
-
                     // Если в воде то замедляем в 2 раза
                     h *= .5f;
                     v *= .5f;
                 }
                 else if (IsEyesWater)
                 {
+                    // Игрок под водой
                     // плывём вверх или низ под водой
                     if (_height != 0) j = (float)_height * VE.SPEED_SWIM;
 
@@ -276,11 +288,11 @@ namespace VoxelEngine
                 }
                 else
                 {
-                    // прыжок
+                    // Прыжок
                     if (_height == Key.Plus && _onGround)
                     {
                         _onGround = false;
-                        j = VE.SPEED_JAMP;
+                        j = IsLegsWater ? VE.SPEED_WATER_JAMP : VE.SPEED_JAMP;
                     }
                 }
             } else
@@ -296,10 +308,10 @@ namespace VoxelEngine
             float v2 = (float)_vertical * v;
             float h2 = (float)_horizontal * h;
 
-            StrDebug =string.Format("j: {0:0.0}{8}{9} v: {1:0.0} h: {2:0.0} {3}{4}{5}{6}{7}",
+            StrDebug =string.Format("j: {0:0.0}{8}{9} v: {1:0.0} h: {2:0.0} {3}{5}{4}{6}{7}",
                 j, v2, h2, _onGround ? "__" : "",
-                IsEyesWater ? "[E]" : "", IsBodyWater ? "[B]" : "", IsLegsWater ? "[L]" : "", flow != Pole.Down ? flow.ToString() : "",
-                IsSpeed ? "[Sp]" : "", _isSneaking == 1 ? "[Sn]" : "");
+                IsEyesWater ? "[E]" : "", IsDownWater ? "[D]" : "", IsLegsWater ? "[L]" : "", flow != Pole.Down ? flow.ToString() : "",
+                IsSpeed ? "[Sp]" : "", _isSneaking == EnumSneaking.Sit ? "[Sn]" : "");
 
             _move.y = j;
             _move.x = glm.sin(cam.Yaw + 1.570796f) * h2;
@@ -325,8 +337,6 @@ namespace VoxelEngine
         {
             if (_move.y == 0 && _onGround)
             {
-                _move.y = VE.SPEED_UPING;
-                //if (IsLegsWater) _move.y *= 2f;
                 _isUping = true;
             }
         }
@@ -338,7 +348,7 @@ namespace VoxelEngine
             _isUping = false;
             // Встаём
             OpenGLF.GetInstance().Cam.Worth();
-            _isSneaking = 0;
+            _isSneaking = EnumSneaking.DonSit;
         }
 
         /// <summary>
@@ -346,10 +356,10 @@ namespace VoxelEngine
         /// </summary>
         protected void _Update()
         {
-            if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
-            {
-                HitBoxPlayer hitBox = cam.GetHitBox();
+            HitBoxPlayer hitBox = cam.HitBox;
 
+            if (VEC.GetInstance().Moving == VEMoving.Survival)
+            {
                 //=== Проверка падения
 
                 // Если не на земле
@@ -357,10 +367,12 @@ namespace VoxelEngine
                 {
                     if (IsEyesWater && _move.y <= 0)
                     {
+                        // Целиком в воде
                         _move.y = -VE.SPEED_FLOW;
                     }
-                    if (IsLegsWater)
+                    else if (IsDownWater || IsLegsWater)
                     {
+                        // Под ногами вода, скорее всего плывём
                         _move.y -= VE.SPEED_DOWN * 0.1f;
                     }
                     else _move.y -= VE.SPEED_DOWN;
@@ -374,7 +386,7 @@ namespace VoxelEngine
                 //=== Проверка упирания вверх
 
                 // Положение сидя
-                if (_move.y == 0 && _isSneaking == 2 && !hitBox.IsCollisionUp())
+                if (_move.y == 0 && _isSneaking == EnumSneaking.GetUp && !hitBox.IsCollisionUp())
                 {
                     // Начинаем прыжок для вставания, если нет прыжка и над головой нет блоков
                     _Uping();
@@ -385,9 +397,9 @@ namespace VoxelEngine
                 }
             }
             
-            if (VEC.GetInstance().Moving != VEC.VEMoving.FreeFlight)
+            if (VEC.GetInstance().Moving != VEMoving.FreeFlight)
             {
-                HitBoxPlayer hitBox = cam.GetHitBox();
+                
 
                 //=== Проваливания в блок
 
@@ -413,37 +425,22 @@ namespace VoxelEngine
             _Refrash();
             
             Camera cam = OpenGLF.GetInstance().Cam;
-            HitBoxPlayer hitBox = cam.GetHitBox();
-            if (Debag.GetInstance().IsDrawCollisium) hitBox.DrawHitBox();
+            HitBoxPlayer hitBox = cam.HitBox;
+            if (Debug.GetInstance().IsDrawCollisium) hitBox.DrawHitBox();
             vec3 move = _move * time;
 
             // Перемещения
-            if (VEC.GetInstance().Moving != VEC.VEMoving.FreeFlight)
+            if (VEC.GetInstance().Moving != VEMoving.FreeFlight)
             {
                 // Коллизия для векторов поверхности
-                if (VEC.GetInstance().Moving == VEC.VEMoving.Survival)
+                if (VEC.GetInstance().Moving == VEMoving.Survival)
                 {
-                    //if (IsLegsWater)
-                    //{
-                    //    //cam.Sneaking();
-                    //    if (!hitBox.CollisionBodyXZ(move))
-                    //    {
-                    //        cam.Sneaking();
-                    //        hitBox = cam.GetHitBox();
-                    //        hitBox.CollisionBodyXZ(move);
-                    //        cam.Worth();
-                    //    }
-                    //    //
-                    //}
-                    //else
-                    {
-                        bool isAutoJump = hitBox.CollisionBodyXZ(move);
+                    bool isAutoJump = hitBox.CollisionBodyXZ(move);
                         
-                        if (isAutoJump && _onGround)
-                        {
-                            _move.y = IsLegsWater ? VE.SPEED_WATER_AUTOJAMP : VE.SPEED_AUTOJAMP;
-                            move.y = _move.y * time;  // под вопросом
-                        }
+                    if (isAutoJump && _onGround)
+                    {
+                        _move.y = IsLegsWater ? VE.SPEED_WATER_AUTOJAMP : VE.SPEED_AUTOJAMP;
+                        move.y = _move.y * time;  // под вопросом
                     }
                 } else
                 {
@@ -480,15 +477,16 @@ namespace VoxelEngine
             // Опрделяем в воде ли я
             vec3i pos = new vec3i(OpenGLF.GetInstance().Cam.Position);
             // глаза
-            IsEyesWater = Mouse.GetInstance().World.GetBlock(pos).IsWater;
-            // тело
-            IsBodyWater = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -1, 0)).IsWater;
+            IsEyesWater = Mouse.GetInstance().World.GetBlock(pos 
+                + new vec3i(0, _isSneaking == EnumSneaking.DonSit ? 3 : 2, 0)).IsWater;
             // ноги
-            IsLegsWater = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -3, 0)).IsWater;
+            IsLegsWater = Mouse.GetInstance().World.GetBlock(pos).IsWater;
+            // ниже ног
+            IsDownWater = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -1, 0)).IsWater;
 
             if (IsLegsWater)
             {
-                Block block = Mouse.GetInstance().World.GetBlock(pos + new vec3i(0, -3, 0));
+                Block block = Mouse.GetInstance().World.GetBlock(pos);
                 if (block.EBlock == EnumBlock.WaterFlowing)
                 {
                     BlockRender blockRender = new BlockRender(new ChunkRender(Mouse.GetInstance().World.GetChunk(block.Position), new WorldRender()), block);

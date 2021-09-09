@@ -1,4 +1,5 @@
-﻿using VoxelEngine.World.Chunk;
+﻿using VoxelEngine.World.Blk;
+using VoxelEngine.World.Chk;
 
 namespace VoxelEngine.World.Biome
 {
@@ -7,7 +8,7 @@ namespace VoxelEngine.World.Biome
     /// </summary>
     public class BiomeWater : BiomeBase
     {
-        public BiomeWater(ChunkD chunk) : base(chunk) { }
+        public BiomeWater(ChunkBase chunk) : base(chunk) { }
 
         /// <summary>
         /// Возращаем сгенерированный столбец

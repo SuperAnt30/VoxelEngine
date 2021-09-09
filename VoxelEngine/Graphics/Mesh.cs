@@ -1,7 +1,7 @@
 ﻿using SharpGL;
 using System;
 
-namespace VoxelEngine
+namespace VoxelEngine.Graphics
 {
     /// <summary>
     /// Объект буфера сетки через VAO

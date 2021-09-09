@@ -1,5 +1,6 @@
 ﻿using VoxelEngine.Glm;
 using System.IO;
+using VoxelEngine.Graphics;
 
 namespace VoxelEngine
 {
@@ -20,7 +21,7 @@ namespace VoxelEngine
                 using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open)))
                 {
                     // Время игры
-                    Debag.GetInstance().TickCount = reader.ReadInt64();
+                    VEC.GetInstance().SetTick(reader.ReadInt64());
 
                     Camera cam = OpenGLF.GetInstance().Cam;
                     // Позиция камеры
@@ -46,7 +47,7 @@ namespace VoxelEngine
             using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.OpenOrCreate)))
             {
                 // Время игры
-                writer.Write(Debag.GetInstance().TickCount);
+                writer.Write(VEC.GetInstance().TickCount);
 
                 Camera cam = OpenGLF.GetInstance().Cam;
                 // Позиция камеры

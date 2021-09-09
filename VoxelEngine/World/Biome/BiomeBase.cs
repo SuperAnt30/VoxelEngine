@@ -1,4 +1,6 @@
-﻿using VoxelEngine.World.Chunk;
+﻿using VoxelEngine.Vxl;
+using VoxelEngine.World.Blk;
+using VoxelEngine.World.Chk;
 
 namespace VoxelEngine.World.Biome
 {
@@ -16,7 +18,7 @@ namespace VoxelEngine.World.Biome
         /// </summary>
         public bool AllCave { get; protected set; } = false;
 
-        public BiomeBase(ChunkD chunk) : base(chunk) { }
+        public BiomeBase(ChunkBase chunk) : base(chunk) { }
 
         /// <summary>
         /// Возращаем сгенерированный столбец

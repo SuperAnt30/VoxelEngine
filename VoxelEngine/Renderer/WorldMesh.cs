@@ -1,0 +1,183 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using VoxelEngine.Glm;
+using VoxelEngine.Graphics;
+using VoxelEngine.Renderer.Chk;
+using VoxelEngine.Renderer.Entity;
+using VoxelEngine.Util;
+using VoxelEngine.World.Chk;
+
+namespace VoxelEngine.Renderer
+{
+    /// <summary>
+    /// Объект для 3д хранение Mesh
+    /// </summary>
+    public class WorldMesh
+    {
+        /// <summary>
+        /// Массив кэша чанков vec2i, ChunkMeshs
+        /// </summary>
+        protected Hashtable chunks = new Hashtable();
+
+        /// <summary>
+        /// Массив кэша сущностей
+        /// </summary>
+        protected List<EntityMesh> entities = new List<EntityMesh>();
+
+        /// <summary>
+        /// Прорисовка сущностей
+        /// </summary>
+        public void DrawEntities()
+        {
+            Debug.GetInstance().CountMeshEntities = entities.Count;
+
+            foreach (EntityMesh entity in entities)
+            {
+                entity.Draw();
+            }
+        }
+
+
+        /// <summary>
+        /// Прорисовка чанков
+        /// </summary>
+        public void DrawDense()
+        {
+            Debug.GetInstance().CountMeshChunk = chunks.Count;
+
+            foreach (ChunkMeshs cm in chunks.Values)
+            {
+                cm.MeshDense.Draw();
+            }
+        }
+
+        /// <summary>
+        /// Ключ для массива
+        /// </summary>
+        public static string KeyChunk(int x, int z)
+        {
+            return x.ToString() + ";" + z.ToString();
+        }
+
+        /// <summary>
+        /// Прорисовка чанков
+        /// </summary>
+        public void DrawAlpha()
+        {
+            Camera camera = OpenGLF.GetInstance().Cam;
+            Pole pole = camera.GetPole();
+            vec2i pos = camera.ToPositionChunk();
+            ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
+
+            // Прорисовка алфы в зависимости куда смотрим. От до
+            for (int i = spiral.Length - 1; i >= 0; i--)
+            {
+                string key = KeyChunk(pos.x + spiral[i].X, pos.y + spiral[i].Z);
+                if (chunks.ContainsKey(key))
+                {
+                    ChunkMeshs cm = chunks[key] as ChunkMeshs;
+                    if (cm.MeshAlpha.CountPoligon > 0) cm.MeshAlpha.Draw();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Получить чанк с кэша, если его там нет, то сгенерировать его
+        /// </summary>
+        public ChunkMeshs GetChunk(int x, int z)
+        {
+            string key = KeyChunk(x, z);
+            if (!chunks.ContainsKey(key))
+            {
+                chunks.Add(key, new ChunkMeshs(x, z));
+                Debug.GetInstance().RenderChunk = chunks.Count;
+            }
+
+            return chunks[key] as ChunkMeshs;
+        }
+
+        /// <summary>
+        /// Внести сетку буфера в чанк
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="z"></param>
+        /// <param name="buffer"></param>
+        public void RenderChank(int x, int z, float[] buffer)
+        {
+            GetChunk(x, z).MeshDense.Render(buffer);
+        }
+
+        /// <summary>
+        /// Внести сетку буфера в чанк
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="z"></param>
+        /// <param name="buffer"></param>
+        public void RenderChankAlpha(int x, int z, float[] buffer)
+        {
+            GetChunk(x, z).MeshAlpha.Render(buffer);
+        }
+
+        /// <summary>
+        /// Внести сущность
+        /// TODO:: временно
+        /// </summary>
+        public void RenderEntity(float[] buffer)
+        {
+            EntityMesh entity = new EntityMesh();
+            entity.Render(buffer);
+            entities.Add(entity);
+        }
+
+        /// <summary>
+        /// Удалить дальние чанки из массива кэша сеток
+        /// </summary>
+        public void Cleaning(vec2i positionCam)
+        {
+            List<string> vs = new List<string>();
+            // дальность чанков с учётом кэша
+            int visiblityCache = VE.CHUNK_VISIBILITY + 2;
+
+            int xMin = positionCam.x - visiblityCache;
+            int xMax = positionCam.x + visiblityCache;
+            int zMin = positionCam.y - visiblityCache;
+            int zMax = positionCam.y + visiblityCache;
+            // Собираем массив чанков которые уже не попадают в видимость
+            foreach (DictionaryEntry s in chunks)
+            {
+                ChunkMeshs cm = s.Value as ChunkMeshs;
+                if (cm.X <= xMin || cm.X >= xMax || cm.Z <= zMin || cm.Z >= zMax)
+                {
+                    Debug.GetInstance().CountPoligonChunk -= cm.CountPoligon;
+                    OnRemoveChanged(new vec2i(cm.X, cm.Z));
+                    cm.Delete();
+                    vs.Add(s.Key.ToString());
+                }
+            }
+
+            // Удаляем
+            if (vs.Count > 0)
+            {
+                foreach (string key in vs)
+                {
+                    chunks.Remove(key);
+                }
+            }
+
+            Debug.GetInstance().RenderChunk = chunks.Count;
+        }
+
+        /// <summary>
+        /// Событие удалена сетка
+        /// </summary>
+        public event CoordEventHandler RemoveChanged;
+
+        /// <summary>
+        /// удалена сетка
+        /// </summary>
+        protected virtual void OnRemoveChanged(vec2i position)
+        {
+            RemoveChanged?.Invoke(this, new CoordEventArgs(position));
+        }
+    }
+}

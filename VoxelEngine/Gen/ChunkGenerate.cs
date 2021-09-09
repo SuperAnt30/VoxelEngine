@@ -1,8 +1,8 @@
 ﻿using System;
 using VoxelEngine.Util;
-using VoxelEngine.World;
 using VoxelEngine.World.Biome;
-using VoxelEngine.World.Chunk;
+using VoxelEngine.World.Blk;
+using VoxelEngine.World.Chk;
 
 namespace VoxelEngine.Gen
 {
@@ -21,7 +21,7 @@ namespace VoxelEngine.Gen
         protected BiomeForest forest;
         protected BiomeMountainsDesert mountainsDesert;
 
-        public ChunkGenerate(ChunkD chunk) : base(chunk)
+        public ChunkGenerate(ChunkBase chunk) : base(chunk)
         {
             biomeBase = new BiomeBase(chunk);
             water = new BiomeWater(chunk);
@@ -95,7 +95,7 @@ namespace VoxelEngine.Gen
                     if (eBlock == EnumBlock.TallGrass || eBlock == EnumBlock.Dandelion)
                     {
                         Chunk.SetBlockState(x, y, z, EnumBlock.Air);
-                        Trees trees = new Trees(Chunk.World);
+                        GenTrees trees = new GenTrees(Chunk.World);
                         trees.Generate(new BlockPos(Chunk.X * 16 + x, y, Chunk.Z * 16 + z));
                         break;
                     }

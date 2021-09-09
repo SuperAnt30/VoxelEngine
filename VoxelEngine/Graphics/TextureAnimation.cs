@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace VoxelEngine
+namespace VoxelEngine.Graphics
 {
     public class TextureAnimation
     {
@@ -61,7 +61,7 @@ namespace VoxelEngine
             {
                 pauseWaterStill = 3;
                 Bitmap bp = new Bitmap(AtlasBoxOriginal);
-                Graphics g = Graphics.FromImage(bp);
+                System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bp);
 
                 int w = WaterStill.Width;
                 int wa = AtlasBoxOriginal.Width / 16;

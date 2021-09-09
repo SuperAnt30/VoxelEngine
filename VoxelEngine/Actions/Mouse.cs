@@ -4,13 +4,15 @@ using System.Drawing;
 using System.Windows.Forms;
 using VoxelEngine.Util;
 using VoxelEngine.World;
+using VoxelEngine.World.Blk;
+using VoxelEngine.Graphics;
 
-namespace VoxelEngine
+namespace VoxelEngine.Actions
 {
     /// <summary>
     /// Объект одиночка мышки
     /// </summary>
-    public class Mouse
+    public class Mouse : WorldHeirSet
     {
         #region Instance
 
@@ -28,11 +30,6 @@ namespace VoxelEngine
         }
 
         #endregion
-
-        /// <summary>
-        /// Объект мира
-        /// </summary>
-        public WorldD World { get; set; }
 
         /// <summary>
         /// Вращается ли камера от мышки
@@ -61,21 +58,38 @@ namespace VoxelEngine
             {
                 if (e.Button == MouseButtons.Left)
                 {
-                    int x = iend.x;
-                    int y = iend.y;
-                    int z = iend.z;
-                    //OnVoxelChanged(iend, World.SetVoxelId(Blocks.GetAir(new BlockPos(iend))));
-                    World.SetBlockState(Blocks.GetAir(new BlockPos(iend)), true);
+                    //int x = iend.x;
+                    //int y = iend.y;
+                    //int z = iend.z;
+                    if (VEC.GetInstance().Zoom == 1)
+                    {
+                        BlockPos blockPos = new BlockPos(iend);
+                        //OnVoxelChanged(iend, World.SetVoxelId(Blocks.GetAir(new BlockPos(iend))));
+                        World.SetBlockState(Blocks.GetAir(blockPos), true);
+                    }
+                    else if (VEC.GetInstance().Zoom == 2)
+                    {
+                        for (int x = iend.x; x <= iend.x + 1; x++)
+                        {
+                            for (int y = iend.y; y <= iend.y + 1; y++)
+                            {
+                                for (int z = iend.z; z <= iend.z + 1; z++)
+                                {
+                                    World.SetBlockState(Blocks.GetAir(new BlockPos(x, y, z)), true);
+                                }
+                            }
+                        }
+                    }
                 }
                 if (e.Button == MouseButtons.Right)
                 {
                     vec3i vec = iend + norm;
 
-                    HitBoxPlayer hitBox = openGLF.Cam.GetHitBox();
+                    HitBoxPlayer hitBox = openGLF.Cam.HitBox;
                     if (!hitBox.IsVoxelBody(vec))
                     {
                         //OnVoxelChanged(vec, World.SetVoxelId(Blocks.GetBlock((byte)Debag.GetInstance().NumberBlock, new BlockPos(vec))));
-                        World.SetBlockState(Blocks.GetBlock(Debag.GetInstance().NumberBlock, new BlockPos(vec)), true);
+                        World.SetBlockState(Blocks.GetBlock(Debug.GetInstance().NumberBlock, new BlockPos(vec)), true);
                         //(byte)Debag.GetInstance().NumberBlock));
                     }
 

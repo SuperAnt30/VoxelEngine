@@ -8,7 +8,7 @@
         /// <summary>
         /// Сколько чанков видим
         /// </summary>
-        public const int CHUNK_VISIBILITY = 12;
+        public const int CHUNK_VISIBILITY = 4;
         /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// Количество общее число по спирале
@@ -69,6 +69,10 @@
         /// </summary>
         public const float SPEED_JAMP = 20f; //16//10 лучше, это чуть больше 2 блоков, если 8 это 2 блока, но бага если нижнего блока нет, подвисает
         /// <summary>
+        /// Скорость прыжка в воде на мели
+        /// </summary>
+        public const float SPEED_WATER_JAMP = 12f;
+        /// <summary>
         /// Скорость авто прыжка и когда встаём из положения сидя
         /// </summary>
         public const float SPEED_AUTOJAMP = 10f; //9
@@ -79,7 +83,7 @@
         /// <summary>
         /// Константа для авто прыжка чтоб встать
         /// </summary>
-        public const float SPEED_UPING = 7f; 
+        public const float SPEED_UPING = .5f; // 7f
         /// <summary>
         /// Скорость падения если нет блоков под нагами
         /// Чем больше тем быстрее падает
@@ -88,11 +92,11 @@
         /// <summary>
         /// Скорость полёта
         /// </summary>
-        public const float SPEED_FLY = 11f;
+        public const float SPEED_FLY = 22f;
         /// <summary>
         /// Скорость быстрого полёта
         /// </summary>
-        public const float SPEED_FLY_FAST = 88f; // 22
+        public const float SPEED_FLY_FAST = 44f; // 22
         /// <summary>
         /// Скорость полёта вертикали
         /// </summary>

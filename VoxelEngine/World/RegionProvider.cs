@@ -1,14 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using VoxelEngine.Glm;
-using VoxelEngine.World.Chunk;
+using VoxelEngine.World.Chk;
 
 namespace VoxelEngine.World
 {
     /// <summary>
     /// Объект который хранит и отвечает за кэш регионов
     /// </summary>
-    public class RegionProvider
+    public class RegionProvider : WorldHeir
     {
         /// <summary>
         /// Список регионов
@@ -21,15 +21,7 @@ namespace VoxelEngine.World
         /// </summary>
         protected readonly bool canSave = true;
 
-        /// <summary>
-        /// Сылка на объект мира
-        /// </summary>
-        public WorldD world { get; protected set; }
-
-        public RegionProvider(WorldD worldIn)
-        {
-            world = worldIn;
-        }
+        public RegionProvider(WorldBase worldIn) : base(worldIn) { }
 
         /// <summary>
         /// Добавить регион файл и вернуть его ключ
@@ -80,7 +72,7 @@ namespace VoxelEngine.World
         {
             if (canSave)
             {
-                foreach (ChunkD chunk in world.ChunkPr.Values)
+                foreach (ChunkBase chunk in World.ChunkPr.Values)
                 {
                     chunk.Save();
                 }
@@ -105,8 +97,8 @@ namespace VoxelEngine.World
 
         protected void Debug()
         {
-            Debag.GetInstance().CacheRegion = regionMapping.Count;
-            Debag.GetInstance().CacheRegionMem = regionMapping.Mem();
+            VoxelEngine.Debug.GetInstance().CacheRegion = regionMapping.Count;
+            VoxelEngine.Debug.GetInstance().CacheRegionMem = regionMapping.Mem();
         }
 
         /// <summary>

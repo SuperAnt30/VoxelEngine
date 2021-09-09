@@ -111,7 +111,7 @@ namespace VoxelEngine
             long ms = stopwatch.ElapsedTicks * 1000 / Stopwatch.Frequency;
 
             pictureBox1.Image = new Bitmap(w, h);
-            g = Graphics.FromImage(pictureBox1.Image);
+            g = System.Drawing.Graphics.FromImage(pictureBox1.Image);
 
             for (int x = 0; x < w2; x++)
             {
@@ -205,7 +205,7 @@ namespace VoxelEngine
 
         }
 
-        Graphics g;
+        System.Drawing.Graphics g;
 
         int w2;
         int h2;
@@ -305,7 +305,7 @@ namespace VoxelEngine
            // float d = (float)Math.Pow(2, octave - 1);
 
             pictureBox1.Image = new Bitmap(w, h);
-            g = Graphics.FromImage(pictureBox1.Image);
+            g = System.Drawing.Graphics.FromImage(pictureBox1.Image);
 
             for (int x = 0; x < w2; x++)
             {
