@@ -55,7 +55,10 @@ namespace VoxelEngine.Util
             animation = true;
         }
 
-        public void Tick()
+        /// <summary>
+        /// Находится в кадрах прорисовки (FPS)
+        /// </summary>
+        public void Update()
         {
             if (animation)
             {

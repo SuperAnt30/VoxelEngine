@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using VoxelEngine.Entity;
 using VoxelEngine.Gen;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
-using VoxelEngine.Models;
 using VoxelEngine.Util;
 using VoxelEngine.Vxl;
 using VoxelEngine.World.Blk;
@@ -41,7 +41,7 @@ namespace VoxelEngine.World
         /// <summary>
         /// Список сущностей
         /// </summary>
-        public List<EntityBase> Entities { get; protected set; }
+        public Hashtable Entities { get; protected set; }
 
         /// <summary>
         /// заполнены кусками, которые находятся в пределах 9 кусков от любого игрока
@@ -54,7 +54,7 @@ namespace VoxelEngine.World
             ChunkPr = new ChunkProvider(this);
             RegionPr = new RegionProvider(this);
             Noise = new NoiseStorge(this);
-            Entities = new List<EntityBase>();
+            Entities = new Hashtable();
         }
 
         /// <summary>
@@ -74,11 +74,12 @@ namespace VoxelEngine.World
         protected bool isTick = true;
 
         /// <summary>
-        /// Тик для сохранения
+        /// Такт
         /// </summary>
         protected virtual void Tick()
         {
             long tick = VEC.GetInstance().TickCount;
+
             // для записи
             if (timeSave + 6000 < VEC.GetInstance().TickCount)
             {
@@ -98,12 +99,14 @@ namespace VoxelEngine.World
                 if (cm != null) cm.Tick(tick);
             }
 
-            // Такты мобов
-            foreach(EntityBase entity in Entities)
+            // Такты всех мобов
+            Hashtable hashtable = (Hashtable)Entities.Clone();
+            foreach (EntityBase entity in hashtable.Values)
             {
                 entity.Tick(tick);
             }
 
+            isTick = true;
             OnTicked();
         }
 
@@ -847,19 +850,29 @@ namespace VoxelEngine.World
         public void AddEntity()
         {
             Camera cam = OpenGLF.GetInstance().Cam;
-
+            VEC config = VEC.GetInstance();
             Block block = RayCast(cam.PosPlus(), cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            vec3 vec = new vec3(iend + norm);
-            EntityChicken entity = new EntityChicken(vec, cam.Yaw - glm.pi);
-            Entities.Add(entity);
-            Debug.GetInstance().Entities = Entities.Count;
-            ModelChicken chicken = new ModelChicken();
-            chicken.Render(entity, 0, 0, 0, 0, 0, VE.UV_SIZE);// 0.12f);
+            vec3 v = new vec3(iend + norm);
 
-            if (!chicken.IsBufferEmpty())
+            EntityChicken entity = new EntityChicken(config.EntityIndex, v, cam.Yaw - glm.pi);
+            if (Entities.ContainsKey(entity.Index))
             {
-                OpenGLF.GetInstance().WorldM.RenderEntity(chicken.Buffer);
+                Entities[entity.Index] = entity;
             }
+            else
+            {
+                Entities.Add(entity.Index, entity);
+            }
+
+            config.EntityAdd();
+            Debug.GetInstance().Entities = config.EntityIndex;
+            //ModelChicken chicken = new ModelChicken();
+            //chicken.Render(entity, 0, 0, 0, 0, 0, VE.UV_SIZE);// 0.12f);
+
+            //if (!chicken.IsBufferEmpty())
+            //{
+            //    OpenGLF.GetInstance().WorldM.RenderEntity(chicken.Buffer);
+            //}
         }
         
 
@@ -895,7 +908,6 @@ namespace VoxelEngine.World
 
         protected void OnTicked()
         {
-            isTick = true;
             Ticked?.Invoke(this, new EventArgs());
         }
 

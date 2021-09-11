@@ -77,6 +77,18 @@
         #endregion
 
         /// <summary>
+        /// Счётчик порядкового номера сущьностей
+        /// </summary>
+        public int EntityIndex { get; protected set; } = 0;
+        /// <summary>
+        /// Увеличить порядковый номер сущьности
+        /// </summary>
+        public void EntityAdd()
+        {
+            EntityIndex++;
+        }
+
+        /// <summary>
         /// Яркость освещения неба
         /// </summary>
         public float LeghtSky { get; protected set; }

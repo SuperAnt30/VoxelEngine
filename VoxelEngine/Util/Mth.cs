@@ -14,6 +14,15 @@ namespace VoxelEngine.Util
         }
 
         /// <summary>
+        /// Округляем в большую сторону
+        /// </summary>
+        public static int Ceiling(float d)
+        {
+            int i = (int)d;
+            return d > i ? i + 1 : i;
+        }
+
+        /// <summary>
         /// Округляем до ближайшего целого
         /// </summary>
         public static int Round(float d)

@@ -130,7 +130,8 @@ namespace VoxelEngine.Actions
                     Debug.GetInstance().CountTest2 = VEC.GetInstance().Zoom;
                     break;
                 case Keys.B:
-                    World.AddEntity();
+                    //for (int i = 0; i < 50; i++)
+                        World.AddEntity();
                     break;
                 case Keys.P:
                     // Перегенерация

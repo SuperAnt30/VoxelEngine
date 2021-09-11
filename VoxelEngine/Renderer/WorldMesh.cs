@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using VoxelEngine.Entity;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
 using VoxelEngine.Renderer.Chk;
@@ -20,9 +21,9 @@ namespace VoxelEngine.Renderer
         protected Hashtable chunks = new Hashtable();
 
         /// <summary>
-        /// Массив кэша сущностей
+        /// Массив кэша сущностей EntityMesh
         /// </summary>
-        protected List<EntityMesh> entities = new List<EntityMesh>();
+        protected Hashtable entities = new Hashtable();
 
         /// <summary>
         /// Прорисовка сущностей
@@ -31,7 +32,7 @@ namespace VoxelEngine.Renderer
         {
             Debug.GetInstance().CountMeshEntities = entities.Count;
 
-            foreach (EntityMesh entity in entities)
+            foreach (EntityMesh entity in entities.Values)
             {
                 entity.Draw();
             }
@@ -120,13 +121,20 @@ namespace VoxelEngine.Renderer
 
         /// <summary>
         /// Внести сущность
-        /// TODO:: временно
         /// </summary>
-        public void RenderEntity(float[] buffer)
+        public void RenderEntity(int index, EnumEntity key, float[] buffer)
         {
-            EntityMesh entity = new EntityMesh();
-            entity.Render(buffer);
-            entities.Add(entity);
+            if (entities.ContainsKey(index))
+            {
+                EntityMesh mesh = entities[index] as EntityMesh;
+                mesh.Render(buffer);
+            }
+            else
+            {
+                EntityMesh mesh = new EntityMesh(index, key);
+                mesh.Render(buffer);
+                entities.Add(index, mesh);
+            }
         }
 
         /// <summary>

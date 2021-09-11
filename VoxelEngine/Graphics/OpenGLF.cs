@@ -150,8 +150,8 @@ namespace VoxelEngine.Graphics
             DrawSkyBox();
             IsLineOn(); // Для прорисовки сетки
             DrawLine();
-            DrawVoxel();
             DrawEntity();
+            DrawVoxel();
             IsLineOff(); // Для прорисовки сетки
             DrawGui();
             DrawDebug();
@@ -240,7 +240,7 @@ namespace VoxelEngine.Graphics
         {
             Debug.GetInstance().CountMesh = 0;
             Keyboard.GetInstance().PlCamera.Update();
-            Cam.HitBox.Size.Tick();
+            Cam.HitBox.Size.Update();
 
             // Включает Буфер глубины 
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);

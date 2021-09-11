@@ -415,6 +415,7 @@ namespace VoxelEngine.Actions
 
         /// <summary>
         /// Изменения или точнее перемещение камеры
+        /// Находится в кадрах прорисовки (FPS)
         /// </summary>
         public void Update()
         {

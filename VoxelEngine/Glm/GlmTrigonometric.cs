@@ -48,13 +48,16 @@ namespace VoxelEngine.Glm
         }
         public static float cos(float angle)
         {
-            return _sinTable[(int)(angle * 10430.378F + 16384.0F) & 65535];
-           //  return (float)Math.Cos(angle);
+            angle %= 360f;
+            return _sinTable[(int)(angle * 10430.378f + 16384.0f) & 65535];
+            
+            //  return (float)Math.Cos(angle);
         }
 
         public static float sin(float angle)
         {
-            return _sinTable[(int)(angle * 10430.378F) & 65535];
+            angle %= 360f;
+            return _sinTable[(int)(angle * 10430.378f) & 65535];
            // return (float)Math.Sin(angle);
         }
 

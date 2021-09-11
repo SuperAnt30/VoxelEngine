@@ -5,6 +5,9 @@ using System;
 using VoxelEngine.Renderer.Chk;
 using VoxelEngine.World.Chk;
 using VoxelEngine.Graphics;
+using VoxelEngine.Entity;
+using VoxelEngine.Models;
+using System.Collections;
 
 namespace VoxelEngine.Renderer
 { 
@@ -122,15 +125,34 @@ namespace VoxelEngine.Renderer
                     float[] ba = chunkR.RenderAlpha();
                     if (ba.Length > 0)
                     {
-                        OnChunkDone(new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, ba));
+                        OnDone(new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, ba));
                     }
                 } else
                 {
-                    OnChunkDone(new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, chunkR.Render(), chunkR.RenderAlpha()));
+                    OnDone(new BufferEventArgs(chunkR.Chunk.X, chunkR.Chunk.Z, chunkR.Render(), chunkR.RenderAlpha()));
                 }
                 return true;
             }
             return false;
+        }
+
+        protected override void Tick()
+        {
+            base.Tick();
+            long tick = VEC.GetInstance().TickCount;
+
+            // Такты мобов
+            Hashtable hashtable = (Hashtable)Entities.Clone();
+            foreach (EntityBase entity in hashtable.Values)
+            {
+                // TODO:: должна быть пометка, что нужен рендер, и уже при ней перерендериваем. 
+                // Если моб пассивен, не двигается, рендер не нужен
+            
+                ModelChicken chicken = new ModelChicken();
+
+                chicken.Render(entity, tick, entity.IsMove ? .6f : 0, tick, 0, 0, VE.UV_SIZE);
+                OnDone(new BufferEventArgs(entity.Index, entity.Key, chicken.Buffer));
+            }
         }
 
         /// <summary>
@@ -144,15 +166,15 @@ namespace VoxelEngine.Renderer
         #region Event
 
         /// <summary>
-        /// Событие сделано
+        /// Событие чанк сделано
         /// </summary>
-        public event BufferEventHandler ChunkDone;
+        public event BufferEventHandler Done;
         /// <summary>
-        /// Событие сделано
+        /// Событие чанк сделано
         /// </summary>
-        protected void OnChunkDone(BufferEventArgs e)
+        protected void OnDone(BufferEventArgs e)
         {
-            ChunkDone?.Invoke(this, e);
+            Done?.Invoke(this, e);
         }
 
         /// <summary>

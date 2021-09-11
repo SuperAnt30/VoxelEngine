@@ -80,6 +80,7 @@
     <Compile Include="Binary\RegionBin.cs" />
     <Compile Include="Entity\EntityBase.cs" />
     <Compile Include="Entity\EntityChicken.cs" />
+    <Compile Include="Entity\EnumEntity.cs" />
     <Compile Include="FormTest.cs">
       <SubType>Form</SubType>
     </Compile>

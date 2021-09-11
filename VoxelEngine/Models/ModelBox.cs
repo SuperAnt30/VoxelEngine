@@ -63,11 +63,13 @@ namespace VoxelEngine.Models
 
         /// <summary>
         /// До рендера обрабатываем вращение
-        ///     +---+---+
-        ///     | 2 | 3 |
-        /// +---+---+---+---+
-        /// | 1 | 4 | 0 | 5 |
-        /// +---+---+---+---+
+        ///       +-----+------+
+        ///       |  2  |  3   |
+        ///       | Top |Bottom|
+        /// +-----+-----+------+----+
+        /// |  1  |  4  |   0  | 5  |
+        /// |Right|Front| Left |Back|
+        /// +-----+-----+------+----+
         ///             7 +-----+ 6
         /// y ^  _  z    /     /|
         ///   |  /|   3 +-----+2|
@@ -100,7 +102,6 @@ namespace VoxelEngine.Models
             for (int i = 0; i < 8; i++) 
             {
                 p[i] = Rotates(p[i]);
-                p[i] = glm.rotate(p[i], glm.pi, new vec3(0, 0, 1f)); // ????
                 if (yaw != 0) p[i] = glm.rotate(p[i], yaw, new vec3(0, 1f, 0));
             }
 

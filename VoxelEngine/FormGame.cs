@@ -192,7 +192,7 @@ namespace VoxelEngine
             WorldFile.Load();
             OpenGLF.GetInstance().Cam.PositionChunkChanged += Cam_PositionChunkChanged;
             OpenGLF.GetInstance().Cam.PositionBlockChanged += Cam_PositionBlockChanged;
-            World.ChunkDone += WorldChunkDone;
+            World.Done += WorldChunkDone;
             World.VoxelChanged += WorldVoxelChanged;
             World.Rendered += WorldRendered;
             World.Cleaned += WorldCleaned;
@@ -360,19 +360,33 @@ namespace VoxelEngine
         /// </summary>
         private void WorldChunkDone(object sender, BufferEventArgs e)
         {
-            if (InvokeRequired) Invoke(new BufferEventHandler(WorldChunkDone), sender, e);
-            else
+            try
             {
-                if (!e.IsAlpha)
+                if (InvokeRequired) Invoke(new BufferEventHandler(WorldChunkDone), sender, e);
+                else
                 {
-                    // Если пометка не альфа, то сетка твёрдых блоков
-                    OpenGLF.GetInstance().WorldM.RenderChank(e.ChunkPos.x, e.ChunkPos.y, e.Buffer);
-                    counterRc.CalculateFrameRate();
+                    WorldMesh world = OpenGLF.GetInstance().WorldM;
+                    if (e.Answer == BufferEventArgs.EnumAnswer.ChunkAll)
+                    {
+                        // Если пометка не альфа, то сетка твёрдых блоков
+                        world.RenderChank(e.ChunkPos.x, e.ChunkPos.y, e.Buffer);
+                        counterRc.CalculateFrameRate();
+                    }
+                    if (e.Answer == BufferEventArgs.EnumAnswer.ChunkAll || e.Answer == BufferEventArgs.EnumAnswer.ChunkAlpha)
+                    {
+                        // Генерация альфы всегда есть
+                        world.RenderChankAlpha(e.ChunkPos.x, e.ChunkPos.y, e.BufferAlpha);
+                        counterRca.CalculateFrameRate();
+                    }
+                    if (e.Answer == BufferEventArgs.EnumAnswer.Entity)
+                    {
+                        // Генерация моба
+                        world.RenderEntity(e.Index, e.KeyEntity, e.Buffer);
+                    }
                 }
-                // Генерация альфы всегда есть
-                OpenGLF.GetInstance().WorldM.RenderChankAlpha(e.ChunkPos.x, e.ChunkPos.y, e.BufferAlpha);
-                counterRca.CalculateFrameRate();
             }
+            catch { }
+
         }
 
         /// <summary>
