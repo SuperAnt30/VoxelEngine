@@ -75,7 +75,7 @@
         /// <summary>
         /// Скорость авто прыжка и когда встаём из положения сидя
         /// </summary>
-        public const float SPEED_AUTOJAMP = 10f; //9
+        public const float SPEED_AUTOJAMP = 11f; //9
         /// <summary>
         /// Скорость авто прыжка и когда встаём из положения сидя в воде
         /// </summary>

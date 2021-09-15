@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using VoxelEngine.Entity;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
 using VoxelEngine.World;
@@ -32,6 +33,24 @@ namespace VoxelEngine.Actions
 
         public PlayerCamera PlCamera { get; protected set; } = new PlayerCamera();
 
+        /// <summary>
+        /// Задать объект мира
+        /// </summary>
+        public new void SetWorld(WorldBase world)
+        {
+            World = world;
+            PlCamera.Entity = World.Entity;
+        }
+
+        public void EntityFPS(float time)
+        {
+            PlCamera.Update(time);
+            foreach (EntityLiving entity in World.Entities.Values)
+            {
+                entity.UpdateDraw(time);
+            }
+        }
+
         public void PreviewKeyDown(Keys keys)
         {
             switch (keys)
@@ -41,14 +60,17 @@ namespace VoxelEngine.Actions
                     break;
                 case Keys.F4:
                     VEC.GetInstance().Moving = VEMoving.FreeFlight;
+                    World.UpdateModePlayer();
                     break;
                 case Keys.F5:
                     VEC.GetInstance().Moving = VEMoving.ObstacleFlight;
+                    World.UpdateModePlayer();
                     // save
                     //File.WriteAllBytes("map.dat", OpenGLF.GetInstance().ChunkItems.Write());
                     break;
                 case Keys.F6:
                     VEC.GetInstance().Moving = VEMoving.Survival;
+                    World.UpdateModePlayer();
                     // load
                     //OpenGLF.GetInstance().ChunkItems.Read(File.ReadAllBytes("map.dat"));
                     break;
@@ -61,7 +83,11 @@ namespace VoxelEngine.Actions
                     break;
                 case Keys.F8:
                     Debug.GetInstance().IsDrawCollisium = !Debug.GetInstance().IsDrawCollisium;
-                    if (!Debug.GetInstance().IsDrawCollisium)
+                    if (Debug.GetInstance().IsDrawCollisium)
+                    {
+                        World.Entity.HitBox.RefrashDrawHitBox();
+                    }
+                    else 
                     {
                         OpenGLF.GetInstance().WorldLineM.Remove("HitBoxPlayer");
                     }
@@ -76,7 +102,7 @@ namespace VoxelEngine.Actions
 
                     break;
                 case Keys.ControlKey:
-                    PlCamera.Speed();
+                    PlCamera.Sprinting();
                     break;
 
             }
@@ -91,6 +117,7 @@ namespace VoxelEngine.Actions
             else if (keys == Keys.W || keys == Keys.S) PlCamera.KeyUpVertical();
             else if (keys == Keys.Space) PlCamera.KeyUpJamp();
             else if (keys == Keys.ShiftKey) PlCamera.KeyUpSneaking();
+            else if (keys == Keys.ControlKey) PlCamera.KeyUpSprinting();
             //PlCamera.KeyUp();
             //  _keysOld = Keys.None;
         }
@@ -135,8 +162,8 @@ namespace VoxelEngine.Actions
                     break;
                 case Keys.P:
                     // Перегенерация
-                    ch = OpenGLF.GetInstance().Cam.ToPositionChunk();
-                    bl = OpenGLF.GetInstance().Cam.ToPositionBlock();
+                    ch = OpenGLF.GetInstance().Cam.ChunkPos;
+                    bl = OpenGLF.GetInstance().Cam.BlockPos;
                     chunk = World.GetChunk(ch.x, ch.y);
                     chunk.Regen();
 
@@ -147,7 +174,7 @@ namespace VoxelEngine.Actions
                     //player.Play();
                     break;
                 case Keys.L:
-                    ch = OpenGLF.GetInstance().Cam.ToPositionChunk();
+                    ch = OpenGLF.GetInstance().Cam.ChunkPos;
                     //bl = OpenGLF.GetInstance().Cam.ToPositionBlock();
                     //blk = Debag.GetInstance().RayCastBlock;
                     chunk = World.GetChunk(ch.x, ch.y);
@@ -200,11 +227,11 @@ namespace VoxelEngine.Actions
                     VEC.GetInstance().AddQuarterTick();
                     break;
                 case Keys.Space:
-                    PlCamera.StepJamp();
+                    PlCamera.Jamp();
                     OnMoveChanged();
                     break;
                 case Keys.ShiftKey:
-                    PlCamera.StepDown();
+                    PlCamera.Down();
                     OnMoveChanged();
                     break;
                 case Keys.A:

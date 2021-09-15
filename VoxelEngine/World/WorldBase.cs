@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using VoxelEngine.Entity;
+using VoxelEngine.Entity.Npc;
 using VoxelEngine.Gen;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
+using VoxelEngine.Renderer;
 using VoxelEngine.Util;
 using VoxelEngine.Vxl;
 using VoxelEngine.World.Blk;
@@ -42,6 +44,10 @@ namespace VoxelEngine.World
         /// Список сущностей
         /// </summary>
         public Hashtable Entities { get; protected set; }
+        /// <summary>
+        /// Объект сущьности игрока
+        /// </summary>
+        public EntityLiving Entity { get; protected set; }
 
         /// <summary>
         /// заполнены кусками, которые находятся в пределах 9 кусков от любого игрока
@@ -55,7 +61,19 @@ namespace VoxelEngine.World
             RegionPr = new RegionProvider(this);
             Noise = new NoiseStorge(this);
             Entities = new Hashtable();
+            Entity = new EntityPlayer(this);
+            Entity.HitBoxChanged += Entity_HitBoxChanged;
+            Entity.LookAtChanged += Entity_HitBoxLookAtChanged;
         }
+
+        /// <summary>
+        /// Обновить режим игрока
+        /// </summary>
+        public void UpdateModePlayer()
+        {
+            Entity.SetMode(VEC.GetInstance().Moving);
+        }
+
 
         /// <summary>
         /// Пакет такта в потоке
@@ -89,7 +107,7 @@ namespace VoxelEngine.World
             }
 
             // Чанк где стоит игрок
-            vec2i c = OpenGLF.GetInstance().Cam.ToPositionChunk();
+            vec2i c = OpenGLF.GetInstance().Cam.ChunkPos;
             // Массив спирали чанков
             ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
             // По спирале такты чанков близ лежащих к игроку
@@ -101,9 +119,9 @@ namespace VoxelEngine.World
 
             // Такты всех мобов
             Hashtable hashtable = (Hashtable)Entities.Clone();
-            foreach (EntityBase entity in hashtable.Values)
+            foreach (EntityLiving entity in hashtable.Values)
             {
-                entity.Tick(tick);
+                entity.UpdateTick(tick);
             }
 
             isTick = true;
@@ -311,7 +329,7 @@ namespace VoxelEngine.World
         /// </summary>
         public void Cleaning()
         {
-            vec2i positionCam = OpenGLF.GetInstance().Cam.ToPositionChunk();
+            vec2i positionCam = OpenGLF.GetInstance().Cam.ChunkPos;
             List<vec2i> chunks = new List<vec2i>();
             
             // дальность чанков с учётом кэша
@@ -852,16 +870,18 @@ namespace VoxelEngine.World
             Camera cam = OpenGLF.GetInstance().Cam;
             VEC config = VEC.GetInstance();
             Block block = RayCast(cam.PosPlus(), cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            vec3 v = new vec3(iend + norm);
+            vec3 v = new vec3(iend + norm) + new vec3(.5f, 0, .5f);
 
-            EntityChicken entity = new EntityChicken(config.EntityIndex, v, cam.Yaw - glm.pi);
-            if (Entities.ContainsKey(entity.Index))
+            EntityChicken entity = new EntityChicken(this);
+            entity.HitBoxChanged += Entity_HitBoxChanged;
+            entity.SetChicken(config.EntityIndex, v, cam.Yaw - glm.pi);
+            if (Entities.ContainsKey(entity.HitBox.Index))
             {
-                Entities[entity.Index] = entity;
+                Entities[entity.HitBox.Index] = entity;
             }
             else
             {
-                Entities.Add(entity.Index, entity);
+                Entities.Add(entity.HitBox.Index, entity);
             }
 
             config.EntityAdd();
@@ -874,9 +894,44 @@ namespace VoxelEngine.World
             //    OpenGLF.GetInstance().WorldM.RenderEntity(chicken.Buffer);
             //}
         }
-        
+
+
 
         #region  Event
+
+        protected void Entity_HitBoxLookAtChanged(object sender, EventArgs e)
+        {
+            OnLookAtChanged();
+        }
+        /// <summary>
+        /// Событие изменена позиция камеры
+        /// </summary>
+        public event EventHandler LookAtChanged;
+
+        /// <summary>
+        /// Изменена позиция камеры
+        /// </summary>
+        protected void OnLookAtChanged()
+        {
+            LookAtChanged?.Invoke(this, new EventArgs());
+        }
+
+        private void Entity_HitBoxChanged(object sender, EntityEventArgs e)
+        {
+            OnHitBoxChanged(e);
+        }
+
+        /// <summary>
+        /// Событие изменён хитбокс сущьности
+        /// </summary>
+        public event EntityEventHandler HitBoxChanged;
+        /// <summary>
+        /// Событие изменён хитбокс сущьности
+        /// </summary>
+        protected void OnHitBoxChanged(EntityEventArgs e)
+        {
+            HitBoxChanged?.Invoke(this, e);
+        }
 
         /// <summary>
         /// Событие изменен воксель

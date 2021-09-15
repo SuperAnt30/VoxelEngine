@@ -67,7 +67,7 @@ namespace VoxelEngine.Renderer
         {
             Camera camera = OpenGLF.GetInstance().Cam;
             Pole pole = camera.GetPole();
-            vec2i pos = camera.ToPositionChunk();
+            vec2i pos = camera.ChunkPos;
             ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
 
             // Прорисовка алфы в зависимости куда смотрим. От до

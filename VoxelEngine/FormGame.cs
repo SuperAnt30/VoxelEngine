@@ -9,6 +9,7 @@ using VoxelEngine.Vxl;
 using VoxelEngine.World.Blk;
 using VoxelEngine.Renderer;
 using VoxelEngine.Graphics;
+using VoxelEngine.Entity;
 
 namespace VoxelEngine
 {
@@ -183,29 +184,44 @@ namespace VoxelEngine
         /// </summary>
         private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
         {
+            Mouse.GetInstance().SetWorld(World);
             OpenGLF.GetInstance().Initialized(openGLControl1.OpenGL);
             OpenGLF.GetInstance().Config = VEC.GetInstance();
             OpenGLF.GetInstance().Cam = new Camera(new vec3(0, 70, 0), glm.radians(70.0f));
             //OpenGLF.GetInstance().Cam = new Camera(new vec3(100000, 7, 24), glm.radians(70.0f));
             OpenGLF.GetInstance().RemoveChunkMeshChanged += OpenGLFRemoveChunkMeshChanged;
             // TODO::Load
-            WorldFile.Load();
+            WorldFile.Load(World);
+            
             OpenGLF.GetInstance().Cam.PositionChunkChanged += Cam_PositionChunkChanged;
             OpenGLF.GetInstance().Cam.PositionBlockChanged += Cam_PositionBlockChanged;
+            OpenGLF.GetInstance().Cam.SetPosRotation(
+                World.Entity.HitBox.Position,
+                World.Entity.RotationYaw,
+                World.Entity.RotationPitch
+            );
+            //OpenGLF.GetInstance().Cam.HitBox.HitBoxChanged += HitBox_Changed;
             World.Done += WorldChunkDone;
             World.VoxelChanged += WorldVoxelChanged;
             World.Rendered += WorldRendered;
             World.Cleaned += WorldCleaned;
             World.Ticked += WorldTicked;
+            World.HitBoxChanged += WorldHitBoxChanged;
+            World.LookAtChanged += WorldLookAtChanged;
 
             Keyboard.GetInstance().MoveChanged += FormGame_MoveChanged;
             Mouse.GetInstance().MoveChanged += FormGame_MoveChanged;
 
             Keyboard.GetInstance().SetWorld(World);
-            Mouse.GetInstance().SetWorld(World);
             Debug.GetInstance().SetWorld(World);
 
             
+
+        }
+
+        private void WorldLookAtChanged(object sender, EventArgs e)
+        {
+            OpenGLF.GetInstance().Cam.SetEyesWater(World.Entity.HitBox.Size.Eyes, World.Entity.HitBox.IsEyesWater);
         }
 
         private void OpenGLFRemoveChunkMeshChanged(object sender, CoordEventArgs e)
@@ -378,7 +394,7 @@ namespace VoxelEngine
                         world.RenderChankAlpha(e.ChunkPos.x, e.ChunkPos.y, e.BufferAlpha);
                         counterRca.CalculateFrameRate();
                     }
-                    if (e.Answer == BufferEventArgs.EnumAnswer.Entity)
+                    else if (e.Answer == BufferEventArgs.EnumAnswer.Entity)
                     {
                         // Генерация моба
                         world.RenderEntity(e.Index, e.KeyEntity, e.Buffer);
@@ -388,6 +404,23 @@ namespace VoxelEngine
             catch { }
 
         }
+
+        private void WorldHitBoxChanged(object sender, EntityEventArgs e)
+        {
+            if (InvokeRequired) Invoke(new EntityEventHandler(WorldHitBoxChanged), sender, e);
+            else
+            {
+                OpenGLF.GetInstance().WorldLineM.RenderChank(
+                    "HitBox" + e.Entity.HitBox.Index,
+                    e.Entity.HitBox.Buffer
+                );
+            }
+        }
+
+        //private void HitBox_Changed(object sender, EventArgs e)
+        //{
+        //    OpenGLF.GetInstance().WorldLineM.RenderChank("HitBoxPlayer", OpenGLF.GetInstance().Cam.HitBox.Buffer);
+        //}
 
         /// <summary>
         /// Подготовка к закрытию
@@ -446,7 +479,7 @@ namespace VoxelEngine
             {
                 OpenGLF.GetInstance().WorldLineM.Chunk();
             }
-            vec2i c = OpenGLF.GetInstance().Cam.ToPositionChunk();
+            vec2i c = OpenGLF.GetInstance().Cam.ChunkPos;
             OpenGLF.GetInstance().WorldM.Cleaning(c);
             isCleaning = true;
             ChunkRender chunk = World.GetChunkRender(c.x, c.y);
@@ -458,6 +491,9 @@ namespace VoxelEngine
         {
             World.ChunckChanged = VE.CHUNK_RENDER_ALPHA_BLOCK;
         }
+
+        
+
 
         protected bool isTick = true;
 

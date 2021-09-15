@@ -61,7 +61,7 @@ namespace VoxelEngine.Renderer
         /// </summary>
         protected void Render()
         {
-            vec2i chunkPos = OpenGLF.GetInstance().Cam.ToPositionChunk();
+            vec2i chunkPos = OpenGLF.GetInstance().Cam.ChunkPos;
             // Получить массив сектора
             ChunkLoading[] chunkLoading = VES.GetInstance().DistSqrtYaw(OpenGLF.GetInstance().Cam.Yaw);
 
@@ -151,7 +151,7 @@ namespace VoxelEngine.Renderer
                 ModelChicken chicken = new ModelChicken();
 
                 chicken.Render(entity, tick, entity.IsMove ? .6f : 0, tick, 0, 0, VE.UV_SIZE);
-                OnDone(new BufferEventArgs(entity.Index, entity.Key, chicken.Buffer));
+                OnDone(new BufferEventArgs(entity.HitBox.Index, entity.Key, chicken.Buffer));
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using VoxelEngine.Glm;
 using System.IO;
 using VoxelEngine.Graphics;
+using VoxelEngine.World;
 
 namespace VoxelEngine
 {
@@ -14,7 +15,7 @@ namespace VoxelEngine
         /// <summary>
         /// Загрузить
         /// </summary>
-        public static void Load()
+        public static void Load(WorldBase world)
         {
             if (File.Exists(path))
             {
@@ -22,14 +23,11 @@ namespace VoxelEngine
                 {
                     // Время игры
                     VEC.GetInstance().SetTick(reader.ReadInt64());
-
-                    Camera cam = OpenGLF.GetInstance().Cam;
+                    
                     // Позиция камеры
-                    cam.Position = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+                    world.Entity.HitBox.SetPos(new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
                     // Pitch & Yaw
-                    cam.Yaw = reader.ReadSingle();
-                    cam.Pitch = reader.ReadSingle();
-                    cam.Rotate(cam.Pitch, cam.Yaw, 0);
+                    world.Entity.SetRotation(reader.ReadSingle(), reader.ReadSingle());
                 }
             }
         }
@@ -37,7 +35,7 @@ namespace VoxelEngine
         /// <summary>
         /// Записать
         /// </summary>
-        public static void Save()
+        public static void Save(WorldBase world)
         {
             if (File.Exists(path))
             {
@@ -49,14 +47,13 @@ namespace VoxelEngine
                 // Время игры
                 writer.Write(VEC.GetInstance().TickCount);
 
-                Camera cam = OpenGLF.GetInstance().Cam;
                 // Позиция камеры
-                writer.Write(cam.Position.x);
-                writer.Write(cam.Position.y);
-                writer.Write(cam.Position.z);
+                writer.Write(world.Entity.HitBox.Position.x);
+                writer.Write(world.Entity.HitBox.Position.y);
+                writer.Write(world.Entity.HitBox.Position.z);
                 // Pitch & Yaw
-                writer.Write(cam.Yaw);
-                writer.Write(cam.Pitch);
+                writer.Write(world.Entity.RotationYaw);
+                writer.Write(world.Entity.RotationPitch);
             }
         }
     }

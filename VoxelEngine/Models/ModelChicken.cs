@@ -46,14 +46,14 @@ namespace VoxelEngine.Models
         {
             SetRotationAngles(entity, limbSwing, limbSwingAmount, ageInTicks, headYaw, headPitch, scale);
 
-            Head.Render(entity.Position, entity.Yaw, scale);
-            Bill.Render(entity.Position, entity.Yaw, scale);
-            Chin.Render(entity.Position, entity.Yaw, scale);
-            Body.Render(entity.Position, entity.Yaw, scale);
-            RightLeg.Render(entity.Position, entity.Yaw, scale);
-            LeftLeg.Render(entity.Position, entity.Yaw, scale);
-            RightWing.Render(entity.Position, entity.Yaw, scale);
-            LeftWing.Render(entity.Position, entity.Yaw, scale);
+            Head.Render(entity.HitBox.Position, entity.RotationYaw, scale);
+            Bill.Render(entity.HitBox.Position, entity.RotationYaw, scale);
+            Chin.Render(entity.HitBox.Position, entity.RotationYaw, scale);
+            Body.Render(entity.HitBox.Position, entity.RotationYaw, scale);
+            RightLeg.Render(entity.HitBox.Position, entity.RotationYaw, scale);
+            LeftLeg.Render(entity.HitBox.Position, entity.RotationYaw, scale);
+            RightWing.Render(entity.HitBox.Position, entity.RotationYaw, scale);
+            LeftWing.Render(entity.HitBox.Position, entity.RotationYaw, scale);
             //Dot.Render(entity.Position, entity.Yaw, scale);
 
             List<float> buffer = new List<float>();

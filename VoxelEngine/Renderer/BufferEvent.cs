@@ -1,7 +1,7 @@
 ﻿using VoxelEngine.Entity;
 using VoxelEngine.Glm;
 
-namespace VoxelEngine.Renderer.Chk
+namespace VoxelEngine.Renderer
 {
     public delegate void BufferEventHandler(object sender, BufferEventArgs e);
 
@@ -49,6 +49,17 @@ namespace VoxelEngine.Renderer.Chk
             Answer = EnumAnswer.Entity;
         }
 
+        ///// <summary>
+        ///// Линии 
+        ///// </summary>
+        //public BufferEventArgs(string key, float[] buffer)
+        //{
+        //    Key = key;
+        //    Buffer = buffer;
+        //    Answer = EnumAnswer.Line;
+        //}
+
+
         /// <summary>
         /// Массив буфера сетки
         /// </summary>
@@ -62,6 +73,10 @@ namespace VoxelEngine.Renderer.Chk
         /// Порядковый номер
         /// </summary>
         public int Index { get; protected set; }
+        /// <summary>
+        /// Ключ сетки
+        /// </summary>
+      //  public string Key { get; protected set; }
         /// <summary>
         /// Тип сущьности
         /// </summary>
@@ -89,7 +104,11 @@ namespace VoxelEngine.Renderer.Chk
             /// <summary>
             /// Сущность
             /// </summary>
-            Entity
+            Entity,
+            /// <summary>
+            /// Линии
+            /// </summary>
+          //  Line 
         }
     }
 }

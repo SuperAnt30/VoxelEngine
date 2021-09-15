@@ -1,4 +1,4 @@
-﻿namespace VoxelEngine.Actions
+﻿namespace VoxelEngine.Entity
 {
     public enum EnumSneaking
     {

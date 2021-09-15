@@ -71,15 +71,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actions\EnumSneaking.cs" />
+    <Compile Include="Entity\EnumSneaking.cs" />
     <Compile Include="Actions\Keyboard.cs" />
     <Compile Include="Actions\Mouse.cs" />
+    <Compile Include="Actions\PlayerCameraOld.cs" />
     <Compile Include="Actions\PlayerCamera.cs" />
     <Compile Include="Binary\BlockTickBin.cs" />
     <Compile Include="Binary\ChunkBin.cs" />
     <Compile Include="Binary\RegionBin.cs" />
+    <Compile Include="Entity\EntityEvent.cs" />
     <Compile Include="Entity\EntityBase.cs" />
-    <Compile Include="Entity\EntityChicken.cs" />
+    <Compile Include="Entity\EnumMovingKey.cs" />
+    <Compile Include="Entity\MovingKey.cs" />
+    <Compile Include="Entity\Npc\EntityPlayer.cs" />
+    <Compile Include="Entity\Npc\EntityChicken.cs" />
+    <Compile Include="Entity\EntityLiving.cs" />
     <Compile Include="Entity\EnumEntity.cs" />
     <Compile Include="FormTest.cs">
       <SubType>Form</SubType>
@@ -100,6 +106,7 @@
     <Compile Include="Models\TextureVertex.cs" />
     <Compile Include="Models\TexturedQuad.cs" />
     <Compile Include="Renderer\Entity\EntityMesh.cs" />
+    <Compile Include="Renderer\Entity\EntityRender.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Util\BlockPos.cs" />
     <Compile Include="Util\BufferHeir.cs" />
@@ -177,7 +184,7 @@
     <Compile Include="World\Chk\ChunkBinary.cs" />
     <Compile Include="World\Chk\ChunkBuffer.cs" />
     <Compile Include="World\Chk\ChunkBase.cs" />
-    <Compile Include="Renderer\Chk\BufferEvent.cs" />
+    <Compile Include="Renderer\BufferEvent.cs" />
     <Compile Include="World\Chk\ChunkHeir.cs" />
     <Compile Include="World\Chk\ChunkMap.cs" />
     <Compile Include="Renderer\Chk\ChunkMeshs.cs" />
@@ -188,7 +195,7 @@
     <Compile Include="World\RegionBinary.cs" />
     <Compile Include="World\RegionMap.cs" />
     <Compile Include="World\RegionProvider.cs" />
-    <Compile Include="World\HitBoxPlayer.cs" />
+    <Compile Include="Util\HitBoxEntity.cs" />
     <Compile Include="Renderer\LineMesh.cs" />
     <Compile Include="Renderer\GuiCursor.cs" />
     <Compile Include="Graphics\RenderMesh.cs" />

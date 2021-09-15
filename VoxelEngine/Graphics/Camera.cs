@@ -1,4 +1,5 @@
 ﻿using System;
+using VoxelEngine.Entity;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
 
@@ -9,196 +10,6 @@ namespace VoxelEngine.Graphics
     /// </summary>
     public class Camera
     {
-        protected vec3 _front;
-        public vec3 Front
-        {
-            get { return _front; }
-            protected set
-            {
-                if (!_front.Equals(value))
-                {
-                    _front = value;
-                    ReplacePosition();
-                }
-                else _front = value;
-            }
-        }
-
-        protected vec3 _up;
-        public vec3 Up
-        {
-            get { return _up; }
-            protected set
-            {
-                if (!_up.Equals(value))
-                {
-                    _up = value;
-                    ReplacePosition();
-                }
-                else _up = value;
-            }
-        }
-
-
-        public vec3 Right { get; protected set; }
-
-        
-        /// <summary>
-        /// Корректировка по высоте масштаб блока 0,5 метра
-        /// </summary>
-        public void PositionVertical()
-        {
-            vec3 pos = Position;
-            pos.y = Mth.Round(pos.y);
-            Position = pos;
-        }
-
-        /// <summary>
-        /// Корректировка по высоте масштаб блока 1 метр
-        /// </summary>
-        public void PositionVerticalMeter()
-        {
-            vec3 pos = Position;
-            int y = Mth.Floor(pos.y);
-            pos.y = (float)y + .5f;
-            Position = pos;
-        }
-
-        protected vec3 _position;
-        /// <summary>
-        /// Позиция камеры
-        /// </summary>
-        public vec3 Position
-        {
-            get
-            {
-                return _position;
-            }
-            set
-            {
-                if (!_position.Equals(value))
-                {
-                    if (!ToPositionBlock(_position).Equals(ToPositionBlock(value)))
-                    {
-                        if (!ToPositionChunk(new vec3i(_position)).Equals(ToPositionChunk(new vec3i(value))))
-                        {
-                            _position = value;
-                            OnPositionChunkChanged();
-                        } else
-                        {
-                            _position = value;
-                            OnPositionBlockChanged();
-                        }
-                    }
-                    else
-                    {
-                        _position = value;
-                    }
-                    HitBox.SetPos(_position);
-                    ReplacePosition();
-                } else
-                {
-                    _position = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Получить хит бокс игрока
-        /// </summary>
-        public HitBoxPlayer HitBox { get; protected set; } 
-
-        /// <summary>
-        /// Рост персонажа, камера + 0,5 блока
-        /// </summary>
-        public vec3 PosPlus()
-        {
-            // TODO:: Рост + 0,5
-            return HitBox == null ? Position : Position + new vec3(0, HitBox.Size.Eyes, 0);
-        }
-             
-        /// <summary>
-        /// Угол обзора
-        /// </summary>
-        public float Fov { get; protected set; }
-        public mat4 Rotation { get; set; }
-
-        protected float _aspect;
-        /// <summary>
-        /// Ширина окна
-        /// </summary>
-        public float Width { get; protected set; }
-        /// <summary>
-        /// Высота окна
-        /// </summary>
-        public float Height { get; protected set; }
-
-        public Camera(vec3 position, float fov)
-        {
-            HitBox = new HitBoxPlayer();
-            HitBox.Size.LookAtChanged += SizeLookAtChanged;
-            Worth();
-            Position = position;
-            Fov = fov;
-            Rotation = new mat4(1.0f);
-            _UpdateVectors();
-            //Sitting();
-            
-        }
-
-        private void SizeLookAtChanged(object sender, EventArgs e)
-        {
-            ReplacePosition();
-            //OnLookAtChanged();
-        }
-
-        protected void _UpdateVectors()
-        {
-            Front = new vec3(Rotation * new vec4(0, 0, -1, 1));
-            Right = new vec3(Rotation * new vec4(1, 0, 0, 1));
-            Up = new vec3(Rotation * new vec4(0, 1, 0, 1));
-        }
-
-        public void Rotate(float x, float y, float z)
-        {
-            Rotation = glm.rotate(Rotation, z, new vec3(0, 0, 1));
-            Rotation = glm.rotate(Rotation, y, new vec3(0, 1, 0));
-            Rotation = glm.rotate(Rotation, x, new vec3(1, 0, 0));
-            _UpdateVectors();
-        }
-
-        /// <summary>
-        /// Изменить размер окна
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        public void SetResized(int width, int height)
-        {
-            Width = width;
-            Height = height;
-            _aspect = Width / Height;
-
-            Projection = glm.perspective(Fov, _aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f).to_array();
-            Ortho2D = glm.ortho(0, Width, Height, 0).to_array();
-        }
-
-        /// <summary>
-        /// Заменить LookAt и PositionView
-        /// </summary>
-        public void ReplacePosition()
-        {
-            vec3 pos = PosPlus();
-            mat4 lookAt = glm.lookAt(pos, pos + Front, Up);
-            LookAt = lookAt.to_array();
-
-            // Для скайбокса позицию камеры не смещаем
-            pos = Position;
-            lookAt = glm.lookAt(pos, pos + Front, Up);
-            PositionView = glm.translate(new mat4(1.0f), pos).to_array();
-            ProjectionLookAt = (glm.perspective(Fov, _aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f)
-                * lookAt).to_array();
-        }
-
         /// <summary>
         /// массив матрицы перспективу камеры 3D
         /// </summary>
@@ -223,11 +34,206 @@ namespace VoxelEngine.Graphics
         /// <summary>
         /// Угол по горизонтали в радианах
         /// </summary>
-        public float Yaw { get; set; } = 0.0f;
+        public float Yaw { get; protected set; } = 0.0f;
         /// <summary>
         /// Угол по вертикали в радианах
         /// </summary>
-        public float Pitch { get; set; } = 0.0f;
+        public float Pitch { get; protected set; } = 0.0f;
+
+        /// <summary>
+        /// Позиция камеры
+        /// </summary>
+        public vec3 Position { get; protected set; }
+
+        public vec3 Front { get; protected set; }
+        public vec3 Up { get; protected set; }
+        public vec3 Right { get; protected set; }
+
+        /// <summary>
+        /// В каком чанке находится
+        /// </summary>
+        public vec2i ChunkPos { get; protected set; } = new vec2i();
+        /// <summary>
+        /// Позиция псевдо чанка
+        /// </summary>
+        public int ChunkY { get; protected set; }
+        /// <summary>
+        /// В каком блоке находится
+        /// </summary>
+        public vec3i BlockPos { get; protected set; } = new vec3i();
+        /// <summary>
+        /// Высота глаз
+        /// </summary>
+        public float Eyes { get; protected set; } = 0f;
+        /// <summary>
+        /// Под водой ли глаза
+        /// </summary>
+        public bool IsEyesWater { get; protected set; } = false;
+        /// <summary>
+        /// Угол обзора
+        /// </summary>
+        public float Fov { get; protected set; }
+
+        protected mat4 rotation;
+
+        protected float aspect;
+        /// <summary>
+        /// Ширина окна
+        /// </summary>
+        public float Width { get; protected set; }
+        /// <summary>
+        /// Высота окна
+        /// </summary>
+        public float Height { get; protected set; }
+
+        public Camera(vec3 position, float fov)
+        {
+            Position = position;
+            Fov = fov;
+            rotation = new mat4(1.0f);
+            UpdateVectors();
+        }
+
+        /// <summary>
+        /// Корректировка по высоте масштаб блока 0,5 метра
+        /// </summary>
+        public void PositionVertical()
+        {
+            vec3 pos = Position;
+            pos.y = Mth.Round(pos.y);
+            Position = pos;
+        }
+
+        /// <summary>
+        /// Корректировка по высоте масштаб блока 1 метр
+        /// </summary>
+        public void PositionVerticalMeter()
+        {
+            vec3 pos = Position;
+            int y = Mth.Floor(pos.y);
+            pos.y = (float)y + .5f;
+            Position = pos;
+        }
+
+        public void SetPosRotation(vec3 pos, float yaw, float pitch)
+        {
+            SetRotation(yaw, pitch);
+            SetPos(pos);
+        }
+
+        public void SetPos(vec3 pos)
+        {
+            if (!Position.Equals(pos))
+            {
+                if (!ToPositionBlock(Position).Equals(ToPositionBlock(pos)))
+                {
+                    if (!ToPositionChunk(new vec3i(Position)).Equals(ToPositionChunk(new vec3i(pos))))
+                    {
+                        Position = pos;
+                        OnPositionChunkChanged();
+                    }
+                    else
+                    {
+                        Position = pos;
+                        OnPositionBlockChanged();
+                    }
+                }
+                else
+                {
+                    Position = pos;
+                }
+                BlockPos = new vec3i(Position);
+                ChunkPos = new vec2i((BlockPos.x) >> 4, (BlockPos.z) >> 4);
+                ChunkY = (BlockPos.y) >> 4;
+                ReplacePosition();
+            }
+        }
+
+        /// <summary>
+        /// Задать вращение
+        /// </summary>
+        public void SetRotation(float yaw, float pitch)
+        {
+            Yaw = yaw;
+            Pitch = pitch;
+            rotation = new mat4(1.0f);
+            Rotate(pitch, yaw, 0);
+        }
+
+        /// <summary>
+        /// Задать высоту глаз и в воде ли они
+        /// </summary>
+        public void SetEyesWater(float eyes, bool isEyesWater)
+        {
+            Eyes = eyes;
+            IsEyesWater = isEyesWater;
+            ReplacePosition();
+        }
+
+        /// <summary>
+        /// Рост персонажа, позиция + высота глаз
+        /// </summary>
+        public vec3 PosPlus()
+        {
+            return Position + new vec3(0, Eyes, 0);
+        }
+             
+        public void SetFov(float fov)
+        {
+            Fov = fov;
+            aspect = Width / Height;
+            Projection = glm.perspective(Fov, aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f).to_array();
+        }
+
+        protected void UpdateVectors()
+        {
+            Front = new vec3(rotation * new vec4(0, 0, -1, 1));
+            Right = new vec3(rotation * new vec4(1, 0, 0, 1));
+            Up = new vec3(rotation * new vec4(0, 1, 0, 1));
+            ReplacePosition();
+        }
+
+        public void Rotate(float x, float y, float z)
+        {
+            rotation = glm.rotate(rotation, z, new vec3(0, 0, 1));
+            rotation = glm.rotate(rotation, y, new vec3(0, 1, 0));
+            rotation = glm.rotate(rotation, x, new vec3(1, 0, 0));
+            UpdateVectors();
+        }
+
+        /// <summary>
+        /// Изменить размер окна
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public void SetResized(int width, int height)
+        {
+            Width = width;
+            Height = height;
+            aspect = Width / Height;
+
+            Projection = glm.perspective(Fov, aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f).to_array();
+            Ortho2D = glm.ortho(0, Width, Height, 0).to_array();
+        }
+
+        /// <summary>
+        /// Заменить LookAt и PositionView
+        /// </summary>
+        public void ReplacePosition()
+        {
+            vec3 pos = PosPlus();
+            mat4 lookAt = glm.lookAt(pos, pos + Front, Up);
+            LookAt = lookAt.to_array();
+
+            // Для скайбокса позицию камеры не смещаем
+            pos = Position;
+            lookAt = glm.lookAt(pos, pos + Front, Up);
+            PositionView = glm.translate(new mat4(1.0f), pos).to_array();
+            ProjectionLookAt = (glm.perspective(Fov, aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f)
+                * lookAt).to_array();
+        }
+
+        
 
         /// <summary>
         /// Угол по горизонтали
@@ -288,16 +294,7 @@ namespace VoxelEngine.Graphics
         /// </summary>
         public vec2i ToPositionRegion()
         {
-            vec2i chunk = ToPositionChunk();
-            return new vec2i(chunk.x >> 5, chunk.y >> 5);
-        }
-
-        /// <summary>
-        /// Определить чанк по позиции камеры
-        /// </summary>
-        public vec2i ToPositionChunk()
-        {
-            return ToPositionChunk(new vec3i(Position));
+            return new vec2i(ChunkPos.x >> 5, ChunkPos.y >> 5);
         }
 
         /// <summary>
@@ -311,42 +308,9 @@ namespace VoxelEngine.Graphics
         /// <summary>
         /// Определить блок по позиции камеры
         /// </summary>
-        public vec3i ToPositionBlock()
-        {
-            return ToPositionBlock(Position);
-        }
-
-        /// <summary>
-        /// Определить блок по позиции камеры
-        /// </summary>
         public vec3i ToPositionBlock(vec3 pos)
         {
             return new vec3i(pos);
-        }
-
-        /// <summary>
-        /// Стоит
-        /// </summary>
-        public void Worth()
-        {
-            HitBox.Size.SetSize(.6f, 3.7f);
-            HitBox.Size.SetEyes(3.4f, 16);
-        }
-        /// <summary>
-        /// Сидит
-        /// </summary>
-        public void Sneaking()
-        {
-            HitBox.Size.SetSize(.6f, 2.6f);
-            HitBox.Size.SetEyes(2.4f, 16);
-        }
-        /// <summary>
-        /// Плывём
-        /// </summary>
-        public void Sailing()
-        {
-            HitBox.Size.SetSize(.6f, 1.8f);
-            HitBox.Size.SetEyes(1.5f, 10);
         }
 
         #region Event

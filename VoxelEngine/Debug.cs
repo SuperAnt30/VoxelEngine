@@ -219,8 +219,8 @@ namespace VoxelEngine
                 Tps, Fps, SpeedFrame, Version, ToStringTime(), Revision
             );
 
-            vec2i posChunk = cam.ToPositionChunk();
-            vec3i posBlock = cam.ToPositionBlock();
+            vec2i posChunk = cam.ChunkPos;
+            vec3i posBlock = cam.BlockPos;
             ChunkBase chunk = World.GetChunk(posChunk.x, posChunk.y);
             
             string strPosition = string.Format(

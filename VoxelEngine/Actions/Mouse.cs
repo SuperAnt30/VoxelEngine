@@ -84,9 +84,8 @@ namespace VoxelEngine.Actions
                 if (e.Button == MouseButtons.Right)
                 {
                     vec3i vec = iend + norm;
-
-                    HitBoxPlayer hitBox = openGLF.Cam.HitBox;
-                    if (!hitBox.IsVoxelBody(vec))
+                    
+                    if (!World.Entity.HitBox.IsVoxelBody(vec))
                     {
                         //OnVoxelChanged(vec, World.SetVoxelId(Blocks.GetBlock((byte)Debag.GetInstance().NumberBlock, new BlockPos(vec))));
                         World.SetBlockState(Blocks.GetBlock(Debug.GetInstance().NumberBlock, new BlockPos(vec)), true);
@@ -140,8 +139,6 @@ namespace VoxelEngine.Actions
             _firstMouse = true;
         }
 
-        
-
         /// <summary>
         /// Движение мыши
         /// </summary>
@@ -151,8 +148,6 @@ namespace VoxelEngine.Actions
         public void Move(Point mouse, Rectangle bounds, Point mousePosition)
         {
             if (!IsMove) return;
-
-            
 
             Camera cam = OpenGLF.GetInstance().Cam;
 
@@ -169,23 +164,16 @@ namespace VoxelEngine.Actions
             float deltaY = mousePosition.Y - point.Y;
             if (deltaX == 0 && deltaY == 0) return;
 
-            cam.Pitch += -deltaY / cam.Height * _speedMouse;
-            cam.Yaw += -deltaX / cam.Height * _speedMouse;
+            float pitch = cam.Pitch - deltaY / cam.Height * _speedMouse;
+            float yaw = cam.Yaw - deltaX / cam.Height * _speedMouse;
 
-            if (cam.Pitch < -glm.radians(89.0f))
-            {
-                cam.Pitch = -glm.radians(89.0f);
-            }
-            if (cam.Pitch > glm.radians(89.0f))
-            {
-                cam.Pitch = glm.radians(89.0f);
-            }
+            if (pitch < -glm.radians(89.0f)) pitch = -glm.radians(89.0f);
+            if (pitch > glm.radians(89.0f)) pitch = glm.radians(89.0f);
+            if (yaw > glm.pi) yaw -= glm.pi360;
+            if (yaw < -glm.pi) yaw += glm.pi360;
 
-            if (cam.Yaw > glm.radians(180f)) cam.Yaw -= glm.radians(360f);
-            if (cam.Yaw < glm.radians(-180f)) cam.Yaw += glm.radians(360f);
-
-            cam.Rotation = new mat4(1.0f);
-            cam.Rotate(cam.Pitch, cam.Yaw, 0);
+            cam.SetRotation(yaw, pitch);
+            World.Entity.SetRotation(cam.Yaw, cam.Pitch);
 
             OnMoveChanged();
 

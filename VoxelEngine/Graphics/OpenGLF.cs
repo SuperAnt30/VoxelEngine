@@ -144,9 +144,11 @@ namespace VoxelEngine.Graphics
 
         public void Draw()
         {
+            float time = stopwatch.ElapsedMilliseconds / 1000f;
             stopwatch.Restart();
+            if (time > 1.5f) time = 1.5f;
 
-            DrawBegin();
+            DrawBegin(time);
             DrawSkyBox();
             IsLineOn(); // Для прорисовки сетки
             DrawLine();
@@ -236,11 +238,15 @@ namespace VoxelEngine.Graphics
         /// <summary>
         /// Стартовый покет прорисовки
         /// </summary>
-        protected void DrawBegin()
+        protected void DrawBegin(float time)
         {
+
             Debug.GetInstance().CountMesh = 0;
-            Keyboard.GetInstance().PlCamera.Update();
-            Cam.HitBox.Size.Update();
+           // Keyboard.GetInstance().PlCamera.Update(time);
+
+            Keyboard.GetInstance().EntityFPS(time);
+            //Cam.Entity.HitBox.Size.Update();
+            //Cam.HitBox.Size.Update();
 
             // Включает Буфер глубины 
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
@@ -259,7 +265,7 @@ namespace VoxelEngine.Graphics
             texture.BindTexture("gui");
 
             // Эффект под водой
-            if (Keyboard.GetInstance().PlCamera.IsEyesWater) guiWater.Draw();
+            if (Cam.IsEyesWater) guiWater.Draw();
             // Курсор
             guiCursor.Draw();
 

@@ -1140,7 +1140,7 @@ namespace VoxelEngine.World.Chk
                 }
             }
             liquidTicksNew.Clear();
-            if (OpenGLF.GetInstance().Cam.ToPositionChunk() == new vec2i(X, Z))
+            if (OpenGLF.GetInstance().Cam.ChunkPos == new vec2i(X, Z))
             {
                 Debug.GetInstance().ChunkLiquidTicks = liquidTicks.Count;
             }

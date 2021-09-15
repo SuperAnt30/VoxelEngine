@@ -21,10 +21,5 @@ namespace VoxelEngine.Renderer
         {
             Key = key;
         }
-
-        public void Render(float[] buffer)
-        {
-            base.Render(buffer);
-        }
     }
 }

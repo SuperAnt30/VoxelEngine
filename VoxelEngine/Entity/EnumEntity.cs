@@ -6,8 +6,12 @@
     public enum EnumEntity
     {
         /// <summary>
+        /// Игрок
+        /// </summary>
+        Player = 0,
+        /// <summary>
         /// Курица
         /// </summary>
-        Chicken = 0
+        Chicken = 1
     }
 }

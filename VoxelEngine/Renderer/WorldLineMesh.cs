@@ -95,7 +95,7 @@ namespace VoxelEngine.Renderer
         /// </summary>
         public void Chunk()
         {
-            vec2i vc = OpenGLF.GetInstance().Cam.ToPositionChunk();
+            vec2i vc = OpenGLF.GetInstance().Cam.ChunkPos;
             vc = new vec2i(vc.x << 4, vc.y << 4);
             vec2i vc16 = vc + 16;
 

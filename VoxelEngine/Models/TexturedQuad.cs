@@ -43,7 +43,7 @@ namespace VoxelEngine.Models
         {
             TextureVertex vertex = Vertices[index];
             return new float[]{
-                pos.x + vertex.Position.x * scale + .5f, pos.y + (1.5f - vertex.Position.y * scale), pos.z + vertex.Position.z * scale+ .5f,
+                pos.x + vertex.Position.x * scale, pos.y + (1.5f - vertex.Position.y * scale), pos.z + vertex.Position.z * scale,
                 vertex.Texture.x, vertex.Texture.y
             };
         }
