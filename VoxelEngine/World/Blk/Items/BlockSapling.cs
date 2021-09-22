@@ -37,6 +37,7 @@ namespace VoxelEngine.World
             IsCollision = false;
             AllDrawing = true;
             LightingYourself = true;
+            IsCube = false;
         }
     }
 }

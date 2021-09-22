@@ -6,7 +6,6 @@ using VoxelEngine.Renderer.Blk;
 using VoxelEngine.Renderer.Chk;
 using VoxelEngine.Util;
 using VoxelEngine.World;
-using VoxelEngine.World.Blk;
 
 namespace VoxelEngine.Entity
 {
@@ -32,8 +31,11 @@ namespace VoxelEngine.Entity
         /// Поворот вверх вниз
         /// </summary>
         public float RotationPitch { get; protected set; }
-        
 
+        /// <summary>
+        /// Убит ли
+        /// </summary>
+        public bool IsKill { get; protected set; } = false;
 
         /// <summary>
         /// Сущность на предыдущем тике, используемая для вычисления позиции во время процедур рендеринга
@@ -46,29 +48,11 @@ namespace VoxelEngine.Entity
        // public int TicksExisted { get; protected set; } = 0;
 
         /// <summary>
-        /// Движение
-        /// TODO:: временно для теста анимации
-        /// </summary>
-        public bool IsMove { get; protected set; } = false;
-
-        /// <summary>
         /// Генератор случайных чисел
         /// </summary>
         protected Random random = new Random();
 
         public EntityBase(WorldBase world) : base(world) { }
-
-        /// <summary>
-        /// Стартовый пакет игрока
-        /// </summary>
-        protected void InitializePlayer()
-        {
-            HitBox = new HitBoxEntity(-1, World);
-            HitBox.SetSizeHitBox(.6f, 3.7f, 3.4f, .6f, 2.6f, 2.4f);
-            HitBox.Worth();
-            HitBox.HitBoxChanged += HitBox_Changed;
-            HitBox.LookAtChanged += HitBox_LookAtChanged;
-        }
 
         /// <summary>
         /// Задать вращение
@@ -78,6 +62,14 @@ namespace VoxelEngine.Entity
             RotationYaw = yaw;
             RotationPitch = pitch;
         }
+
+        /// <summary>
+        /// Убить
+        /// </summary>
+        public void Kill() => IsKill = true;
+
+
+
 
         #region Event
 

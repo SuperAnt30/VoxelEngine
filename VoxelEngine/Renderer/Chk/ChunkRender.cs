@@ -149,8 +149,6 @@ namespace VoxelEngine.Renderer.Chk
         /// </summary>
         public float[] RenderAlpha()
         {
-            Camera camera = OpenGLF.GetInstance().Cam;
-            Pole pole = camera.GetPole();
             List<VoxelData> alphas = new List<VoxelData>();
 
             // TODO:: можно оптемизировать в два массива, по удалению от персонажа, облегчим сортировку
@@ -160,7 +158,7 @@ namespace VoxelEngine.Renderer.Chk
                 {
                     foreach (VoxelData vd in Chunk.StorageArrays[i].Buffer.Alphas)
                     {
-                        vd.Distance = camera.DistanceTo(new vec3(vd.Block.Position.ToVec3i()));
+                        vd.Distance = World.Entity.HitBox.DistanceEyesTo(vd.Block.Position.ToVec3i());
                     }
                     alphas.AddRange(Chunk.StorageArrays[i].Buffer.Alphas);
                 }

@@ -29,6 +29,10 @@ namespace VoxelEngine.Entity
         /// </summary>
         protected VEMoving mode = VEMoving.Survival;
         /// <summary>
+        /// Объект скоростей
+        /// </summary>
+        protected EntitySpeed speed = new EntitySpeed();
+        /// <summary>
         /// Ключевой объект перемещения движения
         /// </summary>
         public MovingKey Moving { get; protected set; } = new MovingKey();
@@ -45,6 +49,11 @@ namespace VoxelEngine.Entity
         /// Прыгаем
         /// </summary>
         public bool IsJumping { get; protected set; } = false;
+
+        /// <summary>
+        /// Нужен ли рендер
+        /// </summary>
+        public bool IsRender { get; protected set; } = true;
 
         /// <summary>
         /// Результат сидеть
@@ -70,6 +79,35 @@ namespace VoxelEngine.Entity
 
         //}
 
+        /// <summary>
+        /// Начало движения
+        /// </summary>    
+        //public void StartMovement()
+        //{
+        //    if (acceleration != EnumMovingKey.Plus)
+        //    {
+        //        acceleration = EnumMovingKey.Plus;
+        //        accelerationValue = 0f;
+        //    }
+        //}
+
+        //public void MovingCache()
+        //{
+        //    movingOld = Moving.Clone();
+        //}
+
+        /// <summary>
+        /// Конец движения
+        /// </summary>    
+        //public void EndMovement()
+        //{
+        //    if (acceleration != EnumMovingKey.Minus && Moving.IsStand())
+        //    {
+        //        acceleration = EnumMovingKey.Minus;
+        //        accelerationValue = 1f;
+        //        Moving = movingOld;
+        //    }
+        //}
 
         /// <summary>
         /// Используется как в воде, так и в летающих объектах 
@@ -82,10 +120,27 @@ namespace VoxelEngine.Entity
         /// <summary>
         /// Обработка прыжка
         /// </summary>
-        //protected void Jump()
-        //{
+        public void Jump()
+        {
+            if (mode == VEMoving.Survival && !IsJumping)
+            {
+                IsJumping = true;
+                Moving.Up();
+            }
+        }
 
-        //}
+        /// <summary>
+        /// Прекратить прыжок
+        /// </summary>
+        public void JumpCancel()
+        {
+            if (IsJumping)
+            {
+                Moving.HeightCancel();
+                IsJumping = false;
+            }
+        }
+
 
         protected void MotionAngle(float j, float v, float h)
         {
@@ -109,6 +164,8 @@ namespace VoxelEngine.Entity
         /// </summary>
         public virtual void UpdateTick(long tick)
         {
+            //Moving.Tick();
+
             if (mode == VEMoving.Survival)
             {
                 if (HitBox.IsLegsWater)
@@ -202,31 +259,32 @@ namespace VoxelEngine.Entity
         /// <summary>
         /// Обновление каждый кадр (FPS)
         /// </summary>
-        public virtual string UpdateDraw(float time)
+        public virtual string UpdateDraw(float timeFrame, float timeAll)
         {
+            Moving.Update(timeAll);
             string str = UpdateMoving();
 
             if (mode == VEMoving.Survival)
             {
-                vec3 move = MoveTime(time);
+                vec3 move = MoveTime(timeFrame);
                 if (HitBox.CollisionBodyXZ(move) && OnGround)
                 {
                     // Авто прыжок
                     motion.y = HitBox.IsLegsWater ? VE.SPEED_WATER_AUTOJAMP : VE.SPEED_AUTOJAMP;
-                    vec3 move2 = MoveTime(time);
+                    vec3 move2 = MoveTime(timeFrame);
                     move.y = move2.y;
                 }
                 CollisionBodyY(move);
             }
             else if (mode == VEMoving.ObstacleFlight)
             {
-                vec3 move = MoveTime(time);
+                vec3 move = MoveTime(timeFrame);
                 HitBox.CollisionBodyXZ(move);
                 CollisionBodyY(move);
             }
             else
             {
-                HitBox.SetPos(HitBox.Position + MoveTime(time));
+                HitBox.SetPos(HitBox.Position + MoveTime(timeFrame));
             }
 
             return str;
@@ -261,38 +319,40 @@ namespace VoxelEngine.Entity
             float h, v, j;
             if (mode == VEMoving.Survival)
             {
-                h = IsSneaking ? VE.SPEED_SNEAKING : VE.SPEED_STEP;
+                h = IsSneaking ? speed.Sneaking : speed.Step;
                 v = h;
                 j = motion.y;
 
-                if (Moving.Height == EnumMovingKey.Minus && OnGround && !IsSneaking)
+                if (Moving.Height.MinusAction && OnGround && !IsSneaking)
                 {
                     // Присел
                     Sneaking();
                 }
 
-                if (Moving.Vertical == EnumMovingKey.Plus && IsSprinting && !IsSneaking)
+                if (Moving.Vertical.Plus && IsSprinting && !IsSneaking)
                 {
-                    v = VE.SPEED_RUN;
+                    v = speed.Sprinting;
                 }
                 if ((HitBox.IsDownWater || HitBox.IsLegsWater) && !HitBox.IsEyesWater)
                 {
                     // Игрок над водой или частично в воде
-                    if (Moving.Height == EnumMovingKey.Plus)
+                    if (Moving.Height.PlusAction)
                     {
                         if (HitBox.IsLegsWater)
                         {
                             // Ноги в воде но нет под ногами дна
                             // скорее всего плывёт
                             OnGround = false;
-                            j = VE.SPEED_SWIM;
+                            j = speed.Swim;
                         }
                         else
                         if (OnGround)
                         {
                             // мы на земле но рядом блок под нами с водой
                             OnGround = false;
-                            j = VE.SPEED_JAMP;
+                            // Но так-как определить в воде плывём или падаем с данного положения
+                            // высота прыжка уменьшаем, чтоб высота прыжка не привышала требуемую
+                            j = speed.Jamp * .5f;
                         }
                     }
                     // Если в воде то замедляем в 2 раза
@@ -303,7 +363,7 @@ namespace VoxelEngine.Entity
                 {
                     // Игрок под водой
                     // плывём вверх или низ под водой
-                    if (Moving.Height != EnumMovingKey.None) j = Moving.GetHeightValue() * VE.SPEED_SWIM;
+                    if (!Moving.Height.IsZero) j = Moving.GetHeightValue() * speed.Swim;
 
                     // Если в воде то замедляем в 2,5 раза
                     h *= .4f;
@@ -312,15 +372,21 @@ namespace VoxelEngine.Entity
                 else
                 {
                     // Прыжок
-                    if (Moving.Height == EnumMovingKey.Plus && OnGround)
+                    if (Moving.Height.PlusAction && OnGround)
                     {
                         OnGround = false;
-                        j = HitBox.IsLegsWater ? VE.SPEED_WATER_JAMP : VE.SPEED_JAMP;
+                        j = speed.Jamp;
                     }
                 }
-
+                
                 v *= Moving.GetVerticalValue();
                 h *= Moving.GetHorizontalValue();
+
+                if (IsSprinting && !OnGround && v > 0)
+                {
+                    // Если прыжок с бегом, то скорость увеличивается на 20%
+                    v *= 1.2f;
+                }
 
                 MotionAngle(j, v, h);
 
@@ -329,23 +395,17 @@ namespace VoxelEngine.Entity
                 else if (HitBox.Flow == Pole.West) motion.x -= VE.SPEED_FLOW;
                 else if (HitBox.Flow == Pole.North) motion.z -= VE.SPEED_FLOW;
                 else if (HitBox.Flow == Pole.South) motion.z += VE.SPEED_FLOW;
-
-                
             }
             else
             {
-                h = VE.SPEED_STEP * Moving.GetHorizontalValue();
-                v = Moving.Vertical == EnumMovingKey.Plus ? IsSprinting
-                        ? VE.SPEED_FLY_FAST : VE.SPEED_FLY
-                    : VE.SPEED_STEP;
-                v *= Moving.GetVerticalValue();
-                j = VE.SPEED_FLY_VERTICAL * Moving.GetHeightValue();
-
+                h = speed.Fly * Moving.GetHorizontalValue();
+                v = (IsSprinting ? speed.FlyFast : speed.Fly) * Moving.GetVerticalValue();
+                j = speed.FlyVertical * Moving.GetHeightValue();
                 MotionAngle(j, v, h);
             }
             return ToDebug(j, v, h);
         }
-
+        
         /// <summary>
         /// Параметр этапа встать, если true мы пытаемся встать
         /// </summary>
@@ -373,11 +433,19 @@ namespace VoxelEngine.Entity
         /// <summary>
         /// Бежим
         /// </summary>
-        public void Sprinting() => IsSprinting = true;
+        public void Sprinting()
+        {
+            IsSprinting = true;
+            Moving.SprintingBegin();
+        }
         /// <summary>
         /// Не бежим
         /// </summary>
-        public void SprintingNot() => IsSprinting = false;
+        public void SprintingNot()
+        {
+            IsSprinting = false;
+            Moving.SprintingCancel();
+        }
         /// <summary>
         /// Сидим
         /// </summary>
@@ -406,6 +474,33 @@ namespace VoxelEngine.Entity
         /// Встаём ли
         /// </summary>
         public bool IsSneakingNearly => sneaking == EnumSneaking.GetUp;
+
+        /// <summary>
+        /// Нужен рендер
+        /// </summary>
+        public void Render() => IsRender = true;
+
+        /// <summary>
+        /// Рендер сделан
+        /// </summary>
+        public void RenderDone()
+        {
+            if (Moving.IsStand()) IsRender = false;
+        }
+
+        /// <summary>
+        /// Стартовый пакет игрока
+        /// </summary>
+        protected void InitializePlayer()
+        {
+            HitBox = new HitBoxEntity(-1, World);
+            HitBox.SetSizeHitBox(.6f, 3.7f, 3.4f, .6f, 2.6f, 2.4f);
+            HitBox.Worth();
+            HitBox.HitBoxChanged += HitBox_Changed;
+            HitBox.LookAtChanged += HitBox_LookAtChanged;
+            Moving = new MovingKey(true);
+            Moving.LookAtChanged += HitBox_LookAtChanged;
+        }
 
     }
 }

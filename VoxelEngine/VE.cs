@@ -8,7 +8,7 @@
         /// <summary>
         /// Сколько чанков видим
         /// </summary>
-        public const int CHUNK_VISIBILITY = 6;
+        public const int CHUNK_VISIBILITY = 12;
         /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// Количество общее число по спирале
@@ -55,23 +55,23 @@
         /// <summary>
         /// Скорость шага
         /// </summary>
-        public const float SPEED_STEP = 8.6f;//4.3f;
+        //public const float SPEED_STEP = 8.6f;//4.3f;
         /// <summary>
         /// Скорость движения сидя
         /// </summary>
-        public const float SPEED_SNEAKING = 2.6f;//1.3f;
+        //public const float SPEED_SNEAKING = 2.6f;//1.3f;
         /// <summary>
         /// Скорость бега
         /// </summary>
-        public const float SPEED_RUN = 11.2f;// 5.6f;
+        //public const float SPEED_RUN = 11.2f;// 5.6f;
         /// <summary>
         /// Скорость прыжка за 0,2 секунды
         /// </summary>
-        public const float SPEED_JAMP = 20f; //16//10 лучше, это чуть больше 2 блоков, если 8 это 2 блока, но бага если нижнего блока нет, подвисает
+        //public const float SPEED_JAMP = 20f; //16//10 лучше, это чуть больше 2 блоков, если 8 это 2 блока, но бага если нижнего блока нет, подвисает
         /// <summary>
         /// Скорость прыжка в воде на мели
         /// </summary>
-        public const float SPEED_WATER_JAMP = 12f;
+        //public const float SPEED_WATER_JAMP = 12f;
         /// <summary>
         /// Скорость авто прыжка и когда встаём из положения сидя
         /// </summary>
@@ -92,15 +92,15 @@
         /// <summary>
         /// Скорость полёта
         /// </summary>
-        public const float SPEED_FLY = 22f;
+        //public const float SPEED_FLY = 22f;
         /// <summary>
         /// Скорость быстрого полёта
         /// </summary>
-        public const float SPEED_FLY_FAST = 44f; // 22
+        //public const float SPEED_FLY_FAST = 44f; // 22
         /// <summary>
         /// Скорость полёта вертикали
         /// </summary>
-        public const float SPEED_FLY_VERTICAL = 12f;
+       // public const float SPEED_FLY_VERTICAL = 12f;
         /// <summary>
         /// Скорость течения
         /// </summary>
@@ -108,7 +108,7 @@
         /// <summary>
         /// Скорость плавание под водой вверх/вниз
         /// </summary>
-        public const float SPEED_SWIM = 4f;
+        //public const float SPEED_SWIM = 4f;
 
         /// <summary>
         /// Скорость растекания воды
@@ -135,6 +135,11 @@
         /// Растояние высыхание листвы от бревна
         /// </summary>
         public const int SIZE_LEAVES = 4;
+
+        /// <summary>
+        /// На каком растоянии диспавн сущьностей
+        /// </summary>
+        public const int ENTITY_DISSPAWN = 48;
 
     }
 }

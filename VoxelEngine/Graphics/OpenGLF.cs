@@ -84,11 +84,13 @@ namespace VoxelEngine.Graphics
         /// Объект под водой
         /// </summary>
         public GuiWater guiWater = new GuiWater();
-
         /// <summary>
-        /// Таймер для фиксации времени
+        /// Объект под дебага
         /// </summary>
-        protected Stopwatch stopwatch = new Stopwatch();
+        public GuiDebug guiDebug = new GuiDebug();
+
+
+
 
         public TextureAnimation textureAnimation;
 
@@ -99,8 +101,6 @@ namespace VoxelEngine.Graphics
 
         public void Initialized(OpenGL openGL)
         {
-            stopwatch.Start();
-
             gl = openGL;
             gl.ClearColor(0.3f, 0.3f, 0.3f, 1.0f);
             gl.Enable(OpenGL.GL_DEPTH_TEST);
@@ -108,7 +108,7 @@ namespace VoxelEngine.Graphics
             gl.Enable(OpenGL.GL_BLEND);
             gl.BlendFunc(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA);
 
-
+            
             //gl.Enable(OpenGL.GL_ALPHA_TEST);
             //gl.AlphaFunc(OpenGL.GL_GREATER, 0.8f);
             //gl.Enable(OpenGL.GL_MULTISAMPLE);
@@ -140,15 +140,12 @@ namespace VoxelEngine.Graphics
             Cam.SetResized(size.Width, size.Height);
             guiCursor.Render(size.Width, size.Height);
             guiWater.Render(size);
+            guiDebug.Render(size);
         }
 
-        public void Draw()
+        public void Draw(float timeFrame, float timeAll)
         {
-            float time = stopwatch.ElapsedMilliseconds / 1000f;
-            stopwatch.Restart();
-            if (time > 1.5f) time = 1.5f;
-
-            DrawBegin(time);
+            DrawBegin(timeFrame, timeAll);
             DrawSkyBox();
             IsLineOn(); // Для прорисовки сетки
             DrawLine();
@@ -157,8 +154,6 @@ namespace VoxelEngine.Graphics
             IsLineOff(); // Для прорисовки сетки
             DrawGui();
             DrawDebug();
-
-            Debug.GetInstance().CountFrame += stopwatch.ElapsedTicks;
         }
 
         /// <summary>
@@ -238,15 +233,11 @@ namespace VoxelEngine.Graphics
         /// <summary>
         /// Стартовый покет прорисовки
         /// </summary>
-        protected void DrawBegin(float time)
+        protected void DrawBegin(float timeFrame, float timeAll)
         {
-
             Debug.GetInstance().CountMesh = 0;
-           // Keyboard.GetInstance().PlCamera.Update(time);
-
-            Keyboard.GetInstance().EntityFPS(time);
-            //Cam.Entity.HitBox.Size.Update();
-            //Cam.HitBox.Size.Update();
+            
+            Keyboard.GetInstance().UpdateFPS(timeFrame, timeAll);
 
             // Включает Буфер глубины 
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
@@ -268,6 +259,9 @@ namespace VoxelEngine.Graphics
             if (Cam.IsEyesWater) guiWater.Draw();
             // Курсор
             guiCursor.Draw();
+
+            //texture.BindTexture("atlas");
+            //guiDebug.Draw();
 
             Sh.ShFont.Unbind(gl);
         }
@@ -315,10 +309,12 @@ namespace VoxelEngine.Graphics
         /// </summary>
         protected void DrawEntity()
         {
+            float leght = Config.LeghtSky + .3f;
+            if (leght > 1f) leght = 1f;
             Sh.ShEntity.Bind(gl);
             Sh.ShEntity.SetUniformMatrix4(gl, "projection", Cam.Projection);
             Sh.ShEntity.SetUniformMatrix4(gl, "lookat", Cam.LookAt);
-            Sh.ShEntity.SetUniform1(gl, "light", Config.LeghtSky);
+            Sh.ShEntity.SetUniform1(gl, "light", leght);
             //Sh.ShFont.SetUniformMatrix4(gl, "projview", Cam.PositionView);
             //Sh.ShEntity.SetUniform1(gl, "light", Config.LeghtSky);
 

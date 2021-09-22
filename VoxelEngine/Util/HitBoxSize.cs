@@ -1,12 +1,10 @@
-﻿using System;
-
-namespace VoxelEngine.Util
+﻿namespace VoxelEngine.Util
 {
     /// <summary>
     /// Объект для размера хитбокса
     /// и анимации сесть, встать
     /// </summary>
-    public class HitBoxSize
+    public class HitBoxSize : AnimationHeir
     {
         /// <summary>
         /// Пол ширины
@@ -23,17 +21,11 @@ namespace VoxelEngine.Util
         /// <summary>
         /// Начальное смещение глаз
         /// </summary>
-        public float EyesBegin { get; protected set; } = 0;
+        protected float eyesBegin = 0;
         /// <summary>
         /// Конечное смещение глаз
         /// </summary>
-        public float EyesEnd { get; protected set; } = 0;
-        /// <summary>
-        /// Начальный тик
-        /// </summary>
-        protected long beginTick = 0;
-        protected int time = 0;
-        protected bool animation = false;
+        protected float eyesEnd = 0;
 
         public void SetSize(float w, float h)
         {
@@ -46,52 +38,37 @@ namespace VoxelEngine.Util
         /// </summary>
         /// <param name="eyes"></param>
         /// <param name="time">1 = 10 милли секунд</param>
-        public void SetEyes(float eyes, int time)
+        public void SetEyes(float eyes)
         {
-            EyesBegin = EyesEnd;
-            EyesEnd = eyes;
-            beginTick = DateTime.Now.Ticks;
-            this.time = time * 100000;
+            eyesBegin = eyesEnd;
+            eyesEnd = eyes;
+            timeBegin = time;
             animation = true;
         }
 
         /// <summary>
         /// Находится в кадрах прорисовки (FPS)
         /// </summary>
-        public void Update()
+        public override void Update(float time)
         {
+            base.Update(time);
+
             if (animation)
             {
-                long tick = DateTime.Now.Ticks;
-                
-                float t = tick - beginTick;
-                if (t > time)
+                if (timeD >= step)
                 {
-                    Eyes = EyesEnd;
+                    Eyes = eyesEnd;
                     animation = false;
                 }
                 else
                 {
                     // дельта смещения
-                    float e = EyesEnd - EyesBegin;
-                    Eyes = EyesBegin + (t * e / (float)time);
+                    float e = eyesEnd - eyesBegin;
+                    Eyes = eyesBegin + (e * (timeD / step));
                 }
-                Debug.GetInstance().CountTest++;
                 OnLookAtChanged();
             }
         }
 
-        /// <summary>
-        /// Событие изменена позиция камеры
-        /// </summary>
-        public event EventHandler LookAtChanged;
-
-        /// <summary>
-        /// Изменена позиция камеры
-        /// </summary>
-        protected void OnLookAtChanged()
-        {
-            LookAtChanged?.Invoke(this, new EventArgs());
-        }
     }
 }

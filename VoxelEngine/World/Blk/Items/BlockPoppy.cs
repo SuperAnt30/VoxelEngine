@@ -42,6 +42,7 @@ namespace VoxelEngine.World
             AllDrawing = true;
             IsGrass = true;
             LightingYourself = true;
+            IsCube = false;
         }
     }
 }

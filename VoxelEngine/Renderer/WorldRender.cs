@@ -139,20 +139,50 @@ namespace VoxelEngine.Renderer
         protected override void Tick()
         {
             base.Tick();
-            long tick = VEC.GetInstance().TickCount;
+        }
 
-            // Такты мобов
-            Hashtable hashtable = (Hashtable)Entities.Clone();
-            foreach (EntityBase entity in hashtable.Values)
-            {
-                // TODO:: должна быть пометка, что нужен рендер, и уже при ней перерендериваем. 
-                // Если моб пассивен, не двигается, рендер не нужен
-            
-                ModelChicken chicken = new ModelChicken();
+        /// <summary>
+        /// Пакет в отдельном потоке рендера сущьностей
+        /// </summary>
+        /// <param name="timeAll">время в секундах от запуска</param>
+        public void PackageEntities(float timeFrame, float timeAll)
+        {
+            Task.Factory.StartNew(() => {
+                // Такты мобов
+                Hashtable hashtable = (Hashtable)Entities.Clone();
+                foreach (EntityLiving entity in hashtable.Values)
+                {
+                    if (entity.Key != EnumEntity.Player)
+                    {
+                        entity.UpdateDraw(timeFrame, timeAll);
 
-                chicken.Render(entity, tick, entity.IsMove ? .6f : 0, tick, 0, 0, VE.UV_SIZE);
-                OnDone(new BufferEventArgs(entity.HitBox.Index, entity.Key, chicken.Buffer));
-            }
+                        if (entity.IsKill)
+                        {
+                            // дисспавн
+                            RemoveEntity(entity);
+                            continue;
+                        }
+                        if (entity.Key == EnumEntity.Chicken && entity.IsRender)
+                        {
+                            entity.RenderDone();
+                            ModelChicken chicken = new ModelChicken();
+
+                            chicken.Render(
+                                entity,
+                                timeAll * 8f, // TODO:: Надо как-то от скорости сущности менять
+                                entity.Moving.GetVerticalValue(),
+                                entity.OnGround ? 0 : timeAll * 32f, 0, 0, VE.UV_SIZE);
+                            OnDone(new BufferEventArgs(entity.HitBox.Index, entity.Key, chicken.Buffer));
+                        }
+                    }
+                }
+            });
+        }
+
+        public override void RemoveEntity(EntityLiving entity)
+        {
+            base.RemoveEntity(entity);
+            OnDone(new BufferEventArgs(entity.HitBox.Index, entity.Key, new float[0]));
         }
 
         /// <summary>

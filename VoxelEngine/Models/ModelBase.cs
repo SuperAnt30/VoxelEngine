@@ -36,8 +36,8 @@ namespace VoxelEngine.Models
         /// <summary>
         /// Устанавливает различные углы поворота модели. Для двуногих, par1 и par2 используются для анимации движения рук и ног, где par1 представляет время (так что руки и ноги качаются вперед и назад), а par2 представляет, насколько "далеко" руки и ноги могут раскачиваться максимум.
         /// </summary>
-        /// <param name="limbSwing"></param>
-        /// <param name="limbSwingAmount"></param>
+        /// <param name="limbSwing">счётчик скорости</param>
+        /// <param name="limbSwingAmount">Амплитуда 0 нет движения 1.0 максимальная амплитуда</param>
         /// <param name="ageInTicks"></param>
         /// <param name="headYaw"></param>
         /// <param name="headPitch"></param>

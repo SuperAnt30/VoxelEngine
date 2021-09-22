@@ -36,6 +36,10 @@ namespace VoxelEngine.Util
         /// </summary>
         public vec3i BlockPos { get; protected set; } = new vec3i();
         /// <summary>
+        /// В каком блоке находится глаза
+        /// </summary>
+        public vec3i BlockEyes { get; protected set; } = new vec3i();
+        /// <summary>
         /// Направление течения если в воде
         /// </summary>
         public Pole Flow { get; set; } = Pole.Down;
@@ -83,6 +87,7 @@ namespace VoxelEngine.Util
             {
                 Position = pos;
                 BlockPos = new vec3i(Position);
+                BlockEyes = new vec3i(Position + new vec3(0, Size.Eyes, 0));
                 ChunkPos = new vec2i((BlockPos.x) >> 4, (BlockPos.z) >> 4);
                 ChunkY = (BlockPos.y) >> 4;
 
@@ -132,7 +137,7 @@ namespace VoxelEngine.Util
         public void Worth()
         {
             Size.SetSize(sizeWorth.x, sizeWorth.y);
-            Size.SetEyes(sizeWorth.z, 16);
+            Size.SetEyes(sizeWorth.z);
             RefrashDrawHitBox();
         }
 
@@ -142,7 +147,7 @@ namespace VoxelEngine.Util
         public void Sneaking()
         {
             Size.SetSize(sizeSneaking.x, sizeSneaking.y);
-            Size.SetEyes(sizeSneaking.z, 16);
+            Size.SetEyes(sizeSneaking.z);
             RefrashDrawHitBox();
         }
 
@@ -151,7 +156,7 @@ namespace VoxelEngine.Util
         /// </summary>
         protected bool UpdateEyes()
         {
-            bool isEyesWater = World.GetBlock(new vec3i(Position + new vec3(0, Size.Eyes, 0))).IsWater;
+            bool isEyesWater = World.GetBlock(BlockEyes).IsWater;
             if (IsEyesWater != isEyesWater)
             {
                 IsEyesWater = isEyesWater;
@@ -396,6 +401,17 @@ namespace VoxelEngine.Util
             //line.Box(vd.x + size.x + .5f, vd.y + size.y / 2f, vd.z + size.x + .5f, size.x * 2f, size.y, size.x * 2f, .0f, .9f, .9f, 1f);
             Buffer = line.ToBuffer();
             OnHitBoxChanged();
+        }
+
+        /// <summary>
+        /// Растояние до объекта от глаз
+        /// </summary>
+        public float DistanceEyesTo(vec3i vec)
+        {
+            int x = vec.x - BlockEyes.x;
+            int y = vec.y - BlockEyes.y;
+            int z = vec.z - BlockEyes.z;
+            return Mth.Sqrt(x * x + y * y + z * z);
         }
 
         #region Event

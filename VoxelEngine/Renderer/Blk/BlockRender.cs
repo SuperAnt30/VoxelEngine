@@ -129,7 +129,7 @@ namespace VoxelEngine.Renderer.Blk
             // Вершины затемнения
             vec4 lg = new vec4(1.0f);
 
-            if (VEC.GetInstance().AmbientOcclusion)
+            if (VEC.GetInstance().AmbientOcclusion && Blk.IsCube)// && Blk.LightValue == 0)
             {
                 switch (_side)
                 {
@@ -375,6 +375,7 @@ namespace VoxelEngine.Renderer.Blk
         /// </summary>
         protected float _LightPole(Pole side)
         {
+            bool grass = Blk.IsGrass && Blk.EBlock != EnumBlock.Grass;
             switch (side)
             {
                 case Pole.Up: return 1f;
@@ -382,10 +383,10 @@ namespace VoxelEngine.Renderer.Blk
                 //case Pole.East: return 0.6f;
                 //case Pole.West: return 0.6f;
                 //case Pole.North: return 0.8f;
-                case Pole.South: return 0.9f;
-                case Pole.East: return 0.8f;
-                case Pole.West: return 0.8f;
-                case Pole.North: return 0.9f;
+                case Pole.South: return grass ? 0.99f : 0.9f;
+                case Pole.East: return grass ? 0.98f : 0.8f;
+                case Pole.West: return grass ? 0.98f : 0.8f;
+                case Pole.North: return grass ? 0.99f : 0.9f;
             }
             return 0.7f;// 0.5f;
         }
@@ -452,6 +453,11 @@ namespace VoxelEngine.Renderer.Blk
             return new Voxel();
         }
 
+        public Block GetBlock(int x, int y, int z)
+        {
+            return ChunkRend.World.GetBlock(new BlockPos(x, y, z));
+        }
+
         /// <summary>
         /// Проверка блока по координате AmbientOcclusion
         /// </summary>
@@ -460,6 +466,9 @@ namespace VoxelEngine.Renderer.Blk
             Voxel v = GetVoxel(x, y, z);
             if (v.IsEmpty) return true;
             return v.GetEBlock() != EnumBlock.Air && Blocks.IsNotTransparent(v.GetEBlock());
+            //vec3i pos = Blk.Position.ToVec3i() - posChunk;
+            //Block block = GetBlock(pos.x + x, pos.y + y, pos.z + z);
+            //return !block.IsAir && block.IsCollision;
         }
 
         /// <summary>

@@ -72,6 +72,7 @@ namespace VoxelEngine.Models
         public override void SetRotationAngles(EntityBase entity, float limbSwing, 
             float limbSwingAmount, float ageInTicks, float headYaw, float headPitch, float scale)
         {
+
             Head.RotateAngleX = headPitch / (180f / glm.pi);
             Head.RotateAngleY = headYaw / (180f / glm.pi);
             //Head.RotateAngleX = (float)System.Math.Cos(ageInTicks * 0.6662f);// glm.cos(ageInTicks);// glm.pi90;
@@ -84,8 +85,8 @@ namespace VoxelEngine.Models
             Body.RotateAngleX = glm.pi90;
             RightLeg.RotateAngleX = glm.cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
             LeftLeg.RotateAngleX = glm.cos(limbSwing * 0.6662f + glm.pi) * 1.4f * limbSwingAmount;
-            //RightWing.RotateAngleZ = glm.cos(limbSwing * 0.16662f) + glm.pi45;
-            //LeftWing.RotateAngleZ = glm.cos(limbSwing * 0.6662f + glm.pi) - glm.pi45;
+            RightWing.RotateAngleZ = glm.cos(ageInTicks * 2f + glm.pi) + glm.pi45 + .2f;
+            LeftWing.RotateAngleZ = glm.cos(ageInTicks * 2f) - glm.pi45 - .2f;
             //RightWing.RotateAngleZ = ageInTicks;
             //LeftWing.RotateAngleZ = -ageInTicks;
         }

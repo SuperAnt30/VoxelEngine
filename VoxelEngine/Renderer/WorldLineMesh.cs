@@ -12,15 +12,15 @@ namespace VoxelEngine.Renderer
         /// <summary>
         /// Массив кэша линий
         /// </summary>
-        protected Hashtable _items = new Hashtable();
+        protected Hashtable items = new Hashtable();
 
         /// <summary>
         /// Прорисовка чанков
         /// </summary>
         public void Draw()
         {
-            Debug.GetInstance().CountMeshLine = _items.Count;
-            foreach (DictionaryEntry s in _items)
+            Debug.GetInstance().CountMeshLine = items.Count;
+            foreach (DictionaryEntry s in items)
             {
                 LineMesh cm = s.Value as LineMesh;
                 cm.DrawLine();
@@ -32,9 +32,9 @@ namespace VoxelEngine.Renderer
         /// </summary>
         public LineMesh GetLine(string key)
         {
-            if (_items.ContainsKey(key))
+            if (items.ContainsKey(key))
             {
-                return _items[key] as LineMesh;
+                return items[key] as LineMesh;
             }
             return null;
         }
@@ -50,7 +50,7 @@ namespace VoxelEngine.Renderer
             if (lineMesh == null)
             {
                 lineMesh = new LineMesh(key);
-                _items.Add(key, lineMesh);
+                items.Add(key, lineMesh);
             }
             lineMesh.Render(buffer);
         }
@@ -63,10 +63,24 @@ namespace VoxelEngine.Renderer
             LineMesh lineMesh = GetLine(key);
             if (lineMesh != null)
             {
-                _items.Remove(key);
+                items.Remove(key);
             }
         }
 
+        /// <summary>
+        /// Удалить линии буфера по префиксу
+        /// </summary>
+        public void RemovePrefix(string prefixKey)
+        {
+            Hashtable itemsClone = (Hashtable)items.Clone();
+            foreach (DictionaryEntry s in itemsClone)
+            {
+                if (s.Key.ToString().Substring(0, prefixKey.Length) == prefixKey)
+                {
+                    items.Remove(s.Key);
+                }
+            }
+        }
 
         /// <summary>
         /// Добавить блок по рёбрам

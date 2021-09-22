@@ -42,6 +42,10 @@ namespace VoxelEngine.World.Blk
         /// </summary>
         public bool IsGrass { get; protected set; } = false;
         /// <summary>
+        /// Является ли объект кубом
+        /// </summary>
+        public bool IsCube { get; protected set; } = true;
+        /// <summary>
         /// Явлыется ли блок небом
         /// </summary>
         public bool IsAir { get { return EBlock == EnumBlock.Air; } }
@@ -58,7 +62,7 @@ namespace VoxelEngine.World.Blk
         /// <summary>
         /// Количество излучаемого света (плафон)
         /// </summary>
-        public byte LightValue { get; protected set; } = 0;
+        public int LightValue { get; protected set; } = 0;
 
         /// <summary>
         /// Дополнительный параметр блока 4 бита

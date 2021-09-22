@@ -10,6 +10,7 @@ using VoxelEngine.World.Blk;
 using VoxelEngine.Renderer;
 using VoxelEngine.Graphics;
 using VoxelEngine.Entity;
+using System.Diagnostics;
 
 namespace VoxelEngine
 {
@@ -56,6 +57,14 @@ namespace VoxelEngine
         /// Пометка первого такта
         /// </summary>
         protected bool startTick = true;
+        /// <summary>
+        /// Таймер для фиксации времени c запуска приложения
+        /// </summary>
+        protected Stopwatch stopwatch = new Stopwatch();
+        /// <summary>
+        /// Таймер для фиксации времени одного кадра
+        /// </summary>
+        protected Stopwatch stopwatchFrame = new Stopwatch();
 
         public FormGame()
         {
@@ -184,6 +193,8 @@ namespace VoxelEngine
         /// </summary>
         private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
         {
+            stopwatch.Start();
+            stopwatchFrame.Start();
             Mouse.GetInstance().SetWorld(World);
             OpenGLF.GetInstance().Initialized(openGLControl1.OpenGL);
             OpenGLF.GetInstance().Config = VEC.GetInstance();
@@ -201,7 +212,7 @@ namespace VoxelEngine
                 World.Entity.RotationPitch
             );
             //OpenGLF.GetInstance().Cam.HitBox.HitBoxChanged += HitBox_Changed;
-            World.Done += WorldChunkDone;
+            World.Done += WorldRenderDone;
             World.VoxelChanged += WorldVoxelChanged;
             World.Rendered += WorldRendered;
             World.Cleaned += WorldCleaned;
@@ -219,10 +230,7 @@ namespace VoxelEngine
 
         }
 
-        private void WorldLookAtChanged(object sender, EventArgs e)
-        {
-            OpenGLF.GetInstance().Cam.SetEyesWater(World.Entity.HitBox.Size.Eyes, World.Entity.HitBox.IsEyesWater);
-        }
+        
 
         private void OpenGLFRemoveChunkMeshChanged(object sender, CoordEventArgs e)
         {
@@ -244,8 +252,17 @@ namespace VoxelEngine
         /// </summary>
         private void openGLControl1_OpenGLDraw(object sender, SharpGL.RenderEventArgs args)
         {
+            float timeAll = stopwatch.ElapsedMilliseconds / 1000f;
+            // Время за один прошедший кадр, секунд
+            float timeFrame = stopwatchFrame.ElapsedMilliseconds / 1000f;
+            stopwatchFrame.Restart();
+            if (timeFrame > 1.5f) timeFrame = 1.5f;
+
+            World.PackageEntities(timeFrame, timeAll);
             counterFps.CalculateFrameRate();
-            OpenGLF.GetInstance().Draw();
+            OpenGLF.GetInstance().Draw(timeFrame, timeAll);
+
+            Debug.GetInstance().CountFrame += stopwatchFrame.ElapsedTicks;
         }
 
         #endregion
@@ -372,13 +389,22 @@ namespace VoxelEngine
         }
 
         /// <summary>
-        /// Сгенерирован чанк
+        /// Изменена камера обзора
         /// </summary>
-        private void WorldChunkDone(object sender, BufferEventArgs e)
+        private void WorldLookAtChanged(object sender, EventArgs e)
+        {
+            OpenGLF.GetInstance().Cam.SetFov(glm.radians(70 + World.Entity.Moving.Sprinting.Moving * 10f));
+            OpenGLF.GetInstance().Cam.SetEyesWater(World.Entity.HitBox.Size.Eyes, World.Entity.HitBox.IsEyesWater);
+        }
+
+        /// <summary>
+        /// Сгенерировано
+        /// </summary>
+        private void WorldRenderDone(object sender, BufferEventArgs e)
         {
             try
             {
-                if (InvokeRequired) Invoke(new BufferEventHandler(WorldChunkDone), sender, e);
+                if (InvokeRequired) Invoke(new BufferEventHandler(WorldRenderDone), sender, e);
                 else
                 {
                     WorldMesh world = OpenGLF.GetInstance().WorldM;

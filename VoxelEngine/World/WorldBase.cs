@@ -121,7 +121,15 @@ namespace VoxelEngine.World
             Hashtable hashtable = (Hashtable)Entities.Clone();
             foreach (EntityLiving entity in hashtable.Values)
             {
-                entity.UpdateTick(tick);
+                if (Entity.HitBox.DistanceEyesTo(entity.HitBox.BlockPos) >= VE.ENTITY_DISSPAWN)
+                {
+                    // дисспавн
+                    entity.Kill();
+                }
+                else
+                {
+                    entity.UpdateTick(tick);
+                }
             }
 
             isTick = true;
@@ -885,7 +893,7 @@ namespace VoxelEngine.World
             }
 
             config.EntityAdd();
-            Debug.GetInstance().Entities = config.EntityIndex;
+            Debug.GetInstance().Entities = Entities.Count;
             //ModelChicken chicken = new ModelChicken();
             //chicken.Render(entity, 0, 0, 0, 0, 0, VE.UV_SIZE);// 0.12f);
 
@@ -893,6 +901,12 @@ namespace VoxelEngine.World
             //{
             //    OpenGLF.GetInstance().WorldM.RenderEntity(chicken.Buffer);
             //}
+        }
+
+        public virtual void RemoveEntity(EntityLiving entity)
+        {
+            Entities.Remove(entity.HitBox.Index);
+            Debug.GetInstance().Entities = Entities.Count;
         }
 
 

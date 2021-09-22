@@ -71,10 +71,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entity\EntitySpeed.cs" />
     <Compile Include="Entity\EnumSneaking.cs" />
     <Compile Include="Actions\Keyboard.cs" />
     <Compile Include="Actions\Mouse.cs" />
-    <Compile Include="Actions\PlayerCameraOld.cs" />
     <Compile Include="Actions\PlayerCamera.cs" />
     <Compile Include="Binary\BlockTickBin.cs" />
     <Compile Include="Binary\ChunkBin.cs" />
@@ -82,6 +82,7 @@
     <Compile Include="Entity\EntityEvent.cs" />
     <Compile Include="Entity\EntityBase.cs" />
     <Compile Include="Entity\EnumMovingKey.cs" />
+    <Compile Include="Entity\MovingKeyDirection.cs" />
     <Compile Include="Entity\MovingKey.cs" />
     <Compile Include="Entity\Npc\EntityPlayer.cs" />
     <Compile Include="Entity\Npc\EntityChicken.cs" />
@@ -107,7 +108,9 @@
     <Compile Include="Models\TexturedQuad.cs" />
     <Compile Include="Renderer\Entity\EntityMesh.cs" />
     <Compile Include="Renderer\Entity\EntityRender.cs" />
+    <Compile Include="Renderer\GuiDebug.cs" />
     <Compile Include="Test.cs" />
+    <Compile Include="Util\AnimationHeir.cs" />
     <Compile Include="Util\BlockPos.cs" />
     <Compile Include="Util\BufferHeir.cs" />
     <Compile Include="Util\CoordEvent.cs" />

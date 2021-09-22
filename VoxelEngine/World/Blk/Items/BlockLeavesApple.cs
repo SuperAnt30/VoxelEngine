@@ -42,6 +42,7 @@ namespace VoxelEngine.World
             IsCollision = false;
             AllDrawing = true;
             IsLeaves = true;
+            IsCube = false;
         }
     }
 }

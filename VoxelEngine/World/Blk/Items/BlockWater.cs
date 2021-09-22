@@ -43,6 +43,7 @@ namespace VoxelEngine.World
             IsAction = false;
             IsCollision = false;
             IsWater = true;
+            IsCube = false;
         }
 
         /// <summary>

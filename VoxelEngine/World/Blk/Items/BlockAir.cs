@@ -15,6 +15,7 @@ namespace VoxelEngine.World
 
             IsCollision = false;
             IsAction = false;
+            IsCube = false;
         }
     }
 }

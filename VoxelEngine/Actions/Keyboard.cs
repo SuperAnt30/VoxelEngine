@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using VoxelEngine.Entity;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
 using VoxelEngine.World;
@@ -42,13 +41,9 @@ namespace VoxelEngine.Actions
             PlCamera.Entity = World.Entity;
         }
 
-        public void EntityFPS(float time)
+        public void UpdateFPS(float timeFrame, float timeAll)
         {
-            PlCamera.Update(time);
-            foreach (EntityLiving entity in World.Entities.Values)
-            {
-                entity.UpdateDraw(time);
-            }
+            PlCamera.Update(timeFrame, timeAll);
         }
 
         public void PreviewKeyDown(Keys keys)
@@ -89,7 +84,7 @@ namespace VoxelEngine.Actions
                     }
                     else 
                     {
-                        OpenGLF.GetInstance().WorldLineM.Remove("HitBoxPlayer");
+                        OpenGLF.GetInstance().WorldLineM.RemovePrefix("HitBox");
                     }
                     break;
                 case Keys.Tab:

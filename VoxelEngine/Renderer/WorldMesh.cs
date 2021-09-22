@@ -124,16 +124,24 @@ namespace VoxelEngine.Renderer
         /// </summary>
         public void RenderEntity(int index, EnumEntity key, float[] buffer)
         {
-            if (entities.ContainsKey(index))
+            if (buffer.Length == 0)
             {
-                EntityMesh mesh = entities[index] as EntityMesh;
-                mesh.Render(buffer);
+                // Удаление
+                entities.Remove(index);
             }
             else
             {
-                EntityMesh mesh = new EntityMesh(index, key);
-                mesh.Render(buffer);
-                entities.Add(index, mesh);
+                if (entities.ContainsKey(index))
+                {
+                    EntityMesh mesh = entities[index] as EntityMesh;
+                    mesh.Render(buffer);
+                }
+                else
+                {
+                    EntityMesh mesh = new EntityMesh(index, key);
+                    mesh.Render(buffer);
+                    entities.Add(index, mesh);
+                }
             }
         }
 

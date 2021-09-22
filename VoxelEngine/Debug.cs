@@ -265,7 +265,7 @@ namespace VoxelEngine
                 Entities, CountMeshEntities);
 
             string strAnother = string.Format(
-                "В руке: {0}\r\nBB: {1} CT: {2} CT2: {3}",
+                "В руке: {0}\r\nBB: {1} CT: {2:0.00} CT2: {3}",
                 NumberBlock, BB, CountTest, CountTest2
             );
 
@@ -294,7 +294,7 @@ namespace VoxelEngine
         }
 
         public string BB { get; set; } = "";
-        public int CountTest { get; set; } = 0;
+        public float CountTest { get; set; } = 0;
         public int CountTest2 { get; set; } = 0;
 
         public void DrawDebug()
