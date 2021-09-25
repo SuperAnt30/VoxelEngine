@@ -74,8 +74,8 @@ namespace VoxelEngine.World.Blk
                 case EnumBlock.Air: return 0;
                 case EnumBlock.Glass: return 2;
                 case EnumBlock.Cactus: return 0;
-                case EnumBlock.Water: return 3;
-                case EnumBlock.WaterFlowing: return 3;
+                case EnumBlock.Water: return 2;
+                case EnumBlock.WaterFlowing: return 2;
                 case EnumBlock.Leaves: return 3;
                 case EnumBlock.Sapling: return 0;
                 case EnumBlock.LeavesApple: return 4;

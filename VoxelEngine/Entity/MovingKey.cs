@@ -105,6 +105,16 @@ namespace VoxelEngine.Entity
         public bool IsStand() => Horizontal.IsZero && Vertical.IsZero && Height.IsZero;
 
         /// <summary>
+        /// Остановиться
+        /// </summary>
+        public void Stand()
+        {
+            Horizontal.Zero();
+            Vertical.Zero();
+            Height.Zero();
+            //if (isPlayer) Sprinting.Zero();
+        }
+        /// <summary>
         /// Находится в кадрах прорисовки (FPS)
         /// </summary>
         public void Update(float time)

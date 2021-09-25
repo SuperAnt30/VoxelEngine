@@ -288,19 +288,8 @@ namespace VoxelEngine.Graphics
             Sh.ShVoxel.SetUniformMatrix4(gl, "lookat", Cam.LookAt);
             Sh.ShVoxel.SetUniform1(gl, "light", Config.LeghtSky);
             Sh.ShVoxel.SetUniform1(gl, "length", lengthFog);
-            // Рендер мира
-
-
-            //texture.BindTexture("test128");
-            //WorldM.DrawDense(37, -1);
-            //texture.BindTexture("test256");
-            //WorldM.DrawDense(9, 36);
             texture.BindTexture("atlas");
-            // texture.MultiTexture();
-            //WorldM.DrawDense(0, -1); //(0, 36);
-            WorldM.DrawDense();
-            //texture.BindTexture("test256");
-            WorldM.DrawAlpha();
+            WorldM.Draw();
             Sh.ShVoxel.Unbind(gl);
         }
 

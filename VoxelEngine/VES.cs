@@ -89,6 +89,14 @@ namespace VoxelEngine
         protected void _GetSqrtPoleOne(int i, List<ChunkLoading> r)
         {
             r.Sort();
+            
+            // TODO:: тест смещаем где я стаю на 5-ое место чтоб небыло фантомов от блоков возле разрыва чанков
+            // {
+            //ChunkLoading chunk = r[0];
+            //for (int j = 0; j < 4; j++) r[j] = r[j + 1];
+            //r[4] = chunk;
+            // } сработало круто когда удалем блоки, а вот ставим, появляется фантом!!!
+
             distSqrtPole[i] = r.ToArray();
             r.Clear();
         }

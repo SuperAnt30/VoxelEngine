@@ -61,15 +61,19 @@ namespace VoxelEngine.Renderer
         /// </summary>
         protected void Render()
         {
-            vec2i chunkPos = OpenGLF.GetInstance().Cam.ChunkPos;
-            // Получить массив сектора
-            ChunkLoading[] chunkLoading = VES.GetInstance().DistSqrtYaw(OpenGLF.GetInstance().Cam.Yaw);
+            Camera cam = OpenGLF.GetInstance().Cam;
+            vec2i chunkPos = Entity.HitBox.ChunkPos;
 
+            // Получить массив сектора
+            //ChunkLoading[] chunkLoading = VES.GetInstance().DistSqrtYaw(OpenGLF.GetInstance().Cam.Yaw);
+
+            ChunkLoading[] chunkLoading = cam.ChunkLoadingFC;
+            
             // собираем новые, и удаляем в старье если они есть
             for (int i = 0; i < chunkLoading.Length; i++)
             {
-                int x = chunkLoading[i].X + chunkPos.x;
-                int z = chunkLoading[i].Z + chunkPos.y;
+                int x = chunkLoading[i].X;// + chunkPos.x;
+                int z = chunkLoading[i].Z;// + chunkPos.y;
 
                 // Загрузка облости в отдельных потоках
                 AreaLoaded(new vec2i(x, z));
@@ -136,9 +140,22 @@ namespace VoxelEngine.Renderer
             return false;
         }
 
-        protected override void Tick()
+        /// <summary>
+        /// Такт конкретной сущьности
+        /// </summary>
+        protected override void TickEntity(EntityLiving entity, long tick)
         {
-            base.Tick();
+            Camera cam = OpenGLF.GetInstance().Cam;
+            bool v = cam.IsBoxInFrustum(entity.HitBox);
+            if (!v)
+            {
+                entity.Visible = entity.Visible == VisibleDraw.See 
+                    ? VisibleDraw.Delete : VisibleDraw.Invisible;
+            }
+            else
+            {
+                entity.Visible = VisibleDraw.See;
+            }
         }
 
         /// <summary>
@@ -162,17 +179,24 @@ namespace VoxelEngine.Renderer
                             RemoveEntity(entity);
                             continue;
                         }
-                        if (entity.Key == EnumEntity.Chicken && entity.IsRender)
+                        if (entity.Visible == VisibleDraw.See)
                         {
-                            entity.RenderDone();
-                            ModelChicken chicken = new ModelChicken();
+                            if (entity.Key == EnumEntity.Chicken && entity.IsRender)
+                            {
+                                entity.RenderDone();
+                                ModelChicken chicken = new ModelChicken();
 
-                            chicken.Render(
-                                entity,
-                                timeAll * 8f, // TODO:: Надо как-то от скорости сущности менять
-                                entity.Moving.GetVerticalValue(),
-                                entity.OnGround ? 0 : timeAll * 32f, 0, 0, VE.UV_SIZE);
-                            OnDone(new BufferEventArgs(entity.HitBox.Index, entity.Key, chicken.Buffer));
+                                chicken.Render(
+                                    entity,
+                                    timeAll * 8f, // TODO:: Надо как-то от скорости сущности менять
+                                    entity.Moving.GetVerticalValue(),
+                                    entity.OnGround ? 0 : timeAll * 32f, 0, 0, VE.UV_SIZE);
+                                OnDone(new BufferEventArgs(entity.HitBox.Index, entity.Key, chicken.Buffer));
+                            }
+                        } else if (entity.Visible == VisibleDraw.Delete)
+                        {
+                            // Сущность не попадает в экран, по этому её сетку удаляем
+                            OnDone(new BufferEventArgs(entity.HitBox.Index, entity.Key, new float[0]));
                         }
                     }
                 }

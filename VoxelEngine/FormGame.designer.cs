@@ -28,9 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.openGLControl1 = new SharpGL.OpenGLControl();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -44,7 +42,7 @@
             this.openGLControl1.Name = "openGLControl1";
             this.openGLControl1.OpenGLVersion = SharpGL.Version.OpenGLVersion.OpenGL3_3;
             this.openGLControl1.RenderContextType = SharpGL.RenderContextType.NativeWindow;
-            this.openGLControl1.RenderTrigger = SharpGL.RenderTrigger.TimerBased;
+            this.openGLControl1.RenderTrigger = SharpGL.RenderTrigger.Manual;
             this.openGLControl1.Size = new System.Drawing.Size(1264, 681);
             this.openGLControl1.TabIndex = 43;
             this.openGLControl1.OpenGLInitialized += new System.EventHandler(this.openGLControl1_OpenGLInitialized);
@@ -56,11 +54,6 @@
             this.openGLControl1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.openGLControl1_MouseDown);
             this.openGLControl1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.openGLControl1_MouseMove);
             this.openGLControl1.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.openGLControl1_PreviewKeyDown);
-            // 
-            // timer1
-            // 
-            this.timer1.Interval = 50;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // FormGame
             // 
@@ -80,7 +73,6 @@
         #endregion
 
         private SharpGL.OpenGLControl openGLControl1;
-        private System.Windows.Forms.Timer timer1;
     }
 }
 

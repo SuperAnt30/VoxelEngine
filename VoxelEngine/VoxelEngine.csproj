@@ -88,6 +88,7 @@
     <Compile Include="Entity\Npc\EntityChicken.cs" />
     <Compile Include="Entity\EntityLiving.cs" />
     <Compile Include="Entity\EnumEntity.cs" />
+    <Compile Include="Entity\VisibleDraw.cs" />
     <Compile Include="FormTest.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -106,6 +107,7 @@
     <Compile Include="Models\ModelChicken.cs" />
     <Compile Include="Models\TextureVertex.cs" />
     <Compile Include="Models\TexturedQuad.cs" />
+    <Compile Include="Graphics\Frustum.cs" />
     <Compile Include="Renderer\Entity\EntityMesh.cs" />
     <Compile Include="Renderer\Entity\EntityRender.cs" />
     <Compile Include="Renderer\GuiDebug.cs" />

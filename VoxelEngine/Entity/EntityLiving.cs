@@ -13,17 +13,10 @@ namespace VoxelEngine.Entity
     /// </summary>
     public class EntityLiving : EntityBase
     {
-        //public vec3 NewPosition { get; protected set; }
-
-        ///// <summary>
-        ///// Угол по горизонтали в радианах
-        ///// </summary>
-        //public float NewRotationYaw { get; protected set; } = 0.0f;
-        ///// <summary>
-        ///// Угол по вертикали в радианах
-        ///// </summary>
-        //public float NewRotationPitch { get; protected set; } = 0.0f;
-
+        /// <summary>
+        /// Видимость сущьности для Frustum Culling
+        /// </summary>
+        public VisibleDraw Visible { get; set; } = VisibleDraw.See;
         /// <summary>
         /// Режим перемещения
         /// </summary>

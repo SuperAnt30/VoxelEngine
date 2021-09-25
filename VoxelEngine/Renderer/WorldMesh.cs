@@ -38,46 +38,47 @@ namespace VoxelEngine.Renderer
             }
         }
 
-
-        /// <summary>
-        /// Прорисовка чанков
-        /// </summary>
-        public void DrawDense()
-        {
-            Debug.GetInstance().CountMeshChunk = chunks.Count;
-
-            foreach (ChunkMeshs cm in chunks.Values)
-            {
-                cm.MeshDense.Draw();
-            }
-        }
-
         /// <summary>
         /// Ключ для массива
         /// </summary>
         public static string KeyChunk(int x, int z)
         {
-            return x.ToString() + ";" + z.ToString();
+            return new vec2i(x, z).ToString();
         }
 
         /// <summary>
         /// Прорисовка чанков
         /// </summary>
-        public void DrawAlpha()
+        public void Draw()
         {
-            Camera camera = OpenGLF.GetInstance().Cam;
-            Pole pole = camera.GetPole();
-            vec2i pos = camera.ChunkPos;
-            ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
+            Debug.GetInstance().CountPoligonChunk = 0;
+            Debug.GetInstance().CountMeshChunk = 0;
+            Camera cam = OpenGLF.GetInstance().Cam;
+            ChunkLoading[] spiral = cam.ChunkLoadingFC;
 
-            // Прорисовка алфы в зависимости куда смотрим. От до
+            // Прорисовка для алфы с далека и ближе
             for (int i = spiral.Length - 1; i >= 0; i--)
             {
-                string key = KeyChunk(pos.x + spiral[i].X, pos.y + spiral[i].Z);
-                if (chunks.ContainsKey(key))
+                vec2i v = new vec2i(spiral[i].X, spiral[i].Z);
+                if (cam.ChunksFC.ContainsKey(v.ToString()))
                 {
-                    ChunkMeshs cm = chunks[key] as ChunkMeshs;
-                    if (cm.MeshAlpha.CountPoligon > 0) cm.MeshAlpha.Draw();
+                    // Если Frustum Culling прошёл
+                    string key = v.ToString();
+                    if (chunks.ContainsKey(key))
+                    {
+                        // Чанк имеется
+                        ChunkMeshs cm = chunks[key] as ChunkMeshs;
+                        // Прорисовка чанка сплошных блоков
+                        cm.MeshDense.Draw();
+                        Debug.GetInstance().CountMeshChunk++;
+                        Debug.GetInstance().CountPoligonChunk += cm.MeshDense.CountPoligon;
+                        if (cm.MeshAlpha.CountPoligon > 0)
+                        {
+                            // Прорисовка чанка альфа блоков если такие имеются
+                            cm.MeshAlpha.Draw();
+                            Debug.GetInstance().CountPoligonChunk += cm.MeshAlpha.CountPoligon;
+                        }
+                    }
                 }
             }
         }
@@ -164,7 +165,7 @@ namespace VoxelEngine.Renderer
                 ChunkMeshs cm = s.Value as ChunkMeshs;
                 if (cm.X <= xMin || cm.X >= xMax || cm.Z <= zMin || cm.Z >= zMax)
                 {
-                    Debug.GetInstance().CountPoligonChunk -= cm.CountPoligon;
+                    //Debug.GetInstance().CountPoligonChunk -= cm.CountPoligon;
                     OnRemoveChanged(new vec2i(cm.X, cm.Z));
                     cm.Delete();
                     vs.Add(s.Key.ToString());

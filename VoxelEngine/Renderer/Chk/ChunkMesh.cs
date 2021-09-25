@@ -25,9 +25,9 @@ namespace VoxelEngine.Renderer.Chk
 
         public override void Render(float[] buffer)
         {
-            Debug.GetInstance().CountPoligonChunk -= CountPoligon;
+            //Debug.GetInstance().CountPoligonChunk -= CountPoligon;
             base.Render(buffer);
-            Debug.GetInstance().CountPoligonChunk += CountPoligon;
+            //Debug.GetInstance().CountPoligonChunk += CountPoligon;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using VoxelEngine.Actions;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
 
@@ -109,7 +110,7 @@ namespace VoxelEngine.Renderer
         /// </summary>
         public void Chunk()
         {
-            vec2i vc = OpenGLF.GetInstance().Cam.ChunkPos;
+            vec2i vc = Keyboard.GetInstance().World.Entity.HitBox.ChunkPos;
             vc = new vec2i(vc.x << 4, vc.y << 4);
             vec2i vc16 = vc + 16;
 

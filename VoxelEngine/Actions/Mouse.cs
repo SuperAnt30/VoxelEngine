@@ -123,10 +123,16 @@ namespace VoxelEngine.Actions
         {
             IsMove = isMove;
 
-            if (IsMove) Cursor.Hide();
+            if (IsMove)
+            {
+                Cursor.Hide();
+                // Бывают случаи курсор остаётся, по этому дублируем
+                Cursor.Hide(); 
+            }
             else
             {
                 RunMove();
+                Cursor.Show();
                 Cursor.Show();
             }
         }

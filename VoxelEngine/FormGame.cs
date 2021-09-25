@@ -3,7 +3,6 @@ using System;
 using System.Windows.Forms;
 using VoxelEngine.Util;
 using VoxelEngine.Actions;
-using System.Threading;
 using VoxelEngine.Renderer.Chk;
 using VoxelEngine.Vxl;
 using VoxelEngine.World.Blk;
@@ -11,6 +10,7 @@ using VoxelEngine.Renderer;
 using VoxelEngine.Graphics;
 using VoxelEngine.Entity;
 using System.Diagnostics;
+using System.Threading;
 
 namespace VoxelEngine
 {
@@ -19,11 +19,6 @@ namespace VoxelEngine
     /// </summary>
     public partial class FormGame : Form
     {
-        /// <summary>
-        /// Дебаг true - timer1, false счётчик через поток
-        /// </summary>
-        protected bool isTimer = false;
-
         protected bool isFullScreen = false;
         /// <summary>
         /// Счётчик FPS
@@ -44,11 +39,7 @@ namespace VoxelEngine
         /// <summary>
         /// Отдельный поток FPS
         /// </summary>
-        //private ThreadTick threadFps = new ThreadTick();
-        /// <summary>
-        /// Отдельный поток TPS
-        /// </summary>
-        private ThreadTick threadTps = new ThreadTick();
+        private ThreadTick threadFps = new ThreadTick();
         /// <summary>
         /// Объект мира
         /// </summary>
@@ -74,19 +65,9 @@ namespace VoxelEngine
 
             counterFps.Tick += CounterFps_Tick;
 
-            if (!isTimer)
-            {
-                threadTps.SetTps(20);
-                threadTps.ThreadDone += ThreadTps_ThreadDone;
-                threadTps.Stoped += Thread_Stoped;
-            }
-
-            //threadFps.Interval = 240000; // TPS 40
-            //threadFps.Interval = 156666; // TPS 60
-            //threadFps.Interval = 73333; // TPS 120
-            //threadFps.SetTps(60);
-            //threadFps.ThreadDone += ThreadFps_ThreadDone;
-            //threadFps.Stoped += Thread_Stoped;
+            threadFps.SetTps(60); // FPS
+            threadFps.ThreadDone += ThreadFps_ThreadDone;
+            threadFps.Stoped += Thread_Stoped;
         }
 
         #region Form
@@ -98,18 +79,8 @@ namespace VoxelEngine
         {
             WinApi.TimeBeginPeriod(1);
 
-            //threadFps.Start();
-            // new Thread(threadFps.Run).Start();
-
-            if (isTimer)
-            {
-                timer1.Start();
-            }
-            else
-            {
-                threadTps.Start();
-                new Thread(threadTps.Run).Start();
-            }
+            threadFps.Start();
+            new Thread(threadFps.Run).Start();
         }
 
         /// <summary>
@@ -117,22 +88,12 @@ namespace VoxelEngine
         /// </summary>
         private void FormGame_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!isTimer)
+            if (threadFps.IsRun)
             {
-                if (threadTps.IsRun)
-                {
-                    e.Cancel = true;
-                    threadTps.Stop();
-                    return;
-                }
+                e.Cancel = true;
+                threadFps.Stop();
+                return;
             }
-
-            //if (threadFps.IsRun)
-            //{
-            //    e.Cancel = true;
-            //    threadFps.Stop();
-            //    return;
-            //}
 
             isClosing = true;
             if (isClosed)
@@ -153,27 +114,11 @@ namespace VoxelEngine
         /// <summary>
         /// Тик FPS
         /// </summary>
-        //private void ThreadFps_ThreadDone(object sender, EventArgs e)
-        //{
-        //    if (InvokeRequired) Invoke(new EventHandler(ThreadFps_ThreadDone), sender, e);
-        //    else openGLControl1.DoRender();
-        //}
-
-        /// <summary>
-        /// Тик TPS
-        /// </summary>
-        private void ThreadTps_ThreadDone(object sender, EventArgs e)
+        private void ThreadFps_ThreadDone(object sender, EventArgs e)
         {
-            if (InvokeRequired) Invoke(new EventHandler(ThreadTps_ThreadDone), sender, e);
-            else Tick(); 
+            if (InvokeRequired) Invoke(new EventHandler(ThreadFps_ThreadDone), sender, e);
+            else openGLControl1.DoRender();
         }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            Tick();
-        }
-
-        
 
         /// <summary>
         /// Остановка потока для закрытия приложения
@@ -226,11 +171,9 @@ namespace VoxelEngine
             Keyboard.GetInstance().SetWorld(World);
             Debug.GetInstance().SetWorld(World);
 
-            
-
+            World.PackageRender();
+            Tick();
         }
-
-        
 
         private void OpenGLFRemoveChunkMeshChanged(object sender, CoordEventArgs e)
         {
@@ -250,7 +193,16 @@ namespace VoxelEngine
         /// <summary>
         /// Прорисовка OpenGL (1 тик)
         /// </summary>
-        private void openGLControl1_OpenGLDraw(object sender, SharpGL.RenderEventArgs args)
+        private void openGLControl1_OpenGLDraw(object sender, SharpGL.RenderEventArgs e)
+        {
+            if (InvokeRequired) Invoke(new SharpGL.RenderEventHandler(openGLControl1_OpenGLDraw), sender, e);
+            else
+            {
+                Draw();
+            }
+        }
+
+        protected void Draw()
         {
             float timeAll = stopwatch.ElapsedMilliseconds / 1000f;
             // Время за один прошедший кадр, секунд
@@ -283,7 +235,6 @@ namespace VoxelEngine
         private void openGLControl1_Click(object sender, EventArgs e)
         {
             Mouse.GetInstance().RunMove();
-            
         }
 
         /// <summary>
@@ -518,45 +469,29 @@ namespace VoxelEngine
             World.ChunckChanged = VE.CHUNK_RENDER_ALPHA_BLOCK;
         }
 
-        
-
-
-        protected bool isTick = true;
-
         /// <summary>
         /// Событие завершения такта, и после этого можем приступать к следующему такту
         /// </summary>
         private void WorldTicked(object sender, EventArgs e)
         {
-            isTick = true;
+            if (InvokeRequired) Invoke(new EventHandler(WorldTicked), sender, e);
+            else Tick();
         }
 
         protected void Tick()
         {
+            // Счётчик ТPS
+            counterTps.CalculateFrameRate();
+
             // Перемещение игрока
             Keyboard.GetInstance().PlCamera.Tick();
+            // Счётик и свойства яркости неба и угла солнца
+            VEC.GetInstance().Tick();
+            // Атлас и дебаг
+            OpenGLF.GetInstance().Tick();
 
-            if (isTick)
-            {
-                isTick = false;
-                counterTps.CalculateFrameRate();
-
-                // Счётик и свойства яркости неба и угла солнца
-                VEC.GetInstance().Tick();
-                // Атлас и дебаг
-                OpenGLF.GetInstance().Tick();
-                
-                // В потоке все игровые события
-                World.PackageTick();
-
-                // Только один раз запустить
-                // TODO:: рассмотреть вынести от сюда
-                if (startTick)
-                {
-                    World.PackageRender();
-                    startTick = false;
-                }
-            }
+            // В потоке все игровые события контролирует 50 мили секунд, для 20 TPS
+            World.PackageTick();
         }
     }
 }

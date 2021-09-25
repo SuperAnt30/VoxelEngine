@@ -1,7 +1,9 @@
 ﻿using System;
-using VoxelEngine.Entity;
+using System.Collections;
+using System.Collections.Generic;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
+using VoxelEngine.World.Chk;
 
 namespace VoxelEngine.Graphics
 {
@@ -85,6 +87,10 @@ namespace VoxelEngine.Graphics
         /// Высота окна
         /// </summary>
         public float Height { get; protected set; }
+        /// <summary>
+        /// Объект Frustum Culling
+        /// </summary>
+        protected Frustum frustum = new Frustum();
 
         public Camera(vec3 position, float fov)
         {
@@ -224,6 +230,8 @@ namespace VoxelEngine.Graphics
             vec3 pos = PosPlus();
             mat4 lookAt = glm.lookAt(pos, pos + Front, Up);
             LookAt = lookAt.to_array();
+            InitFrustumCulling();
+            //frustum.Init(LookAt, Projection);
 
             // Для скайбокса позицию камеры не смещаем
             pos = Position;
@@ -232,8 +240,6 @@ namespace VoxelEngine.Graphics
             ProjectionLookAt = (glm.perspective(Fov, aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f)
                 * lookAt).to_array();
         }
-
-        
 
         /// <summary>
         /// Угол по горизонтали
@@ -311,6 +317,73 @@ namespace VoxelEngine.Graphics
         public vec3i ToPositionBlock(vec3 pos)
         {
             return new vec3i(pos);
+        }
+
+        /// <summary>
+        /// Возвращает true, если прямоугольник находится внутри всех 6 плоскостей отсечения,
+        /// в противном случае возвращает false.
+        /// </summary>
+        protected bool IsBoxInFrustum(float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            return frustum.IsBoxInFrustum(x1, y1, z1, x2, y2, z2);
+        }
+
+        public bool IsBoxInFrustum(HitBoxEntity hitBox)
+        {
+            vec3 p = hitBox.Position;
+            return frustum.IsBoxInFrustum(
+                p.x - hitBox.Size.Width, p.y, p.z - hitBox.Size.Width,
+                p.x + hitBox.Size.Width, p.y + hitBox.Size.Heigth, p.z + hitBox.Size.Width);
+        }
+
+        /// <summary>
+        /// Ключи чанков которые попадают под FrustumCulling для сетки
+        /// </summary>
+        public Hashtable ChunksFC { get; protected set; } = new Hashtable();
+        /// <summary>
+        /// Индексы сущьностей которые попадают под FrustumCulling для сетки
+        /// </summary>
+       // public Hashtable EntitiesFC { get; protected set; } = new Hashtable();
+        /// <summary>
+        /// Массив чанков которые попадают под FrustumCulling для рендера
+        /// </summary>
+        public ChunkLoading[] ChunkLoadingFC { get; protected set; } = new ChunkLoading[0];
+
+        protected void InitFrustumCulling()
+        {
+            if (LookAt == null || Projection == null) return;
+
+            //float[] proj = glm.perspective(glm.radians(25), Width / Height, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f).to_array();
+            //frustum.Init(LookAt, proj);
+            frustum.Init(LookAt, Projection);
+
+            int countAll = 0;
+            int countFC = 0;
+            List<ChunkLoading> list = new List<ChunkLoading>();
+            ChunkLoading[] distSqrt = VES.GetInstance().DistSqrt;
+            Hashtable ht = new Hashtable();
+            for (int i = 0; i < distSqrt.Length; i++)
+            {
+                int xc = distSqrt[i].X + ChunkPos.x;
+                int zc = distSqrt[i].Z + ChunkPos.y;
+                int xb = xc << 4;
+                int zb = zc << 4;
+
+                if (IsBoxInFrustum(xb, 0, zb, xb + 15, 255, zb + 15))
+                {
+                    countFC++;
+                    vec2i v = new vec2i(xc, zc);
+                    ht.Add(v.ToString(), v);
+                    list.Add(new ChunkLoading(xc, zc, distSqrt[i].Distance));
+                }
+                countAll++;
+            }
+
+            ChunkLoadingFC = list.ToArray();
+            ChunksFC = ht;
+            Debug.GetInstance().BB = string.Format(
+                "All:{0} FC:{1}", countAll, countFC
+                );
         }
 
         #region Event

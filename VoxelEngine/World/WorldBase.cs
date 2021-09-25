@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using VoxelEngine.Entity;
 using VoxelEngine.Entity.Npc;
@@ -50,12 +51,13 @@ namespace VoxelEngine.World
         public EntityLiving Entity { get; protected set; }
 
         /// <summary>
-        /// заполнены кусками, которые находятся в пределах 9 кусков от любого игрока
+        /// Таймер для фиксации времени c запуска приложения
         /// </summary>
-        //protected Set activeChunkSet = Sets.newHashSet();
+        protected Stopwatch stopwatch = new Stopwatch();
 
         public WorldBase()
         {
+            stopwatch.Start();
             timeSave = VEC.GetInstance().TickCount;
             ChunkPr = new ChunkProvider(this);
             RegionPr = new RegionProvider(this);
@@ -80,22 +82,15 @@ namespace VoxelEngine.World
         /// </summary>
         public void PackageTick()
         {
-            if (isTick)
-            {
-                isTick = false;
-                Task.Factory.StartNew(() => { Tick(); });
-            }
+            Task.Factory.StartNew(() => { Tick(); });
         }
-        /// <summary>
-        /// Можно ли запускать такт, возможно он не выполнился с прошлого шага
-        /// </summary>
-        protected bool isTick = true;
 
         /// <summary>
         /// Такт
         /// </summary>
         protected virtual void Tick()
         {
+            stopwatch.Restart();
             long tick = VEC.GetInstance().TickCount;
 
             // для записи
@@ -129,12 +124,22 @@ namespace VoxelEngine.World
                 else
                 {
                     entity.UpdateTick(tick);
+                    TickEntity(entity, tick);
                 }
             }
 
-            isTick = true;
+            long ms = stopwatch.ElapsedMilliseconds;
+            if (ms < 50)
+            {
+                System.Threading.Thread.Sleep(50 - (int)ms);
+            }
             OnTicked();
         }
+
+        /// <summary>
+        /// Такт конкретной сущьности
+        /// </summary>
+        protected virtual void TickEntity(EntityLiving entity, long tick) { }
 
         /// <summary>
         /// Получить блок
