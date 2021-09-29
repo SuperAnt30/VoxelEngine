@@ -3,7 +3,7 @@
     public class WorldHeir
     {
         /// <summary>
-        /// Объект кэш чанка
+        /// Объект базового мира
         /// </summary>
         public WorldBase World { get; protected set; }
 

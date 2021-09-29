@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using VoxelEngine.Audio;
 using VoxelEngine.Entity;
 using VoxelEngine.Entity.Npc;
 using VoxelEngine.Gen;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
-using VoxelEngine.Renderer;
 using VoxelEngine.Util;
 using VoxelEngine.Vxl;
 using VoxelEngine.World.Blk;
@@ -49,6 +49,10 @@ namespace VoxelEngine.World
         /// Объект сущьности игрока
         /// </summary>
         public EntityLiving Entity { get; protected set; }
+        /// <summary>
+        /// Объект звуков
+        /// </summary>
+        public AudioBase Audio { get; protected set; }
 
         /// <summary>
         /// Таймер для фиксации времени c запуска приложения
@@ -66,6 +70,8 @@ namespace VoxelEngine.World
             Entity = new EntityPlayer(this);
             Entity.HitBoxChanged += Entity_HitBoxChanged;
             Entity.LookAtChanged += Entity_HitBoxLookAtChanged;
+            Audio = new AudioBase(this);
+            Audio.Initialize();
         }
 
         /// <summary>
@@ -75,7 +81,6 @@ namespace VoxelEngine.World
         {
             Entity.SetMode(VEC.GetInstance().Moving);
         }
-
 
         /// <summary>
         /// Пакет такта в потоке
@@ -92,6 +97,8 @@ namespace VoxelEngine.World
         {
             stopwatch.Restart();
             long tick = VEC.GetInstance().TickCount;
+
+            Audio.Tick();
 
             // для записи
             if (timeSave + 6000 < VEC.GetInstance().TickCount)
@@ -400,6 +407,15 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
+        /// Получить звуковое положение 
+        /// </summary>
+        public vec3 GetPositionSound(BlockPos bpos)
+        {
+            vec3 pos = bpos.ToVec3() - Entity.HitBox.Position;
+            return pos.rotateYaw(-Entity.RotationYaw);
+        }
+
+        /// <summary>
         /// Задать блок
         /// </summary>
         /// <param name="newBlock"></param>
@@ -419,6 +435,15 @@ namespace VoxelEngine.World
 
             if (blockOld != null)
             {
+                if (notTick)
+                {
+                    // Звук установленного блока или разрушенного
+                    //Task.Factory.StartNew(() => {  
+                    Audio.PlaySound(newBlock.IsAir ? blockOld.SoundBreak() : newBlock.SoundPut(),
+                        GetPositionSound(newBlock.Position), 1f, 1f);
+                    //});
+                }
+
                 if (newBlock.GetBlockLightOpacity() != blockOld.GetBlockLightOpacity() || newBlock.LightValue != blockOld.LightValue)
                 {
                     CheckLight(newBlock.Position);

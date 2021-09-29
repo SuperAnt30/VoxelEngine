@@ -5,9 +5,9 @@ using System.IO;
 namespace VoxelEngine.Audio
 {
     /// <summary>
-    /// Загрузчик аудио сэмплов
+    /// Объект аудио сэмпла
     /// </summary>
-    public class AudioLoad
+    public class AudioSample
     {
         /// <summary>
         /// Количество каналов

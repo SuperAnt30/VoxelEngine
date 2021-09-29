@@ -37,6 +37,9 @@ namespace VoxelEngine.World
                 }
             };
 
+            soundBreak = "dig.grass";
+            soundPut = "dig.grass";
+            soundStep = "step.grass";
             IsGrass = true;
         }
     }

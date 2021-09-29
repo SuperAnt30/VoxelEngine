@@ -1,4 +1,5 @@
-﻿using VoxelEngine.Util;
+﻿using System;
+using VoxelEngine.Util;
 using VoxelEngine.Vxl;
 using VoxelEngine.World.Blk.Model;
 
@@ -70,6 +71,31 @@ namespace VoxelEngine.World.Blk
         public byte Properties { get; set; } = 0;
 
         /// <summary>
+        /// Звук сломанного блока
+        /// </summary>
+        protected string soundBreak = "dig.stone";
+        /// <summary>
+        /// Количество разных звуков сломанного блока
+        /// </summary>
+        protected int soundBreakCount = 4;
+        /// <summary>
+        /// Звук поставленного блока
+        /// </summary>
+        protected string soundPut = "dig.stone";
+        /// <summary>
+        /// Количество разных звуков поставленного блока
+        /// </summary>
+        protected int soundPutCount = 4;
+        /// <summary>
+        /// Звук ходьбы по блоку
+        /// </summary>
+        protected string soundStep = "step.stone";
+        /// <summary>
+        /// Количество разных звуков ходьбы по блок
+        /// </summary>
+        protected int soundStepCount = 4;
+
+        /// <summary>
         /// Строка
         /// </summary>
         public override string ToString()
@@ -106,6 +132,29 @@ namespace VoxelEngine.World.Blk
         public byte GetBlockLightOpacity()
         {
             return Blocks.GetBlockLightOpacity(EBlock);
+        }
+
+        /// <summary>
+        /// Звук сломанного блока
+        /// </summary>
+        public string SoundBreak() => Sound(soundBreakCount, soundBreak);
+        /// <summary>
+        /// Звук поставленного блока
+        /// </summary>
+        public string SoundPut() => Sound(soundPutCount, soundPut);
+        /// <summary>
+        /// Звук поставленного блока
+        /// </summary>
+        public string SoundStep() => Sound(soundStepCount, soundStep);
+
+        protected string Sound(int count, string sound)
+        {
+            if (count > 0)
+            {
+                Random random = new Random();
+                return sound + (random.Next(count) + 1);
+            }
+            return sound;
         }
 
     }

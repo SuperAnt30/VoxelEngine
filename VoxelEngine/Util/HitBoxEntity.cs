@@ -36,6 +36,10 @@ namespace VoxelEngine.Util
         /// </summary>
         public vec3i BlockPos { get; protected set; } = new vec3i();
         /// <summary>
+        /// На каком стоим блоке
+        /// </summary>
+        public vec3i BlockPosDown { get; protected set; } = new vec3i();
+        /// <summary>
         /// В каком блоке находится глаза
         /// </summary>
         public vec3i BlockEyes { get; protected set; } = new vec3i();
@@ -56,6 +60,15 @@ namespace VoxelEngine.Util
         /// Находиться ли под ногами вода
         /// </summary>
         public bool IsDownWater { get; protected set; } = false;
+
+        /// <summary>
+        /// Только что нырнули в воду ногами
+        /// </summary>
+        //public bool IsLegsWaterOn { get; protected set; } = false;
+        ///// <summary>
+        ///// Только что вынырнули из воды ногами
+        ///// </summary>
+        //public bool IsLegsWaterOff { get; protected set; } = false;
 
         /// <summary>
         /// Размер стоя
@@ -87,6 +100,7 @@ namespace VoxelEngine.Util
             {
                 Position = pos;
                 BlockPos = new vec3i(Position);
+                BlockPosDown = new vec3i(new vec3(pos.x, pos.y - 1, pos.z));
                 BlockEyes = new vec3i(Position + new vec3(0, Size.Eyes, 0));
                 ChunkPos = new vec2i((BlockPos.x) >> 4, (BlockPos.z) >> 4);
                 ChunkY = (BlockPos.y) >> 4;
@@ -96,12 +110,24 @@ namespace VoxelEngine.Util
 
                 // Ноги
                 IsLegsWater = World.GetBlock(BlockPos).IsWater;
+                //bool water = World.GetBlock(BlockPos).IsWater;
+                //bool waterD = World.GetBlock(BlockPosDown).IsWater;
+                //if (IsLegsWater != water)
+                //{
+                //    IsLegsWater = water;
+                //    //if (water) IsLegsWaterOn = true;
+                //    //else if (!waterD) IsLegsWaterOff = true;
+                //}
                 // ниже ног
-                IsDownWater = World.GetBlock(BlockPos + new vec3i(0, -1, 0)).IsWater;
+                //IsDownWater = waterD;
+                IsDownWater = World.GetBlock(BlockPosDown).IsWater;
 
                 RefrashDrawHitBox();
             }
         }
+
+        //public void LegsWaterOn() => IsLegsWaterOn = false;
+        //public void LegsWaterOff() => IsLegsWaterOff = false;
 
         /// <summary>
         /// Указываем размер хитбокса стоя и сидя

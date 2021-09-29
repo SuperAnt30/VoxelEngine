@@ -381,9 +381,9 @@ namespace VoxelEngine.Graphics
 
             ChunkLoadingFC = list.ToArray();
             ChunksFC = ht;
-            Debug.GetInstance().BB = string.Format(
-                "All:{0} FC:{1}", countAll, countFC
-                );
+            //Debug.GetInstance().BB = string.Format(
+            //    "All:{0} FC:{1}", countAll, countFC
+            //    );
         }
 
         #region Event

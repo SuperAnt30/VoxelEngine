@@ -16,6 +16,8 @@ namespace VoxelEngine.World
             AllDrawing = true;
             IsLeaves = true;
             IsCube = false;
+            soundBreak = "dig.grass";
+            soundPut = "dig.grass";
         }
     }
 }

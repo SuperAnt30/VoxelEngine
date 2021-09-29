@@ -42,11 +42,11 @@ namespace VoxelEngine.World
                     }
                 }
             };
-            //LightOpacity = 1;
             AllDrawing = true;
             LightingYourself = true;
             IsCube = false;
-            //IsAlphe = true;
+            soundBreak = "dig.grass";
+            soundStep = "step.grass";
         }
     }
 }

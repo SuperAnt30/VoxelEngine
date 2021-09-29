@@ -16,6 +16,13 @@ namespace VoxelEngine.World
             IsCollision = false;
             IsAction = false;
             IsCube = false;
+
+            //soundBreak = "";
+            //soundPut = "";
+            //soundStep = "";
+            //soundBreakCount = 0;
+            //soundPutCount = 0;
+            //soundStepCount = 0;
         }
     }
 }

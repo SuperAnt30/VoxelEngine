@@ -44,6 +44,7 @@ namespace VoxelEngine.World
             IsCollision = false;
             IsWater = true;
             IsCube = false;
+            soundPut = "liquid.swim";
         }
 
         /// <summary>

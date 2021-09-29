@@ -89,6 +89,12 @@ namespace VoxelEngine.Actions
                     {
                         //OnVoxelChanged(vec, World.SetVoxelId(Blocks.GetBlock((byte)Debag.GetInstance().NumberBlock, new BlockPos(vec))));
                         World.SetBlockState(Blocks.GetBlock(Debug.GetInstance().NumberBlock, new BlockPos(vec)), true);
+
+                        //string s = "grass";
+                        //if (Debug.GetInstance().NumberBlock == EnumBlock.Sand) s = "sand";
+                        //else if (Debug.GetInstance().NumberBlock == EnumBlock.Stone) s = "stone";
+                        //else if (Debug.GetInstance().NumberBlock == EnumBlock.Planks) s = "wood";
+                        //World.Audio.PlaySound("dig." + s + (World.Entity.random.Next(4) + 1));
                         //(byte)Debag.GetInstance().NumberBlock));
                     }
 

@@ -25,6 +25,9 @@ namespace VoxelEngine.World
                     }
                 }
             };
+            soundBreak = "dig.wood";
+            soundPut = "dig.wood";
+            soundStep = "step.wood";
         }
     }
 }

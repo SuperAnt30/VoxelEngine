@@ -12,6 +12,9 @@ namespace VoxelEngine.World
         public BlockDirt()
         {
             Boxes = new Box[] { new Box(1) };
+            soundBreak = "dig.grass";
+            soundPut = "dig.grass";
+            soundStep = "step.sand";
         }
     }
 }

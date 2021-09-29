@@ -12,6 +12,9 @@ namespace VoxelEngine.World
         public BlockPlanks()
         {
             Boxes = new Box[] { new Box(4) };
+            soundBreak = "dig.wood";
+            soundPut = "dig.wood";
+            soundStep = "step.wood";
         }
     }
 }

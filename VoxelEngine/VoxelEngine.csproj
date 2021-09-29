@@ -86,7 +86,11 @@
   <ItemGroup>
     <Compile Include="Audio\Al.cs" />
     <Compile Include="Audio\Alc.cs" />
-    <Compile Include="Audio\AudioLoad.cs" />
+    <Compile Include="Audio\AudioBase.cs" />
+    <Compile Include="Audio\AudioMap.cs" />
+    <Compile Include="Audio\AudioSample.cs" />
+    <Compile Include="Audio\AudioSource.cs" />
+    <Compile Include="Audio\AudioSources.cs" />
     <Compile Include="Entity\EntitySpeed.cs" />
     <Compile Include="Entity\EnumSneaking.cs" />
     <Compile Include="Actions\Keyboard.cs" />

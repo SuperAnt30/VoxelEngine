@@ -13,7 +13,8 @@ namespace VoxelEngine.World
             Boxes = new Box[] { new Box(19) };
             //LightOpacity = 10;
             IsAlphe = true;
-
+            soundBreak = "dig.glass";
+            soundBreakCount = 3;
         }
     }
 }

@@ -50,7 +50,7 @@ namespace VoxelEngine.Entity
         /// <summary>
         /// Генератор случайных чисел
         /// </summary>
-        protected Random random = new Random();
+        public Random random = new Random();
 
         public EntityBase(WorldBase world) : base(world) { }
 

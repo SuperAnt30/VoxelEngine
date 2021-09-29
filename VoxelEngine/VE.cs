@@ -53,62 +53,26 @@
         public static float WATER_LEVEL = 0.19f;
 
         /// <summary>
-        /// Скорость шага
-        /// </summary>
-        //public const float SPEED_STEP = 8.6f;//4.3f;
-        /// <summary>
-        /// Скорость движения сидя
-        /// </summary>
-        //public const float SPEED_SNEAKING = 2.6f;//1.3f;
-        /// <summary>
-        /// Скорость бега
-        /// </summary>
-        //public const float SPEED_RUN = 11.2f;// 5.6f;
-        /// <summary>
-        /// Скорость прыжка за 0,2 секунды
-        /// </summary>
-        //public const float SPEED_JAMP = 20f; //16//10 лучше, это чуть больше 2 блоков, если 8 это 2 блока, но бага если нижнего блока нет, подвисает
-        /// <summary>
-        /// Скорость прыжка в воде на мели
-        /// </summary>
-        //public const float SPEED_WATER_JAMP = 12f;
-        /// <summary>
-        /// Скорость авто прыжка и когда встаём из положения сидя
+        /// Скорость авто прыжка
         /// </summary>
         public const float SPEED_AUTOJAMP = 11f; //9
         /// <summary>
-        /// Скорость авто прыжка и когда встаём из положения сидя в воде
+        /// Скорость авто прыжка в воде
         /// </summary>
         public const float SPEED_WATER_AUTOJAMP = 4f; //9
         /// <summary>
         /// Константа для авто прыжка чтоб встать
         /// </summary>
-        public const float SPEED_UPING = .5f; // 7f
+       // public const float SPEED_UPING = .5f; // 7f
         /// <summary>
         /// Скорость падения если нет блоков под нагами
         /// Чем больше тем быстрее падает
         /// </summary>
         public const float SPEED_DOWN = 4f; //48
         /// <summary>
-        /// Скорость полёта
-        /// </summary>
-        //public const float SPEED_FLY = 22f;
-        /// <summary>
-        /// Скорость быстрого полёта
-        /// </summary>
-        //public const float SPEED_FLY_FAST = 44f; // 22
-        /// <summary>
-        /// Скорость полёта вертикали
-        /// </summary>
-       // public const float SPEED_FLY_VERTICAL = 12f;
-        /// <summary>
         /// Скорость течения
         /// </summary>
         public const float SPEED_FLOW = 1f;
-        /// <summary>
-        /// Скорость плавание под водой вверх/вниз
-        /// </summary>
-        //public const float SPEED_SWIM = 4f;
 
         /// <summary>
         /// Скорость растекания воды
@@ -139,7 +103,7 @@
         /// <summary>
         /// На каком растоянии диспавн сущьностей
         /// </summary>
-        public const int ENTITY_DISSPAWN = 48;
+        public const int ENTITY_DISSPAWN = 64;
 
     }
 }

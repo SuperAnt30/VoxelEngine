@@ -43,6 +43,8 @@ namespace VoxelEngine.World
             IsGrass = true;
             LightingYourself = true;
             IsCube = false;
+            soundBreak = "dig.grass";
+            soundPut = "dig.grass";
         }
     }
 }

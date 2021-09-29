@@ -1,5 +1,4 @@
 ﻿using VoxelEngine.Glm;
-using VoxelEngine.Graphics;
 using VoxelEngine.Util;
 using VoxelEngine.World;
 
@@ -45,12 +44,14 @@ namespace VoxelEngine.Entity.Npc
 
         int pause = 0;
         int pauseJamp = 0;
+        int pauseSay = 0;
         public override void UpdateTick(long tick)
         {
             base.UpdateTick(tick);
             int r = random.Next(10);
             pause--;
             pauseJamp--;
+            pauseSay--;
 
             int mov = 1;
 
@@ -86,7 +87,7 @@ namespace VoxelEngine.Entity.Npc
                 {
                     Moving.Forward();
                     Render();
-                    pause = random.Next(80) + 40;
+                    pause = random.Next(80) + 40; // 2 - 6 сек
                 }
                 else
                 {
@@ -94,11 +95,28 @@ namespace VoxelEngine.Entity.Npc
                     {
                         Render();
                         Moving.VerticalCancel();
-                        pause = random.Next(160) + 40;
+                        pause = random.Next(160) + 40; // 2 - 10 сек
                     }
                 }
             }
             // Блок перемещения }
+
+            // Кудахчем
+            if (pauseSay <= 0 && r == 5)
+            {
+                pauseSay = random.Next(400) + 100; // 5 - 25 сек
+                World.Audio.PlaySound("mob.chicken.say" + (random.Next(3) + 1), GetPositionSound(), 1f, 1f);
+            }
+
+        }
+
+        /// <summary>
+        /// Звук перемещения
+        /// </summary>
+        protected override void SoundMoving()
+        {
+            pauseStepSound = 8;
+            World.Audio.PlaySound("mob.chicken.step" + (random.Next(2) + 1), GetPositionSound(), 0.1f, 1f);
         }
     }
 }

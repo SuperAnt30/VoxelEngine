@@ -75,6 +75,10 @@ namespace VoxelEngine.World
         public void WriteFile()
         {
             BinaryFormatter formatter = new BinaryFormatter();
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
             using (FileStream ms = new FileStream(Path, FileMode.Create))
             {
                 formatter.Serialize(ms, buffer);

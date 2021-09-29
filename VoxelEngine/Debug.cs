@@ -261,8 +261,8 @@ namespace VoxelEngine
                 ToStringMem());
 
             string strEntity = string.Format(
-                "Entities: {0} M: {1}",
-                Entities, CountMeshEntities);
+                "Entities: {0} M: {1}\r\nSound: {2}",
+                Entities, CountMeshEntities, World.Audio.StrDebug);
 
             string strAnother = string.Format(
                 "В руке: {0}\r\nBB: {1} CT: {2:0.00} CT2: {3}",

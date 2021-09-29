@@ -56,6 +56,14 @@ namespace VoxelEngine.Entity
         /// Вектор движения
         /// </summary>
         protected vec3 motion;
+        /// <summary>
+        /// счётчик паузы ходьбы
+        /// </summary>
+        protected int pauseStepSound = 0;
+        /// <summary>
+        /// счётчик паузы ходьбы в вводе
+        /// </summary>
+        protected int pauseWaterSound = 0;
 
         public EntityLiving(WorldBase world) : base(world) { }
 
@@ -161,12 +169,22 @@ namespace VoxelEngine.Entity
 
             if (mode == VEMoving.Survival)
             {
+                pauseStepSound--;
+                pauseWaterSound--;
+                //if (HitBox.IsLegsWaterOn || HitBox.IsLegsWaterOff)
+                //{
+                //    if (HitBox.IsLegsWaterOn) HitBox.LegsWaterOn();
+                //    else  HitBox.LegsWaterOff();
+                //    World.Audio.PlaySound("liquid.swim" + (random.Next(4) + 1), new vec3(0), 0.5f, 1f);
+                //}
+
                 if (HitBox.IsLegsWater)
                 {
                     Block block = World.GetBlock(HitBox.BlockPos);
                     if (block.EBlock == EnumBlock.WaterFlowing)
                     {
-                        BlockRender blockRender = new BlockRender(new ChunkRender(World.GetChunk(block.Position), new WorldRender()), block);
+                        BlockRender blockRender = new BlockRender(new ChunkRender(World.GetChunk(block.Position),
+                            (WorldRender)World), block);
                         vec4 level = blockRender.HeightWater() * VE.WATER_LEVEL;
 
                         float w = level.x + level.y;
@@ -195,6 +213,7 @@ namespace VoxelEngine.Entity
                     {
                         HitBox.Flow = Pole.Down;
                     }
+                    
                 }
                 else
                 {
@@ -312,6 +331,19 @@ namespace VoxelEngine.Entity
             float h, v, j;
             if (mode == VEMoving.Survival)
             {
+                // Звук от перемещения
+                if (OnGround && !HitBox.IsLegsWater && !IsSneaking && pauseStepSound <= 0 
+                    && (!Moving.Vertical.IsZero || !Moving.Horizontal.IsZero))
+                {
+                    SoundMoving();
+                }
+                // Звук перемещения в воде
+                if (pauseWaterSound <= 0 && (HitBox.IsLegsWater || HitBox.IsLegsWater)
+                    && (!Moving.Vertical.IsZero || !Moving.Horizontal.IsZero))
+                {
+                    SoundWater();
+                }
+
                 h = IsSneaking ? speed.Sneaking : speed.Step;
                 v = h;
                 j = motion.y;
@@ -326,6 +358,7 @@ namespace VoxelEngine.Entity
                 {
                     v = speed.Sprinting;
                 }
+                
                 if ((HitBox.IsDownWater || HitBox.IsLegsWater) && !HitBox.IsEyesWater)
                 {
                     // Игрок над водой или частично в воде
@@ -495,5 +528,33 @@ namespace VoxelEngine.Entity
             Moving.LookAtChanged += HitBox_LookAtChanged;
         }
 
+        /// <summary>
+        /// Получить звуковое положение 
+        /// </summary>
+        public vec3 GetPositionSound()
+        {
+            vec3 pos = HitBox.Position - World.Entity.HitBox.Position;
+            return pos.rotateYaw(-World.Entity.RotationYaw);
+        }
+
+        /// <summary>
+        /// Звук перемещения
+        /// </summary>
+        protected virtual void SoundMoving()
+        {
+            pauseStepSound = IsSprinting ? 5 : 8;
+            Block block = World.GetBlock(HitBox.BlockPosDown);
+            World.Audio.PlaySound(block.SoundStep(), GetPositionSound(), 0.16f, 1f);
+        }
+
+        /// <summary>
+        /// Звук перемещения в воду
+        /// </summary>
+        protected virtual void SoundWater()
+        {
+            pauseWaterSound = 30;
+            World.Audio.PlaySound("liquid.swim" + (random.Next(4) + 1), GetPositionSound(), 0.2f, 1f);
+        }
+       
     }
 }
