@@ -101,7 +101,7 @@ namespace VoxelEngine.World.Chk
         /// <summary>
         /// Получить блок
         /// </summary>
-        public Block GetBlock(BlockPos pos)
+        public BlockBase GetBlock(BlockPos pos)
         {
             return GetBlock(pos.ToVec3i());
         }
@@ -109,7 +109,7 @@ namespace VoxelEngine.World.Chk
         /// <summary>
         /// Получить блок по глобальным координатам
         /// </summary>
-        public Block GetBlock(vec3i pos)
+        public BlockBase GetBlock(vec3i pos)
         {
             if (pos.x >> 4 == X && pos.z >> 4 == Z)
             {
@@ -121,7 +121,7 @@ namespace VoxelEngine.World.Chk
         /// <summary>
         /// Получить блок по координатам чанка
         /// </summary>
-        public Block GetBlock0(vec3i pos)
+        public BlockBase GetBlock0(vec3i pos)
         {
             if (pos.x >> 4 == 0 && pos.z >> 4 == 0)
             {
@@ -539,7 +539,7 @@ namespace VoxelEngine.World.Chk
         /// </summary>
         /// <param name="block"></param>
         /// <returns></returns>
-        public Block SetBlockState(Block block, bool isTick)
+        public BlockBase SetBlockState(BlockBase block, bool isTick)
         {
             int x = block.Position.X & 15;
             int y = block.Position.Y;
@@ -552,7 +552,7 @@ namespace VoxelEngine.World.Chk
             //}
 
             int var7 = heightMap[x, z];
-            Block blockOld = GetBlock0(new vec3i(x, y, z));
+            BlockBase blockOld = GetBlock0(new vec3i(x, y, z));
 
             //EnumBlock eBlockOld = GetBlockState(pos);
 
@@ -573,7 +573,7 @@ namespace VoxelEngine.World.Chk
             if (block.EBlock == EnumBlock.Sapling || block.EBlock == EnumBlock.TallGrass)
             {
                 // проверка что на землю садим
-                Block blockNew = GetBlock(block.Position.OffsetDown());
+                BlockBase blockNew = GetBlock(block.Position.OffsetDown());
                 if (blockNew.EBlock != EnumBlock.Dirt && blockNew.EBlock != EnumBlock.Grass)
                     return null;
             }
@@ -668,7 +668,7 @@ namespace VoxelEngine.World.Chk
             for (int i = 0; i < 6; i++)
             {
                 BlockPos bpos = pos.Offset((Pole)i);
-                Block b = GetBlock(bpos.ToVec3i());
+                BlockBase b = GetBlock(bpos.ToVec3i());
 
                 // вода
                 if (/*(eBlock == EnumBlock.Water || eBlock == EnumBlock.WaterFlowing) && */b.IsWater)
@@ -1088,7 +1088,7 @@ namespace VoxelEngine.World.Chk
                 if (bt.IsAction())
                 {
                     indexs.Add(lt.Key.ToString());
-                    Block block = GetBlock(bt.Position.ToVec3i());
+                    BlockBase block = GetBlock(bt.Position.ToVec3i());
                     if (block.IsWater)
                     {
                         // жидкость вода
@@ -1109,13 +1109,13 @@ namespace VoxelEngine.World.Chk
                         GenTrees trees = new GenTrees(World);
                         if (!trees.IsWood(block.Position))
                         {
-                            Block blockNew = Blocks.GetAir(block.Position);
+                            BlockBase blockNew = Blocks.GetAir(block.Position);
                             World.SetBlockState(blockNew, false);
                             AddTicks(liquidTicksNew, SetBlockTicks(blockNew.Position, EnumBlock.Leaves));
                         }
                         else if (block.EBlock == EnumBlock.Leaves && bt.EBlock == EnumBlock.LeavesApple)
                         {
-                            Block blockNew = Blocks.GetBlock(EnumBlock.LeavesApple, block.Position);
+                            BlockBase blockNew = Blocks.GetBlock(EnumBlock.LeavesApple, block.Position);
                             World.SetBlockState(blockNew, false);
                             AddTicks(liquidTicksNew, SetBlockTicks(blockNew.Position, EnumBlock.Leaves));
                         }
@@ -1146,7 +1146,7 @@ namespace VoxelEngine.World.Chk
             }
         }
 
-        protected void LiquidTickBlock(Block block)
+        protected void LiquidTickBlock(BlockBase block)
         {
             // максимальный параметр
             byte pmax = VE.WATER;
@@ -1155,7 +1155,7 @@ namespace VoxelEngine.World.Chk
             {
                 // если стоячая вода
                 bool isPit = false;
-                Block bd = GetBlock(block.Position.Offset(Pole.Down).ToVec3i());
+                BlockBase bd = GetBlock(block.Position.Offset(Pole.Down).ToVec3i());
                 bool isDown = false;
                 if (bd.IsWater || bd.EBlock == EnumBlock.Air)
                 {
@@ -1180,7 +1180,7 @@ namespace VoxelEngine.World.Chk
                 {
                     for (int i = 2; i < 6; i++) // низ и стороны блока
                     {
-                        Block b = GetBlock(block.Position.Offset((Pole)i).ToVec3i());
+                        BlockBase b = GetBlock(block.Position.Offset((Pole)i).ToVec3i());
                         if (b.EBlock == EnumBlock.Air)
                         {
                             AddLquidTicksBlock(EnumBlock.WaterFlowing, b.Position, 0, VE.TICK_WATER);
@@ -1194,7 +1194,7 @@ namespace VoxelEngine.World.Chk
                 // TODO :: 2021.08.01 надо продумать, алгоритм пробегания воды с проверкой и заменить её параметр, пример добавили рядом воду.
 
                 // если сверху вода
-                Block b = GetBlock(block.Position.Offset(Pole.Up).ToVec3i());
+                BlockBase b = GetBlock(block.Position.Offset(Pole.Up).ToVec3i());
                 bool up = b.EBlock == EnumBlock.Water || b.EBlock == EnumBlock.WaterFlowing;
                 // проверка высыхания
                 int p = up ? 0 : pmax;
@@ -1263,7 +1263,7 @@ namespace VoxelEngine.World.Chk
                             // Проверка сторон
                             for (int i = 2; i < 6; i++) // стороны блока
                             {
-                                Block b2 = GetBlock(block.Position.Offset((Pole)i).ToVec3i());
+                                BlockBase b2 = GetBlock(block.Position.Offset((Pole)i).ToVec3i());
                                 if (b2.EBlock == EnumBlock.Air)
                                 {
                                     // Проверяем ниже на предмет не воздуха
@@ -1284,18 +1284,18 @@ namespace VoxelEngine.World.Chk
         /// <summary>
         /// Есть ли впереди ямка
         /// </summary>
-        protected int LiquidRowPit(Block block, Pole side)
+        protected int LiquidRowPit(BlockBase block, Pole side)
         {
             int pr = block.Properties;
-            Block b = block;
+            BlockBase b = block;
             int count = 1;
             while (pr < VE.WATER)
             {
-                Block b2 = GetBlock(b.Position.Offset(side).ToVec3i());
+                BlockBase b2 = GetBlock(b.Position.Offset(side).ToVec3i());
                 if (b2.EBlock == EnumBlock.Air)
                 {
                     // Проверяем ниже на предмет воздуха или воды
-                    Block b3 = GetBlock(b2.Position.Offset(Pole.Down).ToVec3i());
+                    BlockBase b3 = GetBlock(b2.Position.Offset(Pole.Down).ToVec3i());
                     if (b3.EBlock == EnumBlock.Air || b3.IsWater)
                     {
                         return count;
@@ -1322,7 +1322,7 @@ namespace VoxelEngine.World.Chk
         /// <param name="tick">через сколько тиков</param>
         protected void AddLquidTicksBlock(EnumBlock eBlock, BlockPos pos, int properties, int tick)
         {
-            Block blockNew = Blocks.GetBlock(eBlock, pos);
+            BlockBase blockNew = Blocks.GetBlock(eBlock, pos);
             blockNew.Properties = (byte)properties;
             World.SetBlockState(blockNew, false);
             AddTicks(liquidTicksNew, new BlockTick(blockNew.Position, blockNew.EBlock, tick));

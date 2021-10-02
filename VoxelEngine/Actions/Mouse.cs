@@ -6,6 +6,7 @@ using VoxelEngine.Util;
 using VoxelEngine.World;
 using VoxelEngine.World.Blk;
 using VoxelEngine.Graphics;
+using VoxelEngine.Entity;
 
 namespace VoxelEngine.Actions
 {
@@ -48,75 +49,34 @@ namespace VoxelEngine.Actions
 
         public void Down(MouseEventArgs e)
         {
-            OpenGLF openGLF = OpenGLF.GetInstance();
+            Camera camera = OpenGLF.GetInstance().Cam;
+            MovingObjectPosition moving = World.RayCast(camera.PosPlus(), camera.Front, VE.MAX_DIST);
 
-
-            //Voxel vox = WorldCache.GetInstance().RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3 norm, out vec3 iend);
-            //Voxel vox = World.RayCast(openGLF.Cam.Position, openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            Block block = World.RayCast(openGLF.Cam.PosPlus(), openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            if (block != null && !block.IsAir)
+            if (e.Button == MouseButtons.Left)
             {
-                if (e.Button == MouseButtons.Left)
+                if (moving.IsEntity())
                 {
-                    //int x = iend.x;
-                    //int y = iend.y;
-                    //int z = iend.z;
-                    if (VEC.GetInstance().Zoom == 1)
-                    {
-                        BlockPos blockPos = new BlockPos(iend);
-                        //OnVoxelChanged(iend, World.SetVoxelId(Blocks.GetAir(new BlockPos(iend))));
-                        World.SetBlockState(Blocks.GetAir(blockPos), true);
-                    }
-                    else if (VEC.GetInstance().Zoom == 2)
-                    {
-                        for (int x = iend.x; x <= iend.x + 1; x++)
-                        {
-                            for (int y = iend.y; y <= iend.y + 1; y++)
-                            {
-                                for (int z = iend.z; z <= iend.z + 1; z++)
-                                {
-                                    World.SetBlockState(Blocks.GetAir(new BlockPos(x, y, z)), true);
-                                }
-                            }
-                        }
-                    }
+                    moving.Entity.Kill();
                 }
-                if (e.Button == MouseButtons.Right)
+                else if (moving.IsBlock() && !moving.Block.IsAir)
                 {
-                    vec3i vec = iend + norm;
-                    
-                    if (!World.Entity.HitBox.IsVoxelBody(vec))
-                    {
-                        //OnVoxelChanged(vec, World.SetVoxelId(Blocks.GetBlock((byte)Debag.GetInstance().NumberBlock, new BlockPos(vec))));
-                        World.SetBlockState(Blocks.GetBlock(Debug.GetInstance().NumberBlock, new BlockPos(vec)), true);
-
-                        //string s = "grass";
-                        //if (Debug.GetInstance().NumberBlock == EnumBlock.Sand) s = "sand";
-                        //else if (Debug.GetInstance().NumberBlock == EnumBlock.Stone) s = "stone";
-                        //else if (Debug.GetInstance().NumberBlock == EnumBlock.Planks) s = "wood";
-                        //World.Audio.PlaySound("dig." + s + (World.Entity.random.Next(4) + 1));
-                        //(byte)Debag.GetInstance().NumberBlock));
-                    }
-
-                    //vec3i pos = openGLF.Cam.ToPositionBlock();
-                    //vec3i posD = pos;
-                    //posD.y--;
-
-                    //if (pos != vec && posD != vec)
-                    //OnVoxelChanged(vec, World.SetVoxel(vec, (byte)Debag.GetInstance().NumberBlock));
-                    // openGLF.ChunkItems.SetVoxel(x, y, z, 2); // 244 стекло
-                    //openGLF.lightSolver.Remove(x, y, z);
-                    //for (int i = y - 1; i >= 0; i--)
-                    //{
-                    //    openGLF.lightSolver.Remove(x, i, z);
-                    //    if (i == 0 || openGLF.ChunkItems.GetVoxel(x, i - 1, z).Id != 0) break;
-                    //}
-                    //openGLF.lightSolver.Solve();
-
-                    //openGLF.lightSolver.Add(x, y, z, 7);
-                    //openGLF.lightSolver.Solve();
+                    BlockPos blockPos = new BlockPos(moving.IEnd);
+                    World.SetBlockState(Blocks.GetAir(blockPos), true);
                 }
             }
+            else if (e.Button == MouseButtons.Right)
+            {
+                if (moving.IsBlock() && !moving.Block.IsAir)
+                {
+                    vec3i vec = moving.IEnd + moving.Norm;
+                    if (!World.Entity.HitBox.IsVoxelBody(vec))
+                    {
+                        World.SetBlockState(
+                            Blocks.GetBlock(Debug.GetInstance().NumberBlock, new BlockPos(vec)), true);
+                    }
+                }
+            }
+            
             
         }
 

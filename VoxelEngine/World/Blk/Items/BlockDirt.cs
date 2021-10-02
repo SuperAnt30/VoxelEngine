@@ -4,7 +4,7 @@ using VoxelEngine.World.Blk.Model;
 namespace VoxelEngine.World
 {
     
-    public class BlockDirt : Block
+    public class BlockDirt : BlockBase
     {   
         /// <summary>
         /// Блок земли

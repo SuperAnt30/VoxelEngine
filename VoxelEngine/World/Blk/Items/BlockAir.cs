@@ -6,7 +6,7 @@ namespace VoxelEngine.World
     /// <summary>
     /// Блок воздуха, пустота
     /// </summary>
-    public class BlockAir : Block
+    public class BlockAir : BlockBase
     {
         public BlockAir()
         {

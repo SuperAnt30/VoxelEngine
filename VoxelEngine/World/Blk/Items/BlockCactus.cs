@@ -8,10 +8,13 @@ namespace VoxelEngine.World
     /// <summary>
     /// Блок кактуса
     /// </summary>
-    public class BlockCactus : Block
+    public class BlockCactus : BlockBase
     {
         public BlockCactus()
         {
+            HitBox = new Box(new vec3(VE.UV_SIZE, 0, VE.UV_SIZE),
+                new vec3(1f - VE.UV_SIZE, 1f, 1f - VE.UV_SIZE));
+
             Boxes = new Box[] {
                 new Box()
                 {

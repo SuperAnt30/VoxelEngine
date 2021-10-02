@@ -3,7 +3,7 @@ using VoxelEngine.World.Blk.Model;
 
 namespace VoxelEngine.World
 {
-    public class BlockGlass : Block
+    public class BlockGlass : BlockBase
     {
         /// <summary>
         /// Блок Стекла

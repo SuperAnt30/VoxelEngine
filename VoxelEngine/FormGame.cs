@@ -313,22 +313,31 @@ namespace VoxelEngine
         private void FormGame_MoveChanged(object sender, EventArgs e)
         {
             OpenGLF openGLF = OpenGLF.GetInstance();
-            Block block = World.RayCast(openGLF.Cam.PosPlus(), openGLF.Cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            if (block != null && !block.IsAir)
+            World.Camera(openGLF.Cam.PosPlus(), openGLF.Cam.Front);
+            MovingObjectPosition moving = World.RayCast(World.CameraPosition, World.CameraDirection, VE.MAX_DIST);
+            if (moving.IsBlock() && !moving.Block.IsAir)
             {
-                //float size = 1.01f;
-                float size = (float)VEC.GetInstance().Zoom + .01f;
-                float bias = VEC.GetInstance().Zoom == 1 ? .5f : 1f;
-                // Y .5 => 0.3
-                openGLF.WorldLineM.Box("cursor", iend.x + bias, iend.y + bias, iend.z + bias, size, size, size, .9f, .9f, .1f, .6f);
-                Debug.GetInstance().RayCastBlockUp = World.GetBlock(new BlockPos(block.Position.X, block.Position.Y + 1f, block.Position.Z));
+                vec3 from = moving.Block.HitBox.From;
+                vec3 size = moving.Block.HitBox.Size;
+                //vec3 size2 = size;
+                vec3 bias = size / 2f;
+                size += new vec3(.01f);
+                //size2 -= new vec3(.01f);
+                openGLF.WorldLineM.Box("cursor",
+                    moving.IEnd.x + bias.x + from.x, moving.IEnd.y + bias.y + from.y, moving.IEnd.z + bias.z + from.z, 
+                    size.x, size.y, size.z, .2f, .2f, .2f, 1.0f);
+                //openGLF.WorldLineM.Box("cursor2",
+                //    iend.x + bias.x + from.x, iend.y + bias.y + from.y, iend.z + bias.z + from.z,
+                //    size2.x, size2.y, size2.z, .9f, .9f, .1f, .6f);
+                Debug.GetInstance().RayCastBlockUp = World.GetBlock(new BlockPos(moving.Block.Position.X, moving.Block.Position.Y + 1f, moving.Block.Position.Z));
             }
             else
             {
                 openGLF.WorldLineM.Remove("cursor");
+                //openGLF.WorldLineM.Remove("cursor2");
                 Debug.GetInstance().RayCastBlockUp = null;
             }
-            Debug.GetInstance().RayCastBlock = block;
+            Debug.GetInstance().RayCastObject = moving;
         }
 
         /// <summary>

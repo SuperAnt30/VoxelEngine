@@ -4,7 +4,7 @@ using VoxelEngine.Util;
 
 namespace VoxelEngine.World
 {
-    public class BlockLog : Block
+    public class BlockLog : BlockBase
     {
         /// <summary>
         /// Блок бревна

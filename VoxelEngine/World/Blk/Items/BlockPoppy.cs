@@ -5,7 +5,7 @@ using VoxelEngine.Util;
 
 namespace VoxelEngine.World
 {
-    public class BlockPoppy : Block
+    public class BlockPoppy : BlockBase
     {
         /// <summary>
         /// Блок Мак

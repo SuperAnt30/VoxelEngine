@@ -17,6 +17,22 @@ namespace VoxelEngine.World.Blk.Model
         /// </summary>
         public vec3 To { get; set; } = new vec3(1f);
         /// <summary>
+        /// Начальная точка текстуры (0)
+        /// </summary>
+        public vec2 UVFrom { get; set; } = new vec2(0);
+        /// <summary>
+        /// Конечная точка текстуры (блок 0.0625f)
+        /// </summary>
+        public vec2 UVTo { get; set; } = new vec2(VE.UV_SIZE);
+        /// <summary>
+        /// Размер
+        /// </summary>
+        public vec3 Size { get; protected set; } = new vec3(1f);
+        /// <summary>
+        /// Хитбок занимает полностью блок
+        /// </summary>
+        public bool IsHitBoxAll { get; protected set; } = true;
+        /// <summary>
         /// Стороны
         /// </summary>
         public Face[] Faces { get; set; } = new Face[] { new Face(Pole.All, 0) };
@@ -31,6 +47,14 @@ namespace VoxelEngine.World.Blk.Model
         public float RotatePitch { get; set; } = 0;
 
         public Box() { }
+
+        public Box(vec3 from, vec3 to)
+        {
+            From = from;
+            To = to;
+            Size = To - From;
+            IsHitBoxAll = false;
+        }
 
         public Box(int numberTexture)
         {

@@ -20,7 +20,7 @@ namespace VoxelEngine.Entity
         /// <summary>
         /// Режим перемещения
         /// </summary>
-        protected VEMoving mode = VEMoving.Survival;
+        public VEMoving Mode { get; protected set; } = VEMoving.Survival;
         /// <summary>
         /// Объект скоростей
         /// </summary>
@@ -69,7 +69,7 @@ namespace VoxelEngine.Entity
 
         public void SetMode(VEMoving mode)
         {
-            this.mode = mode;
+            this.Mode = mode;
         }
         /// <summary>
         /// Пытается переместить объект на переданное смещение. 
@@ -123,7 +123,7 @@ namespace VoxelEngine.Entity
         /// </summary>
         public void Jump()
         {
-            if (mode == VEMoving.Survival && !IsJumping)
+            if (Mode == VEMoving.Survival && !IsJumping)
             {
                 IsJumping = true;
                 Moving.Up();
@@ -160,6 +160,11 @@ namespace VoxelEngine.Entity
                 IsSprinting ? "[Sp]" : "", IsSneaking ? "[Sn]" : "");
         }
 
+        public void SetMotionY(float y)
+        {
+            motion.y = y;
+        }
+
         /// <summary>
         /// Обновление каждый такт (TPS)
         /// </summary>
@@ -167,7 +172,7 @@ namespace VoxelEngine.Entity
         {
             //Moving.Tick();
 
-            if (mode == VEMoving.Survival)
+            if (Mode == VEMoving.Survival)
             {
                 pauseStepSound--;
                 pauseWaterSound--;
@@ -180,7 +185,7 @@ namespace VoxelEngine.Entity
 
                 if (HitBox.IsLegsWater)
                 {
-                    Block block = World.GetBlock(HitBox.BlockPos);
+                    BlockBase block = World.GetBlock(HitBox.BlockPos);
                     if (block.EBlock == EnumBlock.WaterFlowing)
                     {
                         BlockRender blockRender = new BlockRender(new ChunkRender(World.GetChunk(block.Position),
@@ -254,7 +259,7 @@ namespace VoxelEngine.Entity
                     Uped();
                 }
             }
-            if (mode != VEMoving.FreeFlight)
+            if (Mode != VEMoving.FreeFlight)
             {
                 UpPos();
             }
@@ -269,43 +274,9 @@ namespace VoxelEngine.Entity
         }
 
         /// <summary>
-        /// Обновление каждый кадр (FPS)
-        /// </summary>
-        public virtual string UpdateDraw(float timeFrame, float timeAll)
-        {
-            Moving.Update(timeAll);
-            string str = UpdateMoving();
-
-            if (mode == VEMoving.Survival)
-            {
-                vec3 move = MoveTime(timeFrame);
-                if (HitBox.CollisionBodyXZ(move) && OnGround)
-                {
-                    // Авто прыжок
-                    motion.y = HitBox.IsLegsWater ? VE.SPEED_WATER_AUTOJAMP : VE.SPEED_AUTOJAMP;
-                    vec3 move2 = MoveTime(timeFrame);
-                    move.y = move2.y;
-                }
-                CollisionBodyY(move);
-            }
-            else if (mode == VEMoving.ObstacleFlight)
-            {
-                vec3 move = MoveTime(timeFrame);
-                HitBox.CollisionBodyXZ(move);
-                CollisionBodyY(move);
-            }
-            else
-            {
-                HitBox.SetPos(HitBox.Position + MoveTime(timeFrame));
-            }
-
-            return str;
-        }
-
-        /// <summary>
         /// Коллизия для вектора вертикали
         /// </summary>
-        protected void CollisionBodyY(vec3 move)
+        public void CollisionBodyY(vec3 move)
         {
             if (HitBox.CollisionBodyY(move))
             {
@@ -316,7 +287,7 @@ namespace VoxelEngine.Entity
             }
         }
 
-        protected vec3 MoveTime(float time)
+        public vec3 MoveTime(float time)
         {
             // Тут надо время умножить на вектор
             return motion * time;
@@ -329,7 +300,7 @@ namespace VoxelEngine.Entity
         public virtual string UpdateMoving()
         {
             float h, v, j;
-            if (mode == VEMoving.Survival)
+            if (Mode == VEMoving.Survival)
             {
                 // Звук от перемещения
                 if (OnGround && !HitBox.IsLegsWater && !IsSneaking && pauseStepSound <= 0 
@@ -543,7 +514,7 @@ namespace VoxelEngine.Entity
         protected virtual void SoundMoving()
         {
             pauseStepSound = IsSprinting ? 5 : 8;
-            Block block = World.GetBlock(HitBox.BlockPosDown);
+            BlockBase block = World.GetBlock(HitBox.BlockPosDown);
             World.Audio.PlaySound(block.SoundStep(), GetPositionSound(), 0.16f, 1f);
         }
 
@@ -555,6 +526,7 @@ namespace VoxelEngine.Entity
             pauseWaterSound = 30;
             World.Audio.PlaySound("liquid.swim" + (random.Next(4) + 1), GetPositionSound(), 0.2f, 1f);
         }
-       
+
+        
     }
 }

@@ -30,6 +30,11 @@
         public const int COUNT_TICE_DAY = 24000;
 
         /// <summary>
+        /// Максимальная дистанция для луча
+        /// </summary>
+        public const float MAX_DIST = 10f;
+
+        /// <summary>
         /// 1/16 часть, для тестуры
         /// </summary>
         public const float UV_SIZE = 0.0625f;

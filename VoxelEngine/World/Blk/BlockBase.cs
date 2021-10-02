@@ -1,4 +1,5 @@
 ﻿using System;
+using VoxelEngine.Glm;
 using VoxelEngine.Util;
 using VoxelEngine.Vxl;
 using VoxelEngine.World.Blk.Model;
@@ -8,12 +9,16 @@ namespace VoxelEngine.World.Blk
     /// <summary>
     /// Объект Блока
     /// </summary>
-    public class Block
+    public class BlockBase
     {
         /// <summary>
         /// Коробки
         /// </summary>
         public Box[] Boxes { get; protected set; } = new Box[] { new Box() };
+        /// <summary>
+        /// Хит бокс блока
+        /// </summary>
+        public Box HitBox { get; protected set; } = new Box();
         /// <summary>
         /// Вся ли прорисовка, аналог кактус, забор...
         /// </summary>
@@ -29,7 +34,7 @@ namespace VoxelEngine.World.Blk
         /// <summary>
         /// Можно ли выбирать блок
         /// </summary>
-        public bool IsAction { get; protected set; } = true;
+        protected bool IsAction { get; set; } = true;
         /// <summary>
         /// Вода ли это
         /// </summary>
@@ -103,7 +108,7 @@ namespace VoxelEngine.World.Blk
             return EBlock.ToString() + " " + Position.ToString();
         }
 
-        public Block() { }
+        public BlockBase() { }
 
         public Voxel Voxel { get; protected set; }
 
@@ -156,6 +161,28 @@ namespace VoxelEngine.World.Blk
             }
             return sound;
         }
+
+        /// <summary>
+        /// Проверить колизию блока на пересечение луча
+        /// </summary>
+        /// <param name="pos">точка от куда идёт лучь</param>
+        /// <param name="dir">вектор луча</param>
+        /// <param name="maxDist">максимальная дистания</param>
+        public bool CollisionRayTrace(vec3 pos, vec3 dir, float maxDist)
+        {
+            if (IsAction)
+            {
+                if (HitBox.IsHitBoxAll) return true;
+
+                // Если блок не полный, обрабатываем хитбокс блока
+                RayCross ray = new RayCross(pos, dir, maxDist);
+                vec3 bpos = Position.ToVec3();
+                return ray.CrossLineToRectangle(HitBox.From + bpos, HitBox.To + bpos);
+            }
+            return false;
+        }
+
+       
 
     }
 }

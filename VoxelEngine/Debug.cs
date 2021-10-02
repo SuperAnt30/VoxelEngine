@@ -10,6 +10,7 @@ using VoxelEngine.World.Chk;
 using VoxelEngine.Graphics.Font;
 using VoxelEngine.Graphics;
 using System.Windows.Forms;
+using VoxelEngine.Entity;
 
 namespace VoxelEngine
 {
@@ -86,11 +87,11 @@ namespace VoxelEngine
         /// <summary>
         /// Куда смотрит курсор
         /// </summary>
-        public Block RayCastBlock { get; set; }
+        public MovingObjectPosition RayCastObject { get; set; }
         /// <summary>
         /// Куда смотрит курсор блок сверху
         /// </summary>
-        public Block RayCastBlockUp { get; set; }
+        public BlockBase RayCastBlockUp { get; set; }
 
         //public long TickCount { get; set; } = 0;
 
@@ -175,7 +176,7 @@ namespace VoxelEngine
                 gl.GetString(OpenGL.GL_VERSION),
                 gl.GetString(OpenGL.GL_VENDOR),
                 gl.GetString(OpenGL.GL_RENDERER)
-                );
+            );
         }
 
         protected string ToStringTime()
@@ -200,14 +201,25 @@ namespace VoxelEngine
                 );
         }
 
-        protected string ToRayCast(Block block)
+        protected string ToRayCast(MovingObjectPosition moving)
         {
-            return block == null ? "" : string.Format("{0} light SB: {1}-{2} b: {3}",
-                block.Position,
-                block.Voxel.GetLightFor(EnumSkyBlock.Sky),
-                block.Voxel.GetLightFor(EnumSkyBlock.Block),
-                block.Voxel.ToString()
-                );
+            if (moving != null)
+            {
+                if (moving.IsBlock() && moving.Block != null)
+                {
+                    return string.Format("{0} light SB: {1}-{2} b: {3}",
+                        moving.Block.Position,
+                        moving.Block.Voxel.GetLightFor(EnumSkyBlock.Sky),
+                        moving.Block.Voxel.GetLightFor(EnumSkyBlock.Block),
+                        moving.Block.Voxel.ToString()
+                    );
+                }
+                if (moving.IsEntity())
+                {
+                    return string.Format("{0} {1}", moving.Entity.Key, moving.Entity.HitBox.Position);
+                }
+            }
+            return "";
         }
 
         protected string ToStringAll()
@@ -240,8 +252,8 @@ namespace VoxelEngine
             string strCursor = string.Format(
                 "Cursor: {0}\r\n" +
                 "CursUp: {1}",
-                ToRayCast(RayCastBlock),
-                ToRayCast(RayCastBlockUp)
+                ToRayCast(RayCastObject),
+                ToRayCast(new MovingObjectPosition(RayCastBlockUp))
             );
 
             string strChunck = string.Format(

@@ -3,7 +3,7 @@ using VoxelEngine.World.Blk.Model;
 
 namespace VoxelEngine.World
 {
-    public class BlockLeaves : Block
+    public class BlockLeaves : BlockBase
     {
         /// <summary>
         /// Блок листвы

@@ -4,7 +4,7 @@ using VoxelEngine.World.Blk.Model;
 namespace VoxelEngine.World
 {
     
-    public class BlockTileBrown : Block
+    public class BlockTileBrown : BlockBase
     {
         /// <summary>
         /// Блок плитка коричневая

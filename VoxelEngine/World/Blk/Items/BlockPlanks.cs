@@ -4,7 +4,7 @@ using VoxelEngine.World.Blk.Model;
 namespace VoxelEngine.World
 {
     
-    public class BlockPlanks : Block
+    public class BlockPlanks : BlockBase
     {
         /// <summary>
         /// Блок доски

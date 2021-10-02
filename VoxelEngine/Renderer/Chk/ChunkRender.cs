@@ -88,7 +88,7 @@ namespace VoxelEngine.Renderer.Chk
                             for (int x = 0; x < 16; x++)
                             {
                                 if (Chunk.GetVoxel(x, y, z).GetEBlock() == EnumBlock.Air) continue;
-                                Block block = Chunk.GetBlock0(new vec3i(x, y, z));
+                                BlockBase block = Chunk.GetBlock0(new vec3i(x, y, z));
                                 float[] buffer = _RenderVoxel(block);
                                 if (block.IsAlphe)
                                 {
@@ -179,7 +179,7 @@ namespace VoxelEngine.Renderer.Chk
         /// <summary>
         /// Рендер вокселя
         /// </summary>
-        protected float[] _RenderVoxel(Block block)
+        protected float[] _RenderVoxel(BlockBase block)
         {
             BlockRender blockRender = new BlockRender(this, block);
             return blockRender.RenderMesh();

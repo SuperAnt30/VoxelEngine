@@ -2,6 +2,8 @@
 using System.Windows.Forms;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
+using VoxelEngine.Renderer;
+using VoxelEngine.Renderer.Entity;
 using VoxelEngine.World;
 using VoxelEngine.World.Blk;
 using VoxelEngine.World.Chk;
@@ -11,7 +13,7 @@ namespace VoxelEngine.Actions
     /// <summary>
     /// Объект одиночка клавиатуры
     /// </summary>
-    public class Keyboard : WorldHeirSet
+    public class Keyboard
     {
         #region Instance
 
@@ -30,15 +32,20 @@ namespace VoxelEngine.Actions
 
         #endregion
 
+        /// <summary>
+        /// Объект кэш чанка
+        /// </summary>
+        public WorldRender World { get; protected set; }
+
         public PlayerCamera PlCamera { get; protected set; } = new PlayerCamera();
 
         /// <summary>
         /// Задать объект мира
         /// </summary>
-        public new void SetWorld(WorldBase world)
+        public void SetWorld(WorldRender world)
         {
             World = world;
-            PlCamera.Entity = World.Entity;
+            PlCamera.EntityR = new EntityRender(world, World.Entity);
         }
 
         public void UpdateFPS(float timeFrame, float timeAll)
@@ -148,8 +155,8 @@ namespace VoxelEngine.Actions
                     OpenGLF.GetInstance().LineOn();
                     break;
                 case Keys.Z:
-                    VEC.GetInstance().Zoom = VEC.GetInstance().Zoom == 1 ? 2 : 1;
-                    Debug.GetInstance().CountTest2 = VEC.GetInstance().Zoom;
+                    //VEC.GetInstance().Zoom = VEC.GetInstance().Zoom == 1 ? 2 : 1;
+                    //Debug.GetInstance().CountTest2 = VEC.GetInstance().Zoom;
                     break;
                 case Keys.B:
                     //for (int i = 0; i < 50; i++)
@@ -254,7 +261,7 @@ namespace VoxelEngine.Actions
                 case Keys.D7: Debug.GetInstance().NumberBlock = EnumBlock.Glass; break; // 8
                 case Keys.D8: Debug.GetInstance().NumberBlock = EnumBlock.Sapling; break; // 9
                 case Keys.D9: Debug.GetInstance().NumberBlock = EnumBlock.Cactus; break;
-                case Keys.D0: Debug.GetInstance().NumberBlock = EnumBlock.Brol; break;
+                case Keys.D0: Debug.GetInstance().NumberBlock = EnumBlock.Torch; break;
 
             }
         }

@@ -5,7 +5,7 @@ using VoxelEngine.World.Blk.Model;
 
 namespace VoxelEngine.World
 {
-    public class BlockDandelion : Block
+    public class BlockDandelion : BlockBase
     {
         /// <summary>
         /// Блок Одуванчик

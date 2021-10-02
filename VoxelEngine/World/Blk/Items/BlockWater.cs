@@ -8,7 +8,7 @@ namespace VoxelEngine.World
     /// <summary>
     /// Блок воды
     /// </summary>
-    public class BlockWater : Block
+    public class BlockWater : BlockBase
     {
         public BlockWater()
         {

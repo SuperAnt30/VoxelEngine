@@ -6,7 +6,7 @@ namespace VoxelEngine.World
     /// <summary>
     /// Блок Коренная порода
     /// </summary>
-    public class BlockBedrock : Block
+    public class BlockBedrock : BlockBase
     {
         /// <summary>
         /// Блок Коренная порода

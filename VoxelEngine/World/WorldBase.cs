@@ -50,9 +50,15 @@ namespace VoxelEngine.World
         /// </summary>
         public EntityLiving Entity { get; protected set; }
         /// <summary>
+        /// Объект сущности на который смотрит курсор
+        /// </summary>
+        public EntityDistance EntityDis { get; protected set; }
+        /// <summary>
         /// Объект звуков
         /// </summary>
         public AudioBase Audio { get; protected set; }
+
+        
 
         /// <summary>
         /// Таймер для фиксации времени c запуска приложения
@@ -121,18 +127,31 @@ namespace VoxelEngine.World
 
             // Такты всех мобов
             Hashtable hashtable = (Hashtable)Entities.Clone();
+            EntityDistance edNew = new EntityDistance();
             foreach (EntityLiving entity in hashtable.Values)
             {
-                if (Entity.HitBox.DistanceEyesTo(entity.HitBox.BlockPos) >= VE.ENTITY_DISSPAWN)
+                float dis = Entity.HitBox.DistanceEyesTo(entity.HitBox.BlockPos);
+                if (dis >= VE.ENTITY_DISSPAWN)
                 {
                     // дисспавн
                     entity.Kill();
                 }
                 else
                 {
+                    EntityDistance ed = RayCrossEntity(entity);
+                    if (!ed.IsEmpty && ed.Distance < edNew.Distance)
+                    {
+                        edNew = ed;
+                    }
                     entity.UpdateTick(tick);
                     TickEntity(entity, tick);
                 }
+            }
+            if (EntityDis != edNew)
+            {
+                EntityDis = edNew;
+                RayCastEntityChange();
+                // TODO:: Тут нужен метот RatCast() для проверки блок или сущность выбрана
             }
 
             long ms = stopwatch.ElapsedMilliseconds;
@@ -151,14 +170,14 @@ namespace VoxelEngine.World
         /// <summary>
         /// Получить блок
         /// </summary>
-        public Block GetBlock(vec3i pos)
+        public BlockBase GetBlock(vec3i pos)
         {
             return Blocks.GetBlock(GetVoxel(pos), new BlockPos(pos));
         }
         /// <summary>
         /// Получить блок
         /// </summary>
-        public Block GetBlock(BlockPos pos)
+        public BlockBase GetBlock(BlockPos pos)
         {
             return Blocks.GetBlock(GetVoxel(pos.ToVec3i()), pos);
         }
@@ -342,8 +361,6 @@ namespace VoxelEngine.World
             Task.Factory.StartNew(() => { Cleaning(); });
         }
 
-
-
         /// <summary>
         /// Удалить дальние чанки из массива кэша и регионы
         /// </summary>
@@ -421,7 +438,7 @@ namespace VoxelEngine.World
         /// <param name="newBlock"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public void SetBlockState(Block newBlock, bool notTick)//, int flags)
+        public void SetBlockState(BlockBase newBlock, bool notTick)//, int flags)
         {
             //if (newBlock.EBlock == EnumBlock.Water) newBlock.Voxel.SetParam4bit(2);
             List<vec2i> p = new List<vec2i>();
@@ -431,7 +448,7 @@ namespace VoxelEngine.World
             vec2i ch = new vec2i(newBlock.Position.X >> 4, newBlock.Position.Z >> 4);
             ChunkBase chunk = GetChunk(ch.x, ch.y);
             
-            Block blockOld = chunk.SetBlockState(newBlock, notTick);
+            BlockBase blockOld = chunk.SetBlockState(newBlock, notTick);
 
             if (blockOld != null)
             {
@@ -521,7 +538,7 @@ namespace VoxelEngine.World
             }
             else
             {
-                Block block = GetBlock(pos);
+                BlockBase block = GetBlock(pos);
                 // Количество излучаемого света
                 int light = type == EnumSkyBlock.Sky ? 0 : block.LightValue;
 
@@ -791,6 +808,16 @@ namespace VoxelEngine.World
         #endregion
 
         /// <summary>
+        /// Пересечение луча с сущностью
+        /// </summary>
+        protected virtual EntityDistance RayCrossEntity(EntityLiving entity) => new EntityDistance();
+
+        /// <summary>
+        /// Изменена сущьность попавшая под луч
+        /// </summary>
+        protected virtual void RayCastEntityChange() { }
+
+        /// <summary>
         /// Пересечения лучей с визуализируемой поверхностью
         /// </summary>
         /// <param name="a">точка от куда идёт лучь</param>
@@ -800,7 +827,7 @@ namespace VoxelEngine.World
         /// <param name="norm">нормаль стороны на какую смотрим блока</param>
         /// <param name="iend">позиция ближайшего блока</param>
         /// <returns></returns>
-        public Block RayCast(vec3 a, vec3 dir, float maxDist, out vec3 end, out vec3i norm, out vec3i iend)
+        public MovingObjectPosition RayCast(vec3 a, vec3 dir, float maxDist)//, out vec3 end, out vec3i norm, out vec3i iend)
         {
             float px = a.x;
             float py = a.y;
@@ -837,9 +864,13 @@ namespace VoxelEngine.World
 
             while (t <= maxDist)
             {
-                Block block = GetBlock(new vec3i(ix, iy, iz));
-                if (block.IsAction)
+                BlockBase block = GetBlock(new vec3i(ix, iy, iz));
+                if (block.CollisionRayTrace(a, dir, maxDist))
                 {
+                    vec3 end;
+                    vec3i norm;
+                    vec3i iend;
+
                     end.x = px + t * dx;
                     end.y = py + t * dy;
                     end.z = pz + t * dz;
@@ -852,7 +883,13 @@ namespace VoxelEngine.World
                     if (steppedIndex == 0) norm.x = -stepx;
                     if (steppedIndex == 1) norm.y = -stepy;
                     if (steppedIndex == 2) norm.z = -stepz;
-                    return block;
+
+                    if (t < EntityDis.Distance)
+                    {
+                        return new MovingObjectPosition(block, end, iend, norm);
+                    }
+
+                    return new MovingObjectPosition(EntityDis.Entity);
                 }
                 if (txMax < tyMax)
                 {
@@ -889,15 +926,15 @@ namespace VoxelEngine.World
                     }
                 }
             }
-            iend.x = ix;
-            iend.y = iy;
-            iend.z = iz;
+            //iend.x = ix;
+            //iend.y = iy;
+            //iend.z = iz;
 
-            end.x = px + t * dx;
-            end.y = py + t * dy;
-            end.z = pz + t * dz;
-            norm.x = norm.y = norm.z = 0;
-            return null;// new Block();
+            //end.x = px + t * dx;
+            //end.y = py + t * dy;
+            //end.z = pz + t * dz;
+            //norm.x = norm.y = norm.z = 0;
+            return new MovingObjectPosition();
         }
 
         /// <summary>
@@ -907,23 +944,26 @@ namespace VoxelEngine.World
         {
             Camera cam = OpenGLF.GetInstance().Cam;
             VEC config = VEC.GetInstance();
-            Block block = RayCast(cam.PosPlus(), cam.Front, 10.0f, out vec3 end, out vec3i norm, out vec3i iend);
-            vec3 v = new vec3(iend + norm) + new vec3(.5f, 0, .5f);
-
-            EntityChicken entity = new EntityChicken(this);
-            entity.HitBoxChanged += Entity_HitBoxChanged;
-            entity.SetChicken(config.EntityIndex, v, cam.Yaw - glm.pi);
-            if (Entities.ContainsKey(entity.HitBox.Index))
+            MovingObjectPosition moving = RayCast(cam.PosPlus(), cam.Front, VE.MAX_DIST);
+            if (moving.IsBlock())
             {
-                Entities[entity.HitBox.Index] = entity;
-            }
-            else
-            {
-                Entities.Add(entity.HitBox.Index, entity);
-            }
+                vec3 v = new vec3(moving.IEnd + moving.Norm) + new vec3(.5f, 0, .5f);
 
-            config.EntityAdd();
-            Debug.GetInstance().Entities = Entities.Count;
+                EntityChicken entity = new EntityChicken(this);
+                entity.HitBoxChanged += Entity_HitBoxChanged;
+                entity.SetChicken(config.EntityIndex, v, cam.Yaw - glm.pi);
+                if (Entities.ContainsKey(entity.HitBox.Index))
+                {
+                    Entities[entity.HitBox.Index] = entity;
+                }
+                else
+                {
+                    Entities.Add(entity.HitBox.Index, entity);
+                }
+
+                config.EntityAdd();
+                Debug.GetInstance().Entities = Entities.Count;
+            }
             //ModelChicken chicken = new ModelChicken();
             //chicken.Render(entity, 0, 0, 0, 0, 0, VE.UV_SIZE);// 0.12f);
 

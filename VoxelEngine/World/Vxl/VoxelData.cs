@@ -8,7 +8,7 @@ namespace VoxelEngine.Vxl
     /// </summary>
     public class VoxelData : IComparable
     {
-        public Block Block { get; set; }
+        public BlockBase Block { get; set; }
 
         public float Distance { get; set; } = 0f;
         /// <summary>

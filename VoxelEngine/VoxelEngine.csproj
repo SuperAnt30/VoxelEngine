@@ -91,6 +91,7 @@
     <Compile Include="Audio\AudioSample.cs" />
     <Compile Include="Audio\AudioSource.cs" />
     <Compile Include="Audio\AudioSources.cs" />
+    <Compile Include="Entity\EntityDistance.cs" />
     <Compile Include="Entity\EntitySpeed.cs" />
     <Compile Include="Entity\EnumSneaking.cs" />
     <Compile Include="Actions\Keyboard.cs" />
@@ -147,8 +148,10 @@
     <Compile Include="Util\Gzip.cs" />
     <Compile Include="Util\HitBoxSize.cs" />
     <Compile Include="Util\Map.cs" />
+    <Compile Include="Util\MovingObjectPosition.cs" />
     <Compile Include="Util\Mth.cs" />
     <Compile Include="Graphics\Shader\ShaderSkyBox.cs" />
+    <Compile Include="Util\RayCross.cs" />
     <Compile Include="Util\WinApi.cs" />
     <Compile Include="VEC.cs" />
     <Compile Include="Glm\GlmGeometric.cs" />
@@ -178,10 +181,11 @@
     <Compile Include="World\Biome\BiomeGreenPlain.cs" />
     <Compile Include="World\Biome\BiomeWater.cs" />
     <Compile Include="World\Biome\EnumBiome.cs" />
-    <Compile Include="World\Blk\Block.cs" />
+    <Compile Include="World\Blk\BlockBase.cs" />
     <Compile Include="Renderer\Blk\BlockColorBiome.cs" />
     <Compile Include="World\Blk\Items\BlockAir.cs" />
     <Compile Include="World\Blk\Items\BlockBedrock.cs" />
+    <Compile Include="World\Blk\Items\BlockTorch.cs" />
     <Compile Include="World\Blk\Items\BlockPoppy.cs" />
     <Compile Include="World\Blk\Items\BlockLeavesApple.cs" />
     <Compile Include="World\Blk\Items\BlockDandelion.cs" />

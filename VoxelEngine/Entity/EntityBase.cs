@@ -66,9 +66,10 @@ namespace VoxelEngine.Entity
         /// <summary>
         /// Убить
         /// </summary>
-        public void Kill() => IsKill = true;
+        public virtual void Kill() => IsKill = true;
 
 
+        
 
 
         #region Event

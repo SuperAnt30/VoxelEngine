@@ -6,7 +6,7 @@ namespace VoxelEngine.World
     /// <summary>
     /// Блок текучей воды
     /// </summary>
-    public class BlockWaterFlowing : Block
+    public class BlockWaterFlowing : BlockBase
     {
         public BlockWaterFlowing()
         {

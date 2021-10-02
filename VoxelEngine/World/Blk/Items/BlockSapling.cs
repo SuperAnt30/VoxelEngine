@@ -5,7 +5,7 @@ using VoxelEngine.Util;
 
 namespace VoxelEngine.World
 {
-    public class BlockSapling : Block
+    public class BlockSapling : BlockBase
     {
         /// <summary>
         /// Блок саженца

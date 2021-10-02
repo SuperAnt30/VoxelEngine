@@ -96,7 +96,11 @@
         /// <summary>
         /// Одуванчик
         /// </summary>
-        Dandelion = 22
-        
+        Dandelion = 22,
+        /// <summary>
+        /// Факел
+        /// </summary>
+        Torch = 23
+
     }
 }

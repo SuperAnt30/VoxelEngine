@@ -6,7 +6,7 @@ namespace VoxelEngine.World
     /// <summary>
     /// Блок камня
     /// </summary>
-    public class BlockStone : Block
+    public class BlockStone : BlockBase
     {
         /// <summary>
         /// Блок камня

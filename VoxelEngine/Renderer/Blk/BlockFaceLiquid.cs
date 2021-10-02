@@ -14,7 +14,7 @@ namespace VoxelEngine.Renderer.Blk
         /// <summary>
         /// Объект блока
         /// </summary>
-        public Block Blk { get; protected set; }
+        public BlockBase Blk { get; protected set; }
         /// <summary>
         /// Уровни высот каждого угла
         ///    x-----w------> X
@@ -38,7 +38,7 @@ namespace VoxelEngine.Renderer.Blk
         /// </summary>
         protected float y;
 
-        public BlockFaceLiquid(BlockFaceUV blockFace, Block block, Box box, vec4 level, vec2 uv)
+        public BlockFaceLiquid(BlockFaceUV blockFace, BlockBase block, Box box, vec4 level, vec2 uv)
         {
             BlockFace = blockFace;
             Blk = block;

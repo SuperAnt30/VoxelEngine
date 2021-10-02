@@ -104,7 +104,7 @@ namespace VoxelEngine.Gen
                 }
             }
 
-            Block block = World.GetBlock(pos.OffsetDown());
+            BlockBase block = World.GetBlock(pos.OffsetDown());
             // проверка что саженец на земле и высота позволяет
             if ((block.EBlock == EnumBlock.Grass || block.EBlock == EnumBlock.Dirt) && pos.Y < 200)
             {
@@ -125,7 +125,7 @@ namespace VoxelEngine.Gen
                                         
                             if (a == 1 || (a == 2 && random.Next(2) == 0) || (a == 3 && random.Next(4) == 0) || a == 4 || a == 5)
                             {
-                                Block block2 = World.GetBlock(new vec3i(pos.X + x, pos.Y + y, pos.Z + z));
+                                BlockBase block2 = World.GetBlock(new vec3i(pos.X + x, pos.Y + y, pos.Z + z));
                                 EnumBlock eblock = EnumBlock.Leaves;
                                 // ветки
                                 if ((a == 4 && random.Next(10) == 0) // 10%
@@ -148,7 +148,7 @@ namespace VoxelEngine.Gen
                 // ствол
                 for (int y = 0; y < h; y++)
                 {
-                    Block var21 = World.GetBlock(pos.OffsetUp(y));
+                    BlockBase var21 = World.GetBlock(pos.OffsetUp(y));
 
                     if (var21.EBlock == EnumBlock.Air || var21.EBlock == EnumBlock.Leaves || var21.EBlock == EnumBlock.Sapling)
                     {
@@ -268,7 +268,7 @@ namespace VoxelEngine.Gen
 
                 if (var5)
                 {
-                    Block var19 = World.GetBlock(pos.OffsetDown());
+                    BlockBase var19 = World.GetBlock(pos.OffsetDown());
 
                     if ((var19.EBlock == EnumBlock.Grass || var19.EBlock == EnumBlock.Dirt) && pos.Y < 256 - h - 1)
                     {
@@ -295,7 +295,7 @@ namespace VoxelEngine.Gen
 
                                     if (Mth.Abs(var13) != w || Mth.Abs(var15) != w || random.Next(2) != 0 && yh != 0)
                                     {
-                                        Block block = World.GetBlock(new vec3i(x, y, z));
+                                        BlockBase block = World.GetBlock(new vec3i(x, y, z));
 
                                         if (block.EBlock == EnumBlock.Air || block.EBlock == EnumBlock.Leaves)
                                         {
@@ -309,7 +309,7 @@ namespace VoxelEngine.Gen
                         // ствол
                         for (int y = 0; y < h; y++)
                         {
-                            Block var21 = World.GetBlock(pos.OffsetUp(y));
+                            BlockBase var21 = World.GetBlock(pos.OffsetUp(y));
 
                             if (var21.EBlock == EnumBlock.Air || var21.EBlock == EnumBlock.Leaves || var21.EBlock == EnumBlock.Sapling)
                             {
@@ -329,7 +329,7 @@ namespace VoxelEngine.Gen
         /// <summary>
         /// Проверка на конкретные блоки где может сгенерироваться дерево
         /// </summary>
-        protected bool CheckBlock(Block block)
+        protected bool CheckBlock(BlockBase block)
         {
             return block.EBlock == EnumBlock.Air || block.EBlock == EnumBlock.Leaves 
                 || block.EBlock == EnumBlock.LeavesApple || block.EBlock == EnumBlock.Grass 
@@ -412,7 +412,7 @@ namespace VoxelEngine.Gen
                 {
                     for (int z = pos.Z - r; z <= pos.Z + r; ++z)
                     {
-                        Block block = World.GetBlock(new vec3i(x, y, z));
+                        BlockBase block = World.GetBlock(new vec3i(x, y, z));
                         if (block.EBlock == EnumBlock.Log)
                         {
                             return true;

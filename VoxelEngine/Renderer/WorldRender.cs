@@ -8,6 +8,8 @@ using VoxelEngine.Graphics;
 using VoxelEngine.Entity;
 using VoxelEngine.Models;
 using System.Collections;
+using VoxelEngine.Renderer.Entity;
+using VoxelEngine.Util;
 
 namespace VoxelEngine.Renderer
 { 
@@ -17,6 +19,15 @@ namespace VoxelEngine.Renderer
         /// Изменён чанк, для перегенерации альфа цвета
         /// </summary>
         public int ChunckChanged { get; set; } = -1;
+
+        /// <summary>
+        /// Позиция камеры
+        /// </summary>
+        public vec3 CameraPosition { get; protected set; }
+        /// <summary>
+        /// Направление
+        /// </summary>
+        public vec3 CameraDirection { get; protected set; }
 
         /// <summary>
         /// Запуск рендер паета
@@ -171,7 +182,8 @@ namespace VoxelEngine.Renderer
                 {
                     if (entity.Key != EnumEntity.Player)
                     {
-                        entity.UpdateDraw(timeFrame, timeAll);
+                        EntityRender entityRender = new EntityRender(this, entity);
+                        entityRender.UpdateDraw(timeFrame, timeAll);
 
                         if (entity.IsKill)
                         {
@@ -203,10 +215,47 @@ namespace VoxelEngine.Renderer
             });
         }
 
+
         public override void RemoveEntity(EntityLiving entity)
         {
             base.RemoveEntity(entity);
             OnDone(new BufferEventArgs(entity.HitBox.Index, entity.Key, new float[0]));
+        }
+
+        public void Camera(vec3 pos, vec3 dir)
+        {
+            CameraPosition = pos;
+            CameraDirection = dir;
+        }
+
+        /// <summary>
+        /// Обработка луча сущности
+        /// </summary>
+        protected override EntityDistance RayCrossEntity(EntityLiving entity)
+        {
+            float dis = 100f;
+            if (entity.Visible == VisibleDraw.See)
+            {
+                dis = Entity.HitBox.DistanceEyesTo(entity.HitBox.BlockPos);
+                if (dis < 10f)
+                {
+                    RayCross ray = new RayCross(CameraPosition, CameraDirection, 10f);
+                    HitBoxEntity.HitBoxSizeUD hitBox = entity.HitBox.SizeUD();
+                    if (ray.CrossLineToRectangle(hitBox.Vd, hitBox.Vu))
+                    {
+                        return new EntityDistance(entity, dis);
+                    }
+                }
+            }
+            return new EntityDistance();
+        }
+
+        /// <summary>
+        /// Изменена сущьность попавшая под луч
+        /// </summary>
+        protected override void RayCastEntityChange()
+        {
+            RayCast(CameraPosition, CameraDirection, VE.MAX_DIST);
         }
 
         /// <summary>

@@ -4,7 +4,7 @@ using VoxelEngine.World.Blk.Model;
 
 namespace VoxelEngine.World
 {
-    public class BlockBrol : Block
+    public class BlockBrol : BlockBase
     {
         /// <summary>
         /// Блок брол, автор Вероника

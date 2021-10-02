@@ -22,9 +22,9 @@ namespace VoxelEngine.Renderer.Blk
         /// <summary>
         /// Объект блока
         /// </summary>
-        public Block Blk { get; protected set; }
+        public BlockBase Blk { get; protected set; }
 
-        public BlockRender(ChunkRender chunkRender, Block block)
+        public BlockRender(ChunkRender chunkRender, BlockBase block)
         {
             ChunkRend = chunkRender;
             Blk = block;
@@ -337,8 +337,10 @@ namespace VoxelEngine.Renderer.Blk
                 blockUV.SetVecUV(
                     pos + _box.From,
                     pos + _box.To,
-                    new vec2(u1, v2 + VE.UV_SIZE),
-                    new vec2(u1 + VE.UV_SIZE, v2)
+                    //new vec2(u1, v2 + VE.UV_SIZE),
+                    //new vec2(u1 + VE.UV_SIZE, v2)
+                    new vec2(u1 + _box.UVFrom.x, v2 + _box.UVTo.y),
+                    new vec2(u1 + _box.UVTo.x, v2 + _box.UVFrom.y)
                 );
 
                 blockUV.RotateYaw(_box.RotateYaw);
@@ -453,7 +455,7 @@ namespace VoxelEngine.Renderer.Blk
             return new Voxel();
         }
 
-        public Block GetBlock(int x, int y, int z)
+        public BlockBase GetBlock(int x, int y, int z)
         {
             return ChunkRend.World.GetBlock(new BlockPos(x, y, z));
         }

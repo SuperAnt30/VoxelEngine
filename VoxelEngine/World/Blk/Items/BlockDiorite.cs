@@ -6,7 +6,7 @@ namespace VoxelEngine.World
     /// <summary>
     /// Блок камня Диорит
     /// </summary>
-    public class BlockDiorite : Block
+    public class BlockDiorite : BlockBase
     {
         /// <summary>
         /// Блок камня Диорит

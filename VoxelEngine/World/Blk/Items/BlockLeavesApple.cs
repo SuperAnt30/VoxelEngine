@@ -5,7 +5,7 @@ using VoxelEngine.Util;
 
 namespace VoxelEngine.World
 {
-    public class BlockLeavesApple : Block
+    public class BlockLeavesApple : BlockBase
     {
         /// <summary>
         /// Блок листвы с яблоком

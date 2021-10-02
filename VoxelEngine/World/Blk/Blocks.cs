@@ -8,10 +8,10 @@ namespace VoxelEngine.World.Blk
     /// </summary>
     public class Blocks
     {
-        public static Block GetBlock(Voxel voxel)
+        public static BlockBase GetBlock(Voxel voxel)
         {
-            if (voxel.IsEmpty) return new Block();
-            Block block = new Block();
+            if (voxel.IsEmpty) return new BlockBase();
+            BlockBase block = new BlockBase();
             EnumBlock eBlock = voxel.GetEBlock();
             switch (eBlock)
             {
@@ -41,6 +41,9 @@ namespace VoxelEngine.World.Blk
                 case EnumBlock.TallGrass: block = new BlockTallGrass(); break;
                 case EnumBlock.Poppy: block = new BlockPoppy(); break;
                 case EnumBlock.Dandelion: block = new BlockDandelion(); break;
+
+                case EnumBlock.Torch: block = new BlockTorch(); break;
+
             }
             
             // тут нада id voxel-я, так-как не успевает замениться тип блока, нет света корректного
@@ -82,22 +85,23 @@ namespace VoxelEngine.World.Blk
                 case EnumBlock.TallGrass: return 0;
                 case EnumBlock.Poppy: return 0;
                 case EnumBlock.Dandelion: return 0;
+                case EnumBlock.Torch: return 2;
             }
             return 15;
         }
 
-        public static Block GetBlock(Voxel voxel, BlockPos pos)
+        public static BlockBase GetBlock(Voxel voxel, BlockPos pos)
         {
-            Block block = GetBlock(voxel);
+            BlockBase block = GetBlock(voxel);
             block.SetPosition(pos);
             return block;
         }
 
-        public static Block GetBlock(EnumBlock eBlock, BlockPos pos)
+        public static BlockBase GetBlock(EnumBlock eBlock, BlockPos pos)
         {
             Voxel voxel = new Voxel();
             voxel.SetEBlock(eBlock);
-            Block block = GetBlock(voxel);
+            BlockBase block = GetBlock(voxel);
             block.SetPosition(pos);
             return block;
         }
@@ -106,9 +110,9 @@ namespace VoxelEngine.World.Blk
         /// Получить блок воздуха
         /// </summary>
         /// <param name="pos"></param>
-        public static Block GetAir(BlockPos pos)
+        public static BlockBase GetAir(BlockPos pos)
         {
-            Block block = new BlockAir();
+            BlockBase block = new BlockAir();
             block.SetPosition(pos);
             return block;
         }

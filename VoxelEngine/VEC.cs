@@ -35,7 +35,7 @@
         /// <summary>
         /// Размер курсора
         /// </summary>
-        public int Zoom { get; set; } = 1;
+        //public int Zoom { get; set; } = 1;
 
         #region Tick
 

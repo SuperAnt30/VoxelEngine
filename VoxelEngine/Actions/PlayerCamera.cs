@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using VoxelEngine.Entity;
 using VoxelEngine.Graphics;
+using VoxelEngine.Renderer.Entity;
 
 namespace VoxelEngine.Actions
 {
@@ -12,7 +13,7 @@ namespace VoxelEngine.Actions
         /// <summary>
         /// Объект сущьности игрока
         /// </summary>
-        public EntityLiving Entity { get; set; }
+        public EntityRender EntityR { get; set; }
 
         /// <summary>
         /// Объект для точного замера времени
@@ -38,10 +39,10 @@ namespace VoxelEngine.Actions
         /// </summary>
         public void Sprinting()
         {
-            if (!Entity.IsSneaking && !Entity.IsSprinting 
-                && Entity.Moving.Vertical.Plus)
+            if (!EntityR.Entity.IsSneaking && !EntityR.Entity.IsSprinting 
+                && EntityR.Entity.Moving.Vertical.Plus)
             {
-                Entity.Sprinting();
+                EntityR.Entity.Sprinting();
                 //cam.SetFov(Glm.glm.radians(80));
             }
             // TODO:: увеличиваем угол обзора от бега на 10-15%
@@ -54,28 +55,28 @@ namespace VoxelEngine.Actions
         /// </summary>
         public void StepLeft()
         {
-            if (Entity.Moving.Left()) StrDebug = Entity.UpdateMoving();
+            if (EntityR.Entity.Moving.Left()) StrDebug = EntityR.Entity.UpdateMoving();
         }
         /// <summary>
         /// Шаг вправо
         /// </summary>
         public void StepRight()
         {
-            if (Entity.Moving.Right()) StrDebug = Entity.UpdateMoving();
+            if (EntityR.Entity.Moving.Right()) StrDebug = EntityR.Entity.UpdateMoving();
         }
         /// <summary>
         /// Шаг вперёд
         /// </summary>
         public void StepForward()
         {
-            if (Entity.Moving.Forward()) StrDebug = Entity.UpdateMoving();
+            if (EntityR.Entity.Moving.Forward()) StrDebug = EntityR.Entity.UpdateMoving();
         }
         /// <summary>
         /// Шаг назад
         /// </summary>
         public void StepBack()
         {
-            if (Entity.Moving.Back()) StrDebug = Entity.UpdateMoving();
+            if (EntityR.Entity.Moving.Back()) StrDebug = EntityR.Entity.UpdateMoving();
         }
 
         /// <summary>
@@ -83,7 +84,7 @@ namespace VoxelEngine.Actions
         /// </summary>
         public void Jamp()
         {
-            if (Entity.Moving.Up()) StrDebug = Entity.UpdateMoving();
+            if (EntityR.Entity.Moving.Up()) StrDebug = EntityR.Entity.UpdateMoving();
         }
 
         /// <summary>
@@ -91,12 +92,12 @@ namespace VoxelEngine.Actions
         /// </summary>
         public void Down()
         {
-            if (Entity.Moving.Down())
+            if (EntityR.Entity.Moving.Down())
             {
-                StrDebug = Entity.UpdateMoving();
-                if (Entity.IsSneaking)
+                StrDebug = EntityR.Entity.UpdateMoving();
+                if (EntityR.Entity.IsSneaking)
                 {
-                    Entity.HitBox.Sneaking();
+                    EntityR.Entity.HitBox.Sneaking();
                 }
             }
         }
@@ -107,7 +108,7 @@ namespace VoxelEngine.Actions
         public void KeyUpSprinting()
         {
             // ускорение сбрасывается
-            Entity.SprintingNot();
+            EntityR.Entity.SprintingNot();
             // Делаем плавно как старт бега
             //cam.SetFov(Glm.glm.radians(70));
         }
@@ -116,21 +117,21 @@ namespace VoxelEngine.Actions
         /// </summary>
         public void KeyUpHorizontal()
         {
-            if (Entity.Moving.HorizontalCancel()) StrDebug = Entity.UpdateMoving();
+            if (EntityR.Entity.Moving.HorizontalCancel()) StrDebug = EntityR.Entity.UpdateMoving();
         }
         /// <summary>
         /// Отпускаем клавишу W || S
         /// </summary>
         public void KeyUpVertical()
         {
-            if (Entity.Moving.VerticalCancel()) StrDebug = Entity.UpdateMoving();
+            if (EntityR.Entity.Moving.VerticalCancel()) StrDebug = EntityR.Entity.UpdateMoving();
         }
         /// <summary>
         /// Отпускаем клавишу прыгать / вверх
         /// </summary>
         public void KeyUpJamp()
         {
-            if (Entity.Moving.HeightCancel()) StrDebug = Entity.UpdateMoving();
+            if (EntityR.Entity.Moving.HeightCancel()) StrDebug = EntityR.Entity.UpdateMoving();
         }
 
         /// <summary>
@@ -138,15 +139,15 @@ namespace VoxelEngine.Actions
         /// </summary>
         public void KeyUpSneaking()
         {
-            if (Entity.Moving.HeightCancel()) StrDebug = Entity.UpdateMoving();
+            if (EntityR.Entity.Moving.HeightCancel()) StrDebug = EntityR.Entity.UpdateMoving();
             if (VEC.GetInstance().Moving == VEMoving.Survival)
             {
                 // Встать
                 // Проверка на возможность встать
                 //HitBoxEntity hitBox = OpenGLF.GetInstance().Cam.HitBox;
-                Entity.SneakingNearly();
+                EntityR.Entity.SneakingNearly();
                 //_isSneaking = EnumSneaking.GetUp;
-                if (!Entity.HitBox.IsCollisionUp())
+                if (!EntityR.Entity.HitBox.IsCollisionUp())
                 {
                     // Встаём
                     Uping();
@@ -161,7 +162,7 @@ namespace VoxelEngine.Actions
         /// </summary>
         protected void Uping()
         {
-            Entity.Uping();
+            EntityR.Entity.Uping();
         }
         /// <summary>
         /// Изменения или точнее перемещение камеры
@@ -169,9 +170,9 @@ namespace VoxelEngine.Actions
         /// </summary>
         public void Update(float timeFrame, float timeAll)
         {
-            StrDebug = Entity.UpdateDraw(timeFrame, timeAll);
-            Entity.HitBox.Size.Update(timeAll);
-            cam.SetPos(Entity.HitBox.Position);
+            StrDebug = EntityR.UpdateDraw(timeFrame, timeAll);
+            EntityR.Entity.HitBox.Size.Update(timeAll);
+            cam.SetPos(EntityR.Entity.HitBox.Position);
         }
 
         /// <summary>
@@ -179,7 +180,7 @@ namespace VoxelEngine.Actions
         /// </summary>
         public void Tick()
         {
-            Entity.UpdateTick(0);
+            EntityR.Entity.UpdateTick(0);
             
         }
     }

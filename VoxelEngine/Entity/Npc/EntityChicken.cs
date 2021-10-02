@@ -25,7 +25,7 @@ namespace VoxelEngine.Entity.Npc
 
             HitBox = new HitBoxEntity(index, World);
             HitBox.HitBoxChanged += HitBox_Changed;
-            HitBox.Size.SetSize(.4f, 0.7f);
+            HitBox.Size.SetSize(.2f, 0.7f);
             HitBox.SetPos(pos);
         }
 
@@ -116,7 +116,16 @@ namespace VoxelEngine.Entity.Npc
         protected override void SoundMoving()
         {
             pauseStepSound = 8;
-            World.Audio.PlaySound("mob.chicken.step" + (random.Next(2) + 1), GetPositionSound(), 0.1f, 1f);
+            World.Audio.PlaySound("mob.chicken.step" + (random.Next(2) + 1), GetPositionSound(), 0.3f, 1f);
+        }
+
+        /// <summary>
+        /// Убить
+        /// </summary>
+        public override void Kill()
+        {
+            World.Audio.PlaySound("mob.chicken.hurt" + (random.Next(2) + 1), GetPositionSound(), 1.0f, 1f);
+            base.Kill();
         }
     }
 }

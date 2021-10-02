@@ -3,6 +3,7 @@ using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
 using VoxelEngine.Renderer;
 using VoxelEngine.World;
+using VoxelEngine.World.Blk;
 
 namespace VoxelEngine.Util
 { 
@@ -289,7 +290,8 @@ namespace VoxelEngine.Util
                 {
                     for (int z = vd.z; z <= vu.z; z++)
                     {
-                        if (World.GetBlock(new vec3i(x, y, z)).IsCollision)
+                        if (BlockCollision(new vec3i(x, y, z), hbs))
+                            //if (World.GetBlock(new vec3i(x, y, z)).IsCollision)
                         {
                             if (vec.y < 0)
                             {
@@ -304,6 +306,36 @@ namespace VoxelEngine.Util
             }
             return EnumCollisionBody.None;
         }
+
+        /// <summary>
+        /// Обработка колизии блока, особенно важен когда блок не цельный
+        /// </summary>
+        /// <param name="blockPos">координата блока</param>
+        /// <param name="hbs">объект хитбокса сущьности</param>
+        /// <returns></returns>
+        protected bool BlockCollision(vec3i blockPos, HitBoxSizeUD hbs)
+        {
+            BlockBase block = World.GetBlock(blockPos);
+            if (block.IsCollision)
+            {
+                // Цельный блок на коллизию
+                if (block.HitBox.IsHitBoxAll) return true;
+                // Выбираем часть блока
+                vec3 bpos = new vec3(blockPos);
+                vec3 vf = block.HitBox.From + bpos;
+                vec3 vt = block.HitBox.To + bpos;
+                if (vf.x > hbs.Vu.x || vt.x < hbs.Vd.x
+                    || vf.y > hbs.Vu.y || vt.y < hbs.Vd.y
+                    || vf.z > hbs.Vu.z || vt.z < hbs.Vd.z)
+                {
+                    // пересечения нет
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
 
         /// <summary>
         /// Проверяем коллизию тела c блоками
@@ -321,11 +353,10 @@ namespace VoxelEngine.Util
                 {
                     for (int z = vd.z; z <= vu.z; z++)
                     {
-                        if (World.GetBlock(new vec3i(x, y, z)).IsCollision)
+                        if (BlockCollision(new vec3i(x, y, z), hbs))
                         {
                             return true;
                         }
-
                     }
                 }
             }
@@ -478,7 +509,12 @@ namespace VoxelEngine.Util
             return new HitBoxSizeUD(pos, Size);
         }
 
-        protected class HitBoxSizeUD
+        public HitBoxSizeUD SizeUD()
+        {
+            return new HitBoxSizeUD(Position, Size);
+        }
+
+        public class HitBoxSizeUD
         {
             public vec3 Vd { get; protected set; } = new vec3();
             public vec3 Vu { get; protected set; } = new vec3();

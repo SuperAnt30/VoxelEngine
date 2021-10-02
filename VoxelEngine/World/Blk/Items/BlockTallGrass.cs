@@ -5,7 +5,7 @@ using VoxelEngine.Util;
 
 namespace VoxelEngine.World
 {
-    public class BlockTallGrass : Block
+    public class BlockTallGrass : BlockBase
     {
         /// <summary>
         /// Блок высокой травы
