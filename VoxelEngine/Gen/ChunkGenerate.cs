@@ -1,4 +1,5 @@
 ﻿using System;
+using VoxelEngine.Glm;
 using VoxelEngine.Util;
 using VoxelEngine.World.Biome;
 using VoxelEngine.World.Blk;
@@ -95,8 +96,8 @@ namespace VoxelEngine.Gen
                     if (eBlock == EnumBlock.TallGrass || eBlock == EnumBlock.Dandelion)
                     {
                         Chunk.SetBlockState(x, y, z, EnumBlock.Air);
-                        GenTrees trees = new GenTrees(Chunk.World);
-                        trees.Generate(new BlockPos(Chunk.X * 16 + x, y, Chunk.Z * 16 + z));
+                        GenTrees trees = new GenTrees(Chunk.World, new vec3i(Chunk.X * 16 + x, y, Chunk.Z * 16 + z));
+                        trees.Put();
                         break;
                     }
                 }

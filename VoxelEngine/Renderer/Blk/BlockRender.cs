@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using VoxelEngine.Gen.Group;
 using VoxelEngine.Glm;
 using VoxelEngine.Renderer.Chk;
 using VoxelEngine.Util;
@@ -23,15 +24,26 @@ namespace VoxelEngine.Renderer.Blk
         /// Объект блока
         /// </summary>
         public BlockBase Blk { get; protected set; }
+        ///// <summary>
+        ///// Объект группы блоков
+        ///// </summary>
+        //public GroupBase Group { get; protected set; }
 
         public BlockRender(ChunkRender chunkRender, BlockBase block)
         {
             ChunkRend = chunkRender;
             Blk = block;
-            
+
             // позиция блока в чанке
             posChunk = new vec3i(Blk.Position.X & 15, Blk.Position.Y, Blk.Position.Z & 15);
         }
+
+        //public BlockRender(ChunkRender chunkRender, BlockBase block, GroupBase group) : this(chunkRender, block)
+        //{
+        //    Group = group;
+        //}
+
+        
 
         /// <summary>
         /// позиция блока в чанке
@@ -74,7 +86,10 @@ namespace VoxelEngine.Renderer.Blk
             //{
             //    Blk.Boxes[0].To = new vec3(1f, 1f - (VE.UV_SIZE * Blk.Properties * 3.6f), 1f);
             //}
-            foreach (Box box in Blk.Boxes)
+
+            Box[] boxes = Blk.Group == null ? Blk.Boxes : Blk.Group.Box(Blk.Properties);
+
+            foreach (Box box in boxes)
             {
                 _box = box;
                 foreach (Face face in box.Faces)

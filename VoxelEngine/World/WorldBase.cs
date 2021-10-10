@@ -7,6 +7,7 @@ using VoxelEngine.Audio;
 using VoxelEngine.Entity;
 using VoxelEngine.Entity.Npc;
 using VoxelEngine.Gen;
+using VoxelEngine.Gen.Group;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
 using VoxelEngine.Util;
@@ -88,6 +89,13 @@ namespace VoxelEngine.World
             Entity.SetMode(VEC.GetInstance().Moving);
         }
 
+        protected bool isTickStop = false;
+
+        /// <summary>
+        /// Остановить такт, закрытие программы
+        /// </summary>
+        public void TickStop() => isTickStop = true;
+
         /// <summary>
         /// Пакет такта в потоке
         /// </summary>
@@ -159,7 +167,7 @@ namespace VoxelEngine.World
             {
                 System.Threading.Thread.Sleep(50 - (int)ms);
             }
-            OnTicked();
+            if (!isTickStop) OnTicked();
         }
 
         /// <summary>
@@ -172,33 +180,62 @@ namespace VoxelEngine.World
         /// </summary>
         public BlockBase GetBlock(vec3i pos)
         {
-            return Blocks.GetBlock(GetVoxel(pos), new BlockPos(pos));
+            if (pos.y >= 0 && pos.y <= 255)
+            {
+                ChunkBase chunk = GetChunk(pos.x >> 4, pos.z >> 4);
+                if (chunk != null)
+                {
+                    return chunk.GetBlock0(new vec3i(pos.x & 15, pos.y, pos.z & 15));
+                }
+            }
+            return Blocks.GetEmpty(new BlockPos(pos));
         }
         /// <summary>
         /// Получить блок
         /// </summary>
         public BlockBase GetBlock(BlockPos pos)
         {
-            return Blocks.GetBlock(GetVoxel(pos.ToVec3i()), pos);
+            return GetBlock(pos.ToVec3i());
+
+           // return Blocks.GetBlock(GetVoxel(pos.ToVec3i()), pos);
         }
 
         /// <summary>
-        /// Получить воксель
+        /// Получить группу если она есть
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        /// <returns></returns>
-        public Voxel GetVoxel(vec3i pos)
-        {
-            if (pos.y < 0 || pos.y > 255)
-            {
-                return new Voxel();
-            }
-            ChunkBase chunk = GetChunk(pos.x >> 4, pos.z >> 4);
-            if (chunk == null) return new Voxel();
-            return chunk.GetVoxel(pos.x & 15, pos.y, pos.z & 15);
-        }
+        //public GroupBase GetGroup(BlockBase block)
+        //{
+        //    if (block.IsGroupModel)
+        //    {
+        //        // Находим смещение координаты к контрольной точке
+        //        vec3i bias = block.GroupPropertiesBias242();
+        //        vec3i pos = block.Position.ToVec3i() - bias;
+        //        ChunkBase chunk = GetChunk(new BlockPos(pos));
+        //        if (chunk != null)
+        //        {
+        //            string key = pos.ToString();
+        //            if (chunk.GroupModel.Contains(key))
+        //            {
+        //                return chunk.GroupModel.Get(key);
+        //            }
+        //        }
+        //    }
+        //    return null;
+        //}
+        //public GroupBase GetGroup(BlockPos pos)
+        //{
+        //    // Находим смещение координаты к контрольной точке
+        //    ChunkBase chunk = GetChunk(pos);
+        //    if (chunk != null)
+        //    {
+        //        string key = pos.ToVec3i().ToString();
+        //        if (chunk.GroupModel.Contains(key))
+        //        {
+        //            return chunk.GroupModel.Get(key);
+        //        }
+        //    }
+        //    return null;
+        //}
 
         /// <summary>
         /// Получить чанк с кэша//, если его там нет, то сгенерировать его
@@ -447,18 +484,25 @@ namespace VoxelEngine.World
 
             vec2i ch = new vec2i(newBlock.Position.X >> 4, newBlock.Position.Z >> 4);
             ChunkBase chunk = GetChunk(ch.x, ch.y);
-            
-            BlockBase blockOld = chunk.SetBlockState(newBlock, notTick);
+
+            BlockBase blockOld = chunk.GetBlock(newBlock.Position);
+            if (blockOld.EBlock == EnumBlock.Door)
+            {
+                GroupDoor door = new GroupDoor(this, blockOld.Position.ToVec3i());
+                door.Remove(blockOld);
+            }
+            else
+            {
+                blockOld = chunk.SetBlockState(newBlock, notTick);
+            }
 
             if (blockOld != null)
             {
                 if (notTick)
                 {
                     // Звук установленного блока или разрушенного
-                    //Task.Factory.StartNew(() => {  
                     Audio.PlaySound(newBlock.IsAir ? blockOld.SoundBreak() : newBlock.SoundPut(),
                         GetPositionSound(newBlock.Position), 1f, 1f);
-                    //});
                 }
 
                 if (newBlock.GetBlockLightOpacity() != blockOld.GetBlockLightOpacity() || newBlock.LightValue != blockOld.LightValue)
@@ -926,14 +970,6 @@ namespace VoxelEngine.World
                     }
                 }
             }
-            //iend.x = ix;
-            //iend.y = iy;
-            //iend.z = iz;
-
-            //end.x = px + t * dx;
-            //end.y = py + t * dy;
-            //end.z = pz + t * dz;
-            //norm.x = norm.y = norm.z = 0;
             return new MovingObjectPosition();
         }
 
@@ -979,6 +1015,7 @@ namespace VoxelEngine.World
             Debug.GetInstance().Entities = Entities.Count;
         }
 
+        
 
 
         #region  Event

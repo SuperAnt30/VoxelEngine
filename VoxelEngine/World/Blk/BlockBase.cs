@@ -1,4 +1,5 @@
 ﻿using System;
+using VoxelEngine.Gen.Group;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
 using VoxelEngine.Vxl;
@@ -59,21 +60,26 @@ namespace VoxelEngine.World.Blk
         /// Освещение от себя, типа травы
         /// </summary>
         public bool LightingYourself { get; protected set; } = false;
-
         /// <summary>
         /// Получить тип блока
         /// </summary>
         public EnumBlock EBlock { get; protected set; }
-
         /// <summary>
         /// Количество излучаемого света (плафон)
         /// </summary>
         public int LightValue { get; protected set; } = 0;
-
         /// <summary>
         /// Дополнительный параметр блока 4 бита
         /// </summary>
-        public byte Properties { get; set; } = 0;
+        public byte Properties { get; protected set; } = 0;
+        /// <summary>
+        /// Относится ли блок к групповой модели
+        /// </summary>
+        public bool IsGroupModel { get; protected set; } = false;
+        /// <summary>
+        /// Объект группы блоков
+        /// </summary>
+        public GroupBase Group { get; protected set; }
 
         /// <summary>
         /// Звук сломанного блока
@@ -116,8 +122,25 @@ namespace VoxelEngine.World.Blk
         {
             Voxel = voxel;
             EBlock = voxel.GetEBlock();
-            Properties = voxel.GetParam4bit();
+            SetProperties(voxel.GetParam4bit());
         }
+
+        /// <summary>
+        /// Задать дополнительный параметр
+        /// </summary>
+        public void SetProperties(byte properties)
+        {
+            Properties = properties;
+            if (IsGroupModel && Group != null)
+            {
+                Group.CollisionRefrash(this);
+            }
+        }
+
+        /// <summary>
+        /// Обновить Коробку
+        /// </summary>
+        public virtual void BoxRefrash() { }
 
         /// <summary>
         /// Позиция блока в мире
@@ -182,7 +205,20 @@ namespace VoxelEngine.World.Blk
             return false;
         }
 
-       
+        /// <summary>
+        /// Изменить колизию в блоке
+        /// </summary>
+        public void SetIsCollision(bool isCollision) => IsCollision = isCollision;
+
+        /// <summary>
+        /// Изменить хит бокс блока
+        /// </summary>
+        public void SetHitBox(Box hitBox) => HitBox = hitBox;
+
+        /// <summary>
+        /// Задать группу блоков
+        /// </summary>
+        public void SetGroup(GroupBase group) => Group = group;
 
     }
 }

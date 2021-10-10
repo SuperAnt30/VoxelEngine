@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using VoxelEngine.Binary;
 using VoxelEngine.Gen;
+using VoxelEngine.Gen.Group;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
 using VoxelEngine.Renderer.Chk;
@@ -49,6 +50,10 @@ namespace VoxelEngine.World.Chk
         /// Столбцы биомов
         /// </summary>
         protected EnumBiome[,] eBiomes = new EnumBiome[16, 16];
+        /// <summary>
+        /// Колекция групповых моделей
+        /// </summary>
+        public GroupMap GroupModel { get; protected set; } = new GroupMap();
 
         protected ChunkBase() { }
         public ChunkBase(WorldBase worldIn, int x, int z)
@@ -99,6 +104,19 @@ namespace VoxelEngine.World.Chk
         #region Block Storage
 
         /// <summary>
+        /// Получить группу по локальной координате
+        /// </summary>
+        public GroupBase GetGroup(vec3i pos)
+        {
+            string key = pos.ToString();
+            if (GroupModel.Contains(key))
+            {
+                return GroupModel.Get(key);
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Получить блок
         /// </summary>
         public BlockBase GetBlock(BlockPos pos)
@@ -113,7 +131,8 @@ namespace VoxelEngine.World.Chk
         {
             if (pos.x >> 4 == X && pos.z >> 4 == Z)
             {
-                return Blocks.GetBlock(GetVoxel(pos.x & 15, pos.y, pos.z & 15), new BlockPos(pos));
+                vec3i pos0 = new vec3i(pos.x & 15, pos.y, pos.z & 15);
+                return Blocks.GetBlock(GetVoxel(pos0.x, pos0.y, pos0.z), new BlockPos(pos), GetGroup(pos0));
             }
             return World.GetBlock(pos);
         }
@@ -125,7 +144,7 @@ namespace VoxelEngine.World.Chk
         {
             if (pos.x >> 4 == 0 && pos.z >> 4 == 0)
             {
-                return Blocks.GetBlock(GetVoxel(pos), new BlockPos(X << 4 | pos.x, pos.y, Z << 4 | pos.z));
+                return Blocks.GetBlock(GetVoxel(pos), new BlockPos(X << 4 | pos.x, pos.y, Z << 4 | pos.z), GetGroup(pos));
             }
             return Blocks.GetAir(new BlockPos(X << 4 | pos.x, pos.y, Z << 4 | pos.z));
         }
@@ -710,7 +729,7 @@ namespace VoxelEngine.World.Chk
         /// <summary>
         /// Создает карту высот для блока с нуля
         /// </summary>
-        protected void GenerateHeightMap()
+        public void GenerateHeightMap()
         {
             int y0 = 239;// this.getTopFilledSegment();
             heightMapMinimum = 1024;
@@ -1018,13 +1037,12 @@ namespace VoxelEngine.World.Chk
             BlocksTick();
         }
 
-        
-
         /// <summary>
         /// Массив действий в чанке надо блоками жидкостей ()
-        /// TODO:: 2021-07-17 научиться сохранять и считывать
         /// </summary>
         protected Hashtable liquidTicks = new Hashtable();
+
+       
 
         /// <summary>
         /// Вернуть массив задач
@@ -1079,7 +1097,8 @@ namespace VoxelEngine.World.Chk
             List<string> indexs = new List<string>();
             liquidTicksNew = new Hashtable();
             // массив блоковых тиков
-            foreach (DictionaryEntry lt in liquidTicks)
+            Hashtable hashtable = (Hashtable)liquidTicks.Clone();
+            foreach (DictionaryEntry lt in hashtable)
             {
                 BlockTick bt = lt.Value as BlockTick;
                 bt.Tick();
@@ -1097,8 +1116,8 @@ namespace VoxelEngine.World.Chk
                     else if (block.EBlock == EnumBlock.Sapling)
                     {
                         // ростёт дерево
-                        GenTrees trees = new GenTrees(World);
-                        if (!trees.Generate(block.Position))
+                        GenTrees trees = new GenTrees(World, block.Position.ToVec3i());
+                        if (!trees.Put())
                         {
                             AddTicks(liquidTicksNew, new BlockTick(block.Position, block.EBlock, VE.TICK_TREE_REPEAT));
                         }
@@ -1106,7 +1125,7 @@ namespace VoxelEngine.World.Chk
                     else if (block.EBlock == EnumBlock.Leaves || block.EBlock == EnumBlock.LeavesApple)
                     {
                         // проверка листвы в 5 блоков от древесины
-                        GenTrees trees = new GenTrees(World);
+                        GenTrees trees = new GenTrees(World, block.Position.ToVec3i());
                         if (!trees.IsWood(block.Position))
                         {
                             BlockBase blockNew = Blocks.GetAir(block.Position);
@@ -1312,7 +1331,6 @@ namespace VoxelEngine.World.Chk
             return -1;
         }
 
-
         /// <summary>
         /// Добавить блок на проверку в очередь
         /// </summary>
@@ -1323,9 +1341,76 @@ namespace VoxelEngine.World.Chk
         protected void AddLquidTicksBlock(EnumBlock eBlock, BlockPos pos, int properties, int tick)
         {
             BlockBase blockNew = Blocks.GetBlock(eBlock, pos);
-            blockNew.Properties = (byte)properties;
+            blockNew.SetProperties((byte)properties);
             World.SetBlockState(blockNew, false);
             AddTicks(liquidTicksNew, new BlockTick(blockNew.Position, blockNew.EBlock, tick));
+        }
+
+        /// <summary>
+        /// Внести группы в чанк блоков из сохранения
+        /// </summary>
+        public void SetGroupModels(GroupBin[] groups)
+        {
+            if (groups != null && groups.Length > 0)
+            {
+                foreach (GroupBin group in groups)
+                {
+                    int cx = group.X >> 4;
+                    int cz = group.Z >> 4;
+                    //vec3i pos = new vec3i(group.X, group.Y, group.Z);
+                    if (cx == X && cz == Z)
+                    {
+                        vec3i pos = new vec3i(group.X, group.Y, group.Z);
+                        // Если позиция блока находится в этом чанке, мы прорисовываем всю дверь
+                        GroupBase groupBase = Groups.GetBin(World, pos, (EnumGroup)group.Type);
+                        groupBase.LoadBin(this, group.Properties);
+                    }
+                    else
+                    {
+                        // Позиция в другом чанке, мы даём запрос на прогрузку двери 
+                        // чанка с нулевым параметром 
+                        if (World.IsChunk(cx, cz))
+                        {
+                            vec3i pos0 = new vec3i(group.X & 15, group.Y, group.Z & 15);
+                            GroupBase groupBase = World.GetChunk(cx, cz).GetGroup(pos0);
+                            if (groupBase != null)
+                            {
+                                groupBase.RequestLoad(this);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Сгенерировать группы моделей в чанке для сохранения
+        /// </summary>
+        public GroupBin[] GetGroupBins()
+        {
+            List<GroupBin> groups = new List<GroupBin>();
+            List<string> keys = new List<string>();
+
+            foreach (GroupBase group in GroupModel.Values)
+            {
+                GroupBin groupBin = new GroupBin()
+                {
+                    X = group.Position.x,
+                    Y = group.Position.y,
+                    Z = group.Position.z,
+                    Type = (byte)group.Type,
+                    Properties = group.GetProperties()
+                };
+
+                string key = group.Position.ToString();
+
+                if (!keys.Contains(key))
+                {
+                    groups.Add(groupBin);
+                    keys.Add(key);
+                }
+            }
+            return groups.ToArray();
         }
 
         #region Events

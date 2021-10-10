@@ -91,6 +91,7 @@
     <Compile Include="Audio\AudioSample.cs" />
     <Compile Include="Audio\AudioSource.cs" />
     <Compile Include="Audio\AudioSources.cs" />
+    <Compile Include="Binary\GroupBin.cs" />
     <Compile Include="Entity\EntityDistance.cs" />
     <Compile Include="Entity\EntitySpeed.cs" />
     <Compile Include="Entity\EnumSneaking.cs" />
@@ -123,12 +124,18 @@
       <DependentUpon>FormTest.cs</DependentUpon>
     </Compile>
     <Compile Include="Gen\EnumGeterationStatus.cs" />
+    <Compile Include="Gen\GenBase.cs" />
+    <Compile Include="Gen\Group\EnumGroup.cs" />
+    <Compile Include="Gen\Group\GroupMap.cs" />
+    <Compile Include="Gen\Group\Groups.cs" />
     <Compile Include="Gen\NoiseStorge.cs" />
     <Compile Include="Gen\ChunkGenerate.cs" />
     <Compile Include="Gen\NoiseGeneratorSimplex.cs" />
     <Compile Include="Gen\NoiseGeneratorPerlin.cs" />
     <Compile Include="Gen\GenTrees.cs" />
     <Compile Include="Graphics\Shader\ShaderEntity.cs" />
+    <Compile Include="Gen\Group\GroupBase.cs" />
+    <Compile Include="Gen\Group\GroupDoor.cs" />
     <Compile Include="Models\ModelBase.cs" />
     <Compile Include="Models\ModelBox.cs" />
     <Compile Include="Models\ModelChicken.cs" />
@@ -185,6 +192,7 @@
     <Compile Include="Renderer\Blk\BlockColorBiome.cs" />
     <Compile Include="World\Blk\Items\BlockAir.cs" />
     <Compile Include="World\Blk\Items\BlockBedrock.cs" />
+    <Compile Include="World\Blk\Items\BlockDoor.cs" />
     <Compile Include="World\Blk\Items\BlockTorch.cs" />
     <Compile Include="World\Blk\Items\BlockPoppy.cs" />
     <Compile Include="World\Blk\Items\BlockLeavesApple.cs" />

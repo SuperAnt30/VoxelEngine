@@ -8,7 +8,7 @@
         /// <summary>
         /// Сколько чанков видим
         /// </summary>
-        public const int CHUNK_VISIBILITY = 12;
+        public const int CHUNK_VISIBILITY = 4;
         /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// Количество общее число по спирале
@@ -34,10 +34,7 @@
         /// </summary>
         public const float MAX_DIST = 10f;
 
-        /// <summary>
-        /// 1/16 часть, для тестуры
-        /// </summary>
-        public const float UV_SIZE = 0.0625f;
+        
         /// <summary>
         /// Ключ текстуры шрифта
         /// </summary>
@@ -110,5 +107,11 @@
         /// </summary>
         public const int ENTITY_DISSPAWN = 64;
 
+        #region Size
+        /// <summary>
+        /// 1/16 часть, для тестуры
+        /// </summary>
+        public const float UV_SIZE = 0.0625f;
+        #endregion
     }
 }

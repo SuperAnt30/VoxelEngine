@@ -1,6 +1,5 @@
 ﻿using VoxelEngine.Glm;
 using System.Collections.Generic;
-using VoxelEngine.Util;
 using System;
 using VoxelEngine.World.Chk;
 using VoxelEngine.World.Blk;
@@ -182,6 +181,11 @@ namespace VoxelEngine.Renderer.Chk
         protected float[] _RenderVoxel(BlockBase block)
         {
             BlockRender blockRender = new BlockRender(this, block);
+            //GroupBase group = World.GetGroup(block);
+            //if (group != null)
+            //{
+            //    blockRender.Blk.SetGroup(group);
+            //}
             return blockRender.RenderMesh();
         }
     }

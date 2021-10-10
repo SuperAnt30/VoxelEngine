@@ -5,7 +5,7 @@ using VoxelEngine.Util;
 using VoxelEngine.Actions;
 using VoxelEngine.Renderer.Chk;
 using VoxelEngine.Vxl;
-using VoxelEngine.World.Blk;
+//using VoxelEngine.World.Blk;
 using VoxelEngine.Renderer;
 using VoxelEngine.Graphics;
 using VoxelEngine.Entity;
@@ -88,6 +88,8 @@ namespace VoxelEngine
         /// </summary>
         private void FormGame_FormClosing(object sender, FormClosingEventArgs e)
         {
+            World.TickStop();
+
             if (threadFps.IsRun)
             {
                 e.Cancel = true;

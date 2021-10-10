@@ -12,8 +12,8 @@ namespace VoxelEngine.World
         /// </summary>
         public BlockTorch()
         {
-            HitBox = new Box(new vec3(VE.UV_SIZE * 7, 0, VE.UV_SIZE * 7),
-                new vec3(1f - VE.UV_SIZE * 7, 1f - VE.UV_SIZE * 6, 1f - VE.UV_SIZE * 7));
+            HitBox = new Box(new vec3(VE.UV_SIZE * 6, 0, VE.UV_SIZE * 6),
+                new vec3(1f - VE.UV_SIZE * 6, 1f - VE.UV_SIZE * 6, 1f - VE.UV_SIZE * 6));
 
             Boxes = new Box[] {
                 new Box()

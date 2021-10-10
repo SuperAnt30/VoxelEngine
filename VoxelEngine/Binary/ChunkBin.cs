@@ -24,8 +24,12 @@ namespace VoxelEngine.Binary
         /// </summary>
         public byte GeterationStatus { get; set; }
         /// <summary>
-        /// Массив задачь тиков на блоки
+        /// Массив задач тиков на блоки
         /// </summary>
         public BlockTickBin[] BlockTickBins { get; set; }
+        /// <summary>
+        /// Массив групповых блоков
+        /// </summary>
+        public GroupBin[] GroupBins { get; set; }
     }
 }

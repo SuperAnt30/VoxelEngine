@@ -6,7 +6,7 @@ using VoxelEngine.Util;
 using VoxelEngine.World;
 using VoxelEngine.World.Blk;
 using VoxelEngine.Graphics;
-using VoxelEngine.Entity;
+using VoxelEngine.Gen.Group;
 
 namespace VoxelEngine.Actions
 {
@@ -68,16 +68,34 @@ namespace VoxelEngine.Actions
             {
                 if (moving.IsBlock() && !moving.Block.IsAir)
                 {
-                    vec3i vec = moving.IEnd + moving.Norm;
-                    if (!World.Entity.HitBox.IsVoxelBody(vec))
+                    if (moving.Block.IsGroupModel)
                     {
-                        World.SetBlockState(
-                            Blocks.GetBlock(Debug.GetInstance().NumberBlock, new BlockPos(vec)), true);
+                        // Модель блоков, возможность активации
+                        if (moving.Block.Group != null)
+                        {
+                            moving.Block.Group.Action();
+                        }
+                    }
+                    else
+                    {
+                        vec3i vec = moving.IEnd + moving.Norm;
+                        if (Debug.GetInstance().NumberBlock == EnumBlock.Door)
+                        {
+                            // Дверь
+                            GroupDoor door = new GroupDoor(World, vec);
+                            door.Put();
+                        }
+                        else
+                        {
+                            if (!World.Entity.HitBox.IsVoxelBody(vec))
+                            {
+                                World.SetBlockState(
+                                    Blocks.GetBlock(Debug.GetInstance().NumberBlock, new BlockPos(vec)), true);
+                            }
+                        }
                     }
                 }
             }
-            
-            
         }
 
         public void Move()

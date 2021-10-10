@@ -1,4 +1,5 @@
-﻿using VoxelEngine.Util;
+﻿using VoxelEngine.Gen.Group;
+using VoxelEngine.Util;
 using VoxelEngine.Vxl;
 
 namespace VoxelEngine.World.Blk
@@ -8,7 +9,7 @@ namespace VoxelEngine.World.Blk
     /// </summary>
     public class Blocks
     {
-        public static BlockBase GetBlock(Voxel voxel)
+        protected static BlockBase GetBlock(Voxel voxel, GroupBase group)
         {
             if (voxel.IsEmpty) return new BlockBase();
             BlockBase block = new BlockBase();
@@ -43,12 +44,17 @@ namespace VoxelEngine.World.Blk
                 case EnumBlock.Dandelion: block = new BlockDandelion(); break;
 
                 case EnumBlock.Torch: block = new BlockTorch(); break;
+                case EnumBlock.Door: block = new BlockDoor(); break;
 
             }
-            
+
             // тут нада id voxel-я, так-как не успевает замениться тип блока, нет света корректного
             //voxel.SetBlockLightOpacity(GetBlockLightOpacity(id));// block.EBlock));
             //block.LightBlock = (float)voxel.GetLightFor(EnumSkyBlock.Sky) / 15f;
+            if (group != null)
+            {
+                block.SetGroup(group);
+            }
             block.SetVoxel(voxel);
             return block;
         }
@@ -86,13 +92,14 @@ namespace VoxelEngine.World.Blk
                 case EnumBlock.Poppy: return 0;
                 case EnumBlock.Dandelion: return 0;
                 case EnumBlock.Torch: return 2;
+                case EnumBlock.Door: return 1; // 1 вместо 0, чтоб при удалении двери корректно обновлялись блоки под дверью
             }
             return 15;
         }
 
-        public static BlockBase GetBlock(Voxel voxel, BlockPos pos)
+        public static BlockBase GetBlock(Voxel voxel, BlockPos pos, GroupBase group)
         {
-            BlockBase block = GetBlock(voxel);
+            BlockBase block = GetBlock(voxel, group);
             block.SetPosition(pos);
             return block;
         }
@@ -101,9 +108,13 @@ namespace VoxelEngine.World.Blk
         {
             Voxel voxel = new Voxel();
             voxel.SetEBlock(eBlock);
-            BlockBase block = GetBlock(voxel);
-            block.SetPosition(pos);
-            return block;
+            return GetBlock(voxel, pos, null);
+
+            //Voxel voxel = new Voxel();
+            //voxel.SetEBlock(eBlock);
+            //BlockBase block = GetBlock(voxel);
+            //block.SetPosition(pos);
+            //return block;
         }
 
         /// <summary>
@@ -113,6 +124,16 @@ namespace VoxelEngine.World.Blk
         public static BlockBase GetAir(BlockPos pos)
         {
             BlockBase block = new BlockAir();
+            block.SetPosition(pos);
+            return block;
+        }
+
+        /// <summary>
+        /// Получить базовый блок, как пустышку
+        /// </summary>
+        public static BlockBase GetEmpty(BlockPos pos)
+        {
+            BlockBase block = new BlockBase();
             block.SetPosition(pos);
             return block;
         }

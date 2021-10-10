@@ -3,21 +3,15 @@ using VoxelEngine.Glm;
 using VoxelEngine.Util;
 using VoxelEngine.World;
 using VoxelEngine.World.Blk;
-using VoxelEngine.World.Chk;
 
 namespace VoxelEngine.Gen
 {
     /// <summary>
     /// Генерация дерева
     /// </summary>
-    public class GenTrees : WorldHeir
+    public class GenTrees : GenBase
     {
-        public GenTrees(WorldBase world) : base(world) { }
-
-        public bool Generate(BlockPos pos)
-        {
-            return Generate(new Random(), pos);
-        }
+        public GenTrees(WorldBase world, vec3i pos) : base(world, pos) { }
 
         protected int[,] ar1 = new int[1, 1] { { 2 } };
         protected int[,] ar3 = new int[3, 3] { { 3, 2, 3 }, { 2, 1, 2 }, { 3, 2, 3 } };
@@ -62,18 +56,13 @@ namespace VoxelEngine.Gen
         /// высота дерева (8-12)
         /// </summary>
         protected int ht = 8;
-        /// <summary>
-        /// Массив чанков используемых в генерации
-        /// </summary>
-        protected ChunkMap chunks = new ChunkMap();
-
+        
         /// <summary>
         /// Сгенерировать дерево
         /// </summary>
         /// <param name="random"></param>
-        /// <param name="pos">позиция саженца</param>
         /// <returns>true - сгенерировали, false - нет</returns>
-        public bool Generate(Random random, BlockPos pos)
+        public override bool Put(Random random)
         {
             h += random.Next(4);
             wl += random.Next(3);
@@ -81,7 +70,7 @@ namespace VoxelEngine.Gen
             ht = (int)((float)h * 1.6f);
             chunks.Clear();
 
-            if (pos.Y < 1 || pos.Y > 200) return false;
+            if (Position.y < 1 || Position.y > 200) return false;
 
             Layer layer;
 
@@ -97,19 +86,20 @@ namespace VoxelEngine.Gen
                     {
                         if (layer.Ar[x + layer.Size, z + layer.Size] > 0)
                         {
-                            if (!CheckBlock(World.GetBlock(new BlockPos(pos.X + x, pos.Y + y, pos.Z + z))))
+                            if (!CheckBlock(World.GetBlock(new BlockPos(Position.x + x, Position.y + y, Position.z + z))))
                                 return false;
                         }
                     }
                 }
             }
 
-            BlockBase block = World.GetBlock(pos.OffsetDown());
+            vec3i posDown = Position + new vec3i(0, -1, 0);
+            BlockBase block = World.GetBlock(posDown);
             // проверка что саженец на земле и высота позволяет
-            if ((block.EBlock == EnumBlock.Grass || block.EBlock == EnumBlock.Dirt) && pos.Y < 200)
+            if ((block.EBlock == EnumBlock.Grass || block.EBlock == EnumBlock.Dirt) && Position.y < 200)
             {
                 // Меняем основание на землю
-                SetDirt(pos.OffsetDown());
+                SetDirt(new BlockPos(posDown));
                         
 
                 // листва
@@ -125,7 +115,7 @@ namespace VoxelEngine.Gen
                                         
                             if (a == 1 || (a == 2 && random.Next(2) == 0) || (a == 3 && random.Next(4) == 0) || a == 4 || a == 5)
                             {
-                                BlockBase block2 = World.GetBlock(new vec3i(pos.X + x, pos.Y + y, pos.Z + z));
+                                BlockBase block2 = World.GetBlock(new vec3i(Position.x + x, Position.y + y, Position.z + z));
                                 EnumBlock eblock = EnumBlock.Leaves;
                                 // ветки
                                 if ((a == 4 && random.Next(10) == 0) // 10%
@@ -148,12 +138,13 @@ namespace VoxelEngine.Gen
                 // ствол
                 for (int y = 0; y < h; y++)
                 {
-                    BlockBase var21 = World.GetBlock(pos.OffsetUp(y));
+                    BlockPos posUp = new BlockPos(Position + new vec3i(0, y, 0));
+                    BlockBase var21 = World.GetBlock(posUp);
 
                     if (var21.EBlock == EnumBlock.Air || var21.EBlock == EnumBlock.Leaves || var21.EBlock == EnumBlock.Sapling)
                     {
                         //SetBlock(pos.OffsetUp(y), EnumBlock.Log);
-                        SetBlockState(pos.OffsetUp(y), EnumBlock.Log);
+                        SetBlockState(posUp, EnumBlock.Log);
                     }
                 }
 
@@ -346,40 +337,6 @@ namespace VoxelEngine.Gen
                 SetBlockState(pos, EnumBlock.Dirt);
             }
         }
-
-        protected void RecheckGaps()
-        {
-            foreach(ChunkBase chunk in chunks.Values)
-            {
-                //chunk.StartRecheckGaps(true);
-                chunk.RecheckGaps();
-                chunk.SetChunkModified();
-            }
-        }
-
-        /// <summary>
-        /// Задать блок на прямую к вокселю
-        /// </summary>
-        protected void SetBlockState(BlockPos pos, EnumBlock eBlock)
-        {
-            int vx = pos.X & 15;
-            int vz = pos.Z & 15;
-            int cx = pos.X >> 4;
-            int cz = pos.Z >> 4;
-            
-            if (World.IsChunk(cx, cz))
-            {
-                ChunkBase chunk = World.GetChunk(cx, cz);
-                chunk.SetBlockState(vx, pos.Y, vz, eBlock);
-                if (pos.Y > chunk.GetHeight(vx, vz))
-                {
-                    chunk.SetUpBlock(vx, pos.Y, vz);
-                    chunk.PropagateSkylightOcclusion(vx, vz);
-                }
-                chunks.Set(chunk);
-            }
-        }
-
 
         /// <summary>
         /// Задать блок

@@ -39,6 +39,19 @@ namespace VoxelEngine.Util
             return Pole.South;
         }
 
+        /// <summary>
+        /// Проверить левее ли от тикущего полюса
+        /// </summary>
+        /// <param name="angle">угол в градусах</param>
+        public static bool IsFromAngleLeft(float angle, Pole pole)
+        {
+            if (pole == Pole.North) return angle > 0;
+            if (pole == Pole.West) return angle > 90f;
+            if (pole == Pole.South) return angle < 0;
+            if (pole == Pole.East) return angle > -90f;
+            return true;
+        }
+
 
         /// <summary>
         /// Получите сторону по его горизонтальному индексу (0-3). Заказ S-W-N-E.

@@ -253,7 +253,7 @@ namespace VoxelEngine.Actions
                     OnMoveChanged();
                     break;
                 case Keys.D1: Debug.GetInstance().NumberBlock = EnumBlock.Stone; break;
-                case Keys.D2: Debug.GetInstance().NumberBlock = EnumBlock.Dirt; break;
+                case Keys.D2: Debug.GetInstance().NumberBlock = EnumBlock.Door; break;
                 case Keys.D3: Debug.GetInstance().NumberBlock = EnumBlock.Sand; break;
                 case Keys.D4: Debug.GetInstance().NumberBlock = EnumBlock.Planks; break;
                 case Keys.D5: Debug.GetInstance().NumberBlock = EnumBlock.Log; break; // 6

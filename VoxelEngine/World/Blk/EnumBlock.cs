@@ -100,7 +100,11 @@
         /// <summary>
         /// Факел
         /// </summary>
-        Torch = 23
+        Torch = 23,
+        /// <summary>
+        /// Дверь
+        /// </summary>
+        Door = 24
 
     }
 }

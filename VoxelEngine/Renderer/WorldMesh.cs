@@ -60,7 +60,7 @@ namespace VoxelEngine.Renderer
             for (int i = spiral.Length - 1; i >= 0; i--)
             {
                 vec2i v = new vec2i(spiral[i].X, spiral[i].Z);
-                if (cam.ChunksFC.ContainsKey(v.ToString()))
+                if (cam.ChunksFC.ContainsKey(v.ToString())) // эта не надо походу
                 {
                     // Если Frustum Culling прошёл
                     string key = v.ToString();

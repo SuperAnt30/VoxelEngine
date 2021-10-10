@@ -18,6 +18,12 @@ namespace VoxelEngine
         {
             DistSqrt = _GetSqrt(VE.CHUNK_VISIBILITY);
             _GetSqrtPole3();
+
+            for (int i = 0; i <=16; i++)
+            {
+                Uv[i] = (float)i * 0.00390625f;
+                Xy[i] = (float)i * 0.0625f;
+            }
         }
 
         /// <summary>
@@ -36,6 +42,20 @@ namespace VoxelEngine
         /// Массив по длинам используя квадратный корень для всей видимости
         /// </summary>
         public ChunkLoading[] DistSqrt { get; protected set; }
+        /// <summary>
+        /// Массив по длинам используя квадратный корень для всей видимости
+        /// </summary>
+        protected ChunkLoading[][] distSqrtPole = new ChunkLoading[8][];
+
+        /// <summary>
+        /// Параметр [0]=0 .. [16]=0.0625f
+        /// </summary>
+        public static float[] Uv { get; protected set; } = new float[17];
+        /// <summary>
+        /// Параметр [1]=0.0625f .. [16]=1.0f
+        /// </summary>
+        public static float[] Xy { get; protected set; } = new float[17];
+
 
         /// <summary>
         /// Сгенерировать массив по длинам используя квадратный корень
@@ -53,10 +73,7 @@ namespace VoxelEngine
             return r.ToArray();
         }
 
-        /// <summary>
-        /// Массив по длинам используя квадратный корень для всей видимости
-        /// </summary>
-        protected ChunkLoading[][] distSqrtPole = new ChunkLoading[8][];
+        
 
 
         /// <summary>

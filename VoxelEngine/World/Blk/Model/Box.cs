@@ -48,6 +48,9 @@ namespace VoxelEngine.World.Blk.Model
 
         public Box() { }
 
+        /// <summary>
+        /// Для хитбокса
+        /// </summary>
         public Box(vec3 from, vec3 to)
         {
             From = from;
@@ -64,6 +67,15 @@ namespace VoxelEngine.World.Blk.Model
         public Box(int numberTexture, bool isColor)
         {
             Faces = new Face[] { new Face(Pole.All, numberTexture, isColor) };
+        }
+
+        public Box(vec3 from, vec3 to, vec2 uvf, vec2 uvt, Pole side, int numberTexture)
+        {
+            From = from;
+            To = to;
+            UVFrom = uvf;
+            UVTo = uvt;
+            Faces = new Face[] { new Face(side, numberTexture) };
         }
     }
 }
