@@ -25,7 +25,7 @@
         /// <summary>
         /// Режим перемещения
         /// </summary>
-        public VEMoving Moving { get; set; } = VEMoving.Survival;// ObstacleFlight;//.Survival;//.FreeFlight;
+        public static VEMoving Moving { get; set; } = VEMoving.Survival;// ObstacleFlight;//.Survival;//.FreeFlight;
 
         /// <summary>
         /// Режим теней у блоках

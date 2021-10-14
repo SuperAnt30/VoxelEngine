@@ -84,6 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\KeyboardMove.cs" />
     <Compile Include="Audio\Al.cs" />
     <Compile Include="Audio\Alc.cs" />
     <Compile Include="Audio\AudioBase.cs" />
@@ -136,6 +137,21 @@
     <Compile Include="Graphics\Shader\ShaderEntity.cs" />
     <Compile Include="Gen\Group\GroupBase.cs" />
     <Compile Include="Gen\Group\GroupDoor.cs" />
+    <Compile Include="Gui\BaseControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Gui\GuiControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Gui\GuiControl.Designer.cs">
+      <DependentUpon>GuiControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Gui\OptionsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Gui\OptionsControl.Designer.cs">
+      <DependentUpon>OptionsControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\ModelBase.cs" />
     <Compile Include="Models\ModelBox.cs" />
     <Compile Include="Models\ModelChicken.cs" />
@@ -150,6 +166,7 @@
     <Compile Include="Util\BlockPos.cs" />
     <Compile Include="Util\BufferHeir.cs" />
     <Compile Include="Util\CoordEvent.cs" />
+    <Compile Include="Util\CursorExtensions.cs" />
     <Compile Include="Util\EnumFacing.cs" />
     <Compile Include="Util\EnumSkyBlock.cs" />
     <Compile Include="Util\Gzip.cs" />
@@ -290,6 +307,12 @@
     <EmbeddedResource Include="FormTest.resx">
       <DependentUpon>FormTest.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Gui\GuiControl.resx">
+      <DependentUpon>GuiControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gui\OptionsControl.resx">
+      <DependentUpon>OptionsControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -313,9 +336,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Gui\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
       <Visible>False</Visible>

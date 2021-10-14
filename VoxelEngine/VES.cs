@@ -16,7 +16,7 @@ namespace VoxelEngine
         private static VES instance;
         private VES()
         {
-            DistSqrt = _GetSqrt(VE.CHUNK_VISIBILITY);
+            DistSqrtRefrash();
             _GetSqrtPole3();
 
             for (int i = 0; i <=16; i++)
@@ -37,6 +37,11 @@ namespace VoxelEngine
         }
 
         #endregion
+
+        public void DistSqrtRefrash()
+        {
+            DistSqrt = _GetSqrt(VE.CHUNK_VISIBILITY);
+        }
 
         /// <summary>
         /// Массив по длинам используя квадратный корень для всей видимости

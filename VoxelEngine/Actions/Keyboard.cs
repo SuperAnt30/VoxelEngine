@@ -4,7 +4,6 @@ using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
 using VoxelEngine.Renderer;
 using VoxelEngine.Renderer.Entity;
-using VoxelEngine.World;
 using VoxelEngine.World.Blk;
 using VoxelEngine.World.Chk;
 
@@ -18,7 +17,10 @@ namespace VoxelEngine.Actions
         #region Instance
 
         private static Keyboard instance;
-        private Keyboard() { }
+        private Keyboard()
+        {
+            KeyMove.MoveChanged += KeyMove_MoveChanged;
+        }
 
         /// <summary>
         /// Передать по ссылке объект если он создан, иначе создать
@@ -36,8 +38,10 @@ namespace VoxelEngine.Actions
         /// Объект кэш чанка
         /// </summary>
         public WorldRender World { get; protected set; }
-
-        public PlayerCamera PlCamera { get; protected set; } = new PlayerCamera();
+        /// <summary>
+        /// Объект хранящий нажатие клавиш перемещения
+        /// </summary>
+        public KeyboardMove KeyMove { get; protected set; } = new KeyboardMove();
 
         /// <summary>
         /// Задать объект мира
@@ -45,12 +49,12 @@ namespace VoxelEngine.Actions
         public void SetWorld(WorldRender world)
         {
             World = world;
-            PlCamera.EntityR = new EntityRender(world, World.Entity);
+            KeyMove.PlCamera.EntityR = new EntityRender(world, World.Entity);
         }
 
         public void UpdateFPS(float timeFrame, float timeAll)
         {
-            PlCamera.Update(timeFrame, timeAll);
+            KeyMove.PlCamera.Update(timeFrame, timeAll);
         }
 
         public void PreviewKeyDown(Keys keys)
@@ -61,20 +65,16 @@ namespace VoxelEngine.Actions
                     Debug.GetInstance().IsDraw = !Debug.GetInstance().IsDraw;
                     break;
                 case Keys.F4:
-                    VEC.GetInstance().Moving = VEMoving.FreeFlight;
+                    VEC.Moving = VEMoving.FreeFlight;
                     World.UpdateModePlayer();
                     break;
                 case Keys.F5:
-                    VEC.GetInstance().Moving = VEMoving.ObstacleFlight;
+                    VEC.Moving = VEMoving.ObstacleFlight;
                     World.UpdateModePlayer();
-                    // save
-                    //File.WriteAllBytes("map.dat", OpenGLF.GetInstance().ChunkItems.Write());
                     break;
                 case Keys.F6:
-                    VEC.GetInstance().Moving = VEMoving.Survival;
+                    VEC.Moving = VEMoving.Survival;
                     World.UpdateModePlayer();
-                    // load
-                    //OpenGLF.GetInstance().ChunkItems.Read(File.ReadAllBytes("map.dat"));
                     break;
                 case Keys.F7:
                     Debug.GetInstance().IsDrawChunk = !Debug.GetInstance().IsDrawChunk;
@@ -104,51 +104,26 @@ namespace VoxelEngine.Actions
 
                     break;
                 case Keys.ControlKey:
-                    PlCamera.Sprinting();
+                    KeyMove.Sprinting();
                     break;
 
             }
         }
 
-
-       // protected Keys _keysOld = Keys.None;
-
         public void KeyUp(Keys keys)
         {
-            if (keys == Keys.D || keys == Keys.A) PlCamera.KeyUpHorizontal();
-            else if (keys == Keys.W || keys == Keys.S) PlCamera.KeyUpVertical();
-            else if (keys == Keys.Space) PlCamera.KeyUpJamp();
-            else if (keys == Keys.ShiftKey) PlCamera.KeyUpSneaking();
-            else if (keys == Keys.ControlKey) PlCamera.KeyUpSprinting();
-            //PlCamera.KeyUp();
-            //  _keysOld = Keys.None;
+            if (keys == Keys.D || keys == Keys.A) KeyMove.CancelHorizontal();
+            else if (keys == Keys.W || keys == Keys.S) KeyMove.CancelVertical();
+            else if (keys == Keys.Space) KeyMove.CancelUp();
+            else if (keys == Keys.ShiftKey) KeyMove.CancelDown();
+            else if (keys == Keys.ControlKey) KeyMove.CancelSprinting();
         }
 
         public void KeyDown(Keys keys)
         {
-            //if (_keysOld == keys)
-            //{
-            //    // NEXT
-            //    switch (keys)
-            //    {
-            //        case Keys.D:
-            //            PlCamera.NextRight();
-            //            OnMoveChanged();
-            //            break;
-            //    }
-            //    return;
-            //}
-
-            //if (_keysOld == Keys.None)
-            {
-                //Debag.GetInstance().BeginTick = DateTime.Now.Ticks - 1000000;
-              //  _keysOld = keys;
-            }
             vec2i ch;
             vec3i bl;
-            //Block blk;
             ChunkBase chunk;
-            //Debag.Log("LogKey", keys.ToString());
             switch (keys)
             {
                 case Keys.E:
@@ -159,8 +134,7 @@ namespace VoxelEngine.Actions
                     //Debug.GetInstance().CountTest2 = VEC.GetInstance().Zoom;
                     break;
                 case Keys.B:
-                    //for (int i = 0; i < 50; i++)
-                        World.AddEntity();
+                    World.AddEntity();
                     break;
                 case Keys.P:
                     // Перегенерация
@@ -228,30 +202,12 @@ namespace VoxelEngine.Actions
                     // Плюс четверть дня
                     VEC.GetInstance().AddQuarterTick();
                     break;
-                case Keys.Space:
-                    PlCamera.Jamp();
-                    OnMoveChanged();
-                    break;
-                case Keys.ShiftKey:
-                    PlCamera.Down();
-                    OnMoveChanged();
-                    break;
-                case Keys.A:
-                    PlCamera.StepLeft();
-                    OnMoveChanged();
-                    break;
-                case Keys.D:
-                    PlCamera.StepRight();
-                    OnMoveChanged();
-                    break;
-                case Keys.W:
-                    PlCamera.StepForward();
-                    OnMoveChanged();
-                    break;
-                case Keys.S:
-                    PlCamera.StepBack();
-                    OnMoveChanged();
-                    break;
+                case Keys.Space: KeyMove.Up(); break;
+                case Keys.ShiftKey: KeyMove.Down(); break;
+                case Keys.A: KeyMove.Left(); break;
+                case Keys.D: KeyMove.Right(); break;
+                case Keys.W: KeyMove.Forward(); break;
+                case Keys.S: KeyMove.Back(); break;
                 case Keys.D1: Debug.GetInstance().NumberBlock = EnumBlock.Stone; break;
                 case Keys.D2: Debug.GetInstance().NumberBlock = EnumBlock.Door; break;
                 case Keys.D3: Debug.GetInstance().NumberBlock = EnumBlock.Sand; break;
@@ -266,6 +222,13 @@ namespace VoxelEngine.Actions
             }
         }
 
+        #region Event
+
+        private void KeyMove_MoveChanged(object sender, EventArgs e)
+        {
+            OnMoveChanged();
+        }
+
         /// <summary>
         /// Событие движение WASD
         /// </summary>
@@ -278,5 +241,7 @@ namespace VoxelEngine.Actions
         {
             MoveChanged?.Invoke(this, new EventArgs());
         }
+
+        #endregion
     }
 }

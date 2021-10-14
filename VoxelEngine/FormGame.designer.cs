@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.openGLControl1 = new SharpGL.OpenGLControl();
+            this.guiControl1 = new VoxelEngine.Gui.GuiControl();
             ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -49,20 +50,32 @@
             this.openGLControl1.OpenGLDraw += new SharpGL.RenderEventHandler(this.openGLControl1_OpenGLDraw);
             this.openGLControl1.Resized += new System.EventHandler(this.openGLControl1_Resized);
             this.openGLControl1.Click += new System.EventHandler(this.openGLControl1_Click);
+            this.openGLControl1.Enter += new System.EventHandler(this.openGLControl1_Enter);
             this.openGLControl1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.openGLControl1_KeyDown);
             this.openGLControl1.KeyUp += new System.Windows.Forms.KeyEventHandler(this.openGLControl1_KeyUp);
             this.openGLControl1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.openGLControl1_MouseDown);
             this.openGLControl1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.openGLControl1_MouseMove);
             this.openGLControl1.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.openGLControl1_PreviewKeyDown);
             // 
+            // guiControl1
+            // 
+            this.guiControl1.BackColor = System.Drawing.SystemColors.Control;
+            this.guiControl1.Location = new System.Drawing.Point(100, 100);
+            this.guiControl1.Name = "guiControl1";
+            this.guiControl1.Size = new System.Drawing.Size(390, 272);
+            this.guiControl1.TabIndex = 44;
+            this.guiControl1.VisibleChanged += new System.EventHandler(this.guiControl1_VisibleChanged);
+            // 
             // FormGame
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1264, 681);
+            this.Controls.Add(this.guiControl1);
             this.Controls.Add(this.openGLControl1);
             this.Name = "FormGame";
             this.Text = "Test by SuperAnt";
+            this.Deactivate += new System.EventHandler(this.FormGame_Deactivate);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormGame_FormClosing);
             this.Load += new System.EventHandler(this.FormGame_Load);
             ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).EndInit();
@@ -73,6 +86,7 @@
         #endregion
 
         private SharpGL.OpenGLControl openGLControl1;
+        private Gui.GuiControl guiControl1;
     }
 }
 

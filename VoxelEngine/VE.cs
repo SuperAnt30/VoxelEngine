@@ -6,9 +6,13 @@
     public class VE
     {
         /// <summary>
+        /// Количество FPS (кадров в секунду)
+        /// </summary>
+        public static int FPS = 60;
+        /// <summary>
         /// Сколько чанков видим
         /// </summary>
-        public const int CHUNK_VISIBILITY = 4;
+        public static int CHUNK_VISIBILITY = 4;
         /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// Количество общее число по спирале

@@ -86,7 +86,7 @@ namespace VoxelEngine.World
         /// </summary>
         public void UpdateModePlayer()
         {
-            Entity.SetMode(VEC.GetInstance().Moving);
+            Entity.SetMode(VEC.Moving);
         }
 
         protected bool isTickStop = false;

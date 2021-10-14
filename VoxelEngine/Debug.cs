@@ -247,7 +247,7 @@ namespace VoxelEngine
                     posChunk, cam.ToPositionRegion(),
                     cam.AngleYaw(), cam.AnglePitch(), EnumFacing.FromAngle(cam.AngleYaw()),
                     chunk == null ? "-" : chunk.GetBiome(posBlock.x & 15, posBlock.z & 15).ToString(),
-                    Keyboard.GetInstance().PlCamera.StrDebug);
+                    Keyboard.GetInstance().KeyMove.PlCamera.StrDebug);
 
             string strCursor = string.Format(
                 "Cursor: {0}\r\n" +

@@ -5,12 +5,12 @@ using VoxelEngine.Util;
 using VoxelEngine.Actions;
 using VoxelEngine.Renderer.Chk;
 using VoxelEngine.Vxl;
-//using VoxelEngine.World.Blk;
 using VoxelEngine.Renderer;
 using VoxelEngine.Graphics;
 using VoxelEngine.Entity;
 using System.Diagnostics;
 using System.Threading;
+using System.Drawing;
 
 namespace VoxelEngine
 {
@@ -56,6 +56,18 @@ namespace VoxelEngine
         /// Таймер для фиксации времени одного кадра
         /// </summary>
         protected Stopwatch stopwatchFrame = new Stopwatch();
+        /// <summary>
+        /// Подготовка к закрытию
+        /// </summary>
+        protected bool isClosing = false;
+        /// <summary>
+        /// Потоки приостановленны для закрытия
+        /// </summary>
+        protected bool isClosed = false;
+        /// <summary>
+        /// Этап очистки, определяется по смене чанка, в этот момент глушится загрузка чанков
+        /// </summary>
+        protected bool isCleaning = false;
 
         public FormGame()
         {
@@ -65,7 +77,7 @@ namespace VoxelEngine
 
             counterFps.Tick += CounterFps_Tick;
 
-            threadFps.SetTps(60); // FPS
+            RefreshFps();
             threadFps.ThreadDone += ThreadFps_ThreadDone;
             threadFps.Stoped += Thread_Stoped;
         }
@@ -79,6 +91,7 @@ namespace VoxelEngine
         {
             WinApi.TimeBeginPeriod(1);
 
+            guiControl1.Visible = false;
             threadFps.Start();
             new Thread(threadFps.Run).Start();
         }
@@ -107,6 +120,12 @@ namespace VoxelEngine
             {
                 e.Cancel = true;
             }
+        }
+
+        private void FormGame_Deactivate(object sender, EventArgs e)
+        {
+            // Если форма приложения стала не активной, делаем курсор не в движке 3д
+            Mouse.GetInstance().Move(false);
         }
 
         #endregion
@@ -219,6 +238,20 @@ namespace VoxelEngine
             Debug.GetInstance().CountFrame += stopwatchFrame.ElapsedTicks;
         }
 
+
+        /// <summary>
+        /// Появился фокуса в 3д
+        /// </summary>
+        private void openGLControl1_Enter(object sender, EventArgs e)
+        {
+            if (guiControl1.Visible)
+            {
+                // Если фокус появился, а GUI активен, значит был клик по 3д
+                // Возращаем фркус на GUI
+                guiControl1.Focus();
+            }
+        }
+
         #endregion
 
         #region Mouse
@@ -228,7 +261,7 @@ namespace VoxelEngine
         /// </summary>
         private void openGLControl1_MouseMove(object sender, MouseEventArgs e)
         {
-            Mouse.GetInstance().Move(e.Location, Bounds, MousePosition);
+            if (!guiControl1.Visible) Mouse.GetInstance().Move(e.Location, Bounds, MousePosition);
         }
 
         /// <summary>
@@ -236,7 +269,7 @@ namespace VoxelEngine
         /// </summary>
         private void openGLControl1_Click(object sender, EventArgs e)
         {
-            Mouse.GetInstance().RunMove();
+            if (!guiControl1.Visible) Mouse.GetInstance().RunMove();
         }
 
         /// <summary>
@@ -244,7 +277,7 @@ namespace VoxelEngine
         /// </summary>
         private void openGLControl1_MouseDown(object sender, MouseEventArgs e)
         {
-            Mouse.GetInstance().Down(e);
+            if (!guiControl1.Visible) Mouse.GetInstance().Down(e);
         }
 
         #endregion
@@ -278,6 +311,11 @@ namespace VoxelEngine
                 World.ChunksClear();
                 Cam_PositionChunkChanged(sender, new EventArgs());
             }
+            else if (e.KeyCode == Keys.I)
+            {
+                Mouse.GetInstance().Move(false);
+                GuiOptions();
+            }
         }
 
         private void openGLControl1_KeyUp(object sender, KeyEventArgs e)
@@ -295,6 +333,32 @@ namespace VoxelEngine
 
         #endregion
 
+        #region GUI
+
+        private void guiControl1_VisibleChanged(object sender, EventArgs e)
+        {
+            if (!guiControl1.Visible)
+            {
+                openGLControl1.Focus();
+            }
+        }
+        /// <summary>
+        /// Активация GUI опций
+        /// </summary>
+        protected void GuiOptions() => guiControl1.OpenOptions();
+
+        #endregion
+
+        #region Разное
+
+        /// <summary>
+        /// Обновить фпс
+        /// </summary>
+        public void RefreshFps() => threadFps.SetTps(VE.FPS);
+        /// <summary>
+        /// Обновить угол обзора камеры
+        /// </summary>
+        public void RefreshFov() => OpenGLF.GetInstance().Cam.SetFov(glm.radians(70 + World.Entity.Moving.Sprinting.Moving * 10f));
         /// <summary>
         /// Тик счётчика
         /// </summary>
@@ -355,7 +419,7 @@ namespace VoxelEngine
         /// </summary>
         private void WorldLookAtChanged(object sender, EventArgs e)
         {
-            OpenGLF.GetInstance().Cam.SetFov(glm.radians(70 + World.Entity.Moving.Sprinting.Moving * 10f));
+            RefreshFov();
             OpenGLF.GetInstance().Cam.SetEyesWater(World.Entity.HitBox.Size.Eyes, World.Entity.HitBox.IsEyesWater);
         }
 
@@ -405,24 +469,6 @@ namespace VoxelEngine
             }
         }
 
-        //private void HitBox_Changed(object sender, EventArgs e)
-        //{
-        //    OpenGLF.GetInstance().WorldLineM.RenderChank("HitBoxPlayer", OpenGLF.GetInstance().Cam.HitBox.Buffer);
-        //}
-
-        /// <summary>
-        /// Подготовка к закрытию
-        /// </summary>
-        protected bool isClosing = false;
-        /// <summary>
-        /// Потоки приостановленны для закрытия
-        /// </summary>
-        protected bool isClosed = false;
-        /// <summary>
-        /// Этап очистки, определяется по смене чанка, в этот момент глушится загрузка чанков
-        /// </summary>
-        protected bool isCleaning = false;
-
         private void WorldRendered(object sender, EventArgs e)
         {
             if (InvokeRequired) Invoke(new EventHandler(WorldRendered), sender, e);
@@ -455,8 +501,6 @@ namespace VoxelEngine
             World.ChunckChanged = VE.CHUNK_RENDER_ALPHA;
             World.PackageRender();
         }
-
-        
 
         /// <summary>
         /// Событие изменение позиции камеры на другой чанк
@@ -495,7 +539,7 @@ namespace VoxelEngine
             counterTps.CalculateFrameRate();
 
             // Перемещение игрока
-            Keyboard.GetInstance().PlCamera.Tick();
+            Keyboard.GetInstance().KeyMove.PlCamera.Tick();
             // Счётик и свойства яркости неба и угла солнца
             VEC.GetInstance().Tick();
             // Атлас и дебаг
@@ -504,5 +548,7 @@ namespace VoxelEngine
             // В потоке все игровые события контролирует 50 мили секунд, для 20 TPS
             World.PackageTick();
         }
+
+        #endregion
     }
 }
