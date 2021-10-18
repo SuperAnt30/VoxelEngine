@@ -59,8 +59,6 @@ namespace VoxelEngine.World
         /// </summary>
         public AudioBase Audio { get; protected set; }
 
-        
-
         /// <summary>
         /// Таймер для фиксации времени c запуска приложения
         /// </summary>
@@ -201,43 +199,6 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
-        /// Получить группу если она есть
-        /// </summary>
-        //public GroupBase GetGroup(BlockBase block)
-        //{
-        //    if (block.IsGroupModel)
-        //    {
-        //        // Находим смещение координаты к контрольной точке
-        //        vec3i bias = block.GroupPropertiesBias242();
-        //        vec3i pos = block.Position.ToVec3i() - bias;
-        //        ChunkBase chunk = GetChunk(new BlockPos(pos));
-        //        if (chunk != null)
-        //        {
-        //            string key = pos.ToString();
-        //            if (chunk.GroupModel.Contains(key))
-        //            {
-        //                return chunk.GroupModel.Get(key);
-        //            }
-        //        }
-        //    }
-        //    return null;
-        //}
-        //public GroupBase GetGroup(BlockPos pos)
-        //{
-        //    // Находим смещение координаты к контрольной точке
-        //    ChunkBase chunk = GetChunk(pos);
-        //    if (chunk != null)
-        //    {
-        //        string key = pos.ToVec3i().ToString();
-        //        if (chunk.GroupModel.Contains(key))
-        //        {
-        //            return chunk.GroupModel.Get(key);
-        //        }
-        //    }
-        //    return null;
-        //}
-
-        /// <summary>
         /// Получить чанк с кэша//, если его там нет, то сгенерировать его
         /// </summary>
         public ChunkBase GetChunk(int x, int z)
@@ -255,48 +216,11 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
-        /// Загружен ли чанк, если нет тут же загружаем
-        /// </summary>
-        //public bool IsChunkLoaded(int x, int z)
-        //{
-        //    if (IsChunk(x, z)) return true;
-
-        //    var outer = Task.Factory.StartNew(() => { ChunkPr.LoadChunk(x, z); });
-        //    //ChunkPr.LoadChunk(x, z);
-        //    //Debag.GetInstance().CacheChunk = ChunkPr.Count();
-        //    outer.Wait();
-        //    return false;
-        //}
-
-        /// <summary>
         /// загружен ли чанк
         /// </summary>
         public bool IsChunk(int x, int z)
         {
             return ChunkPr.IsChunk(x, z);
-        }
-
-        /// <summary>
-        /// Загрузка области чанков 3*3
-        /// </summary>
-        public void AreaLoaded(vec2i pos)
-        {
-            int x0 = pos.x - 1;
-            int x1 = pos.x + 1;
-            int z0 = pos.y - 1;
-            int z1 = pos.y + 1;
-
-            for (int x = x0; x <= x1; x++)
-            {
-                for (int z = z0; z <= z1; z++)
-                {
-                    RegionPr.RegionSet(x, z);
-                    if (!IsChunk(x, z))
-                    {
-                        ChunkPr.LoadChunk(x, z);
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -322,14 +246,14 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
-        /// Проверка облости загрузки чанков
+        /// Проверка облости загрузки чанков 3*3
         /// </summary>
-        public bool IsArea(vec2i ch, int radius)
+        public bool IsArea(int chx, int chz)
         {
-            int x0 = ch.x - radius;
-            int x1 = ch.x + radius;
-            int z0 = ch.y - radius;
-            int z1 = ch.y + radius;
+            int x0 = chx - 1;
+            int x1 = chx + 1;
+            int z0 = chz - 1;
+            int z1 = chz + 1;
 
             for (int x = x0; x <= x1; x++)
             {
@@ -342,112 +266,12 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
-        /// TODO::#
-        /// Не используется
-        /// </summary>
-        //public BlockPos GetHorizon(BlockPos pos)
-        //{
-        //    int y = 0;
-
-        //    if (pos.X >= -30000000 && pos.Z >= -30000000 && pos.X < 30000000 && pos.Z < 30000000)
-        //    {
-        //        if (IsChunkLoaded(pos.X >> 4, pos.Z >> 4))
-        //        {
-        //            y = GetChunk(pos.X >> 4, pos.Z >> 4).GetHeight(pos.X & 15, pos.Z & 15);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        y = 64;
-        //    }
-
-        //    return new BlockPos(pos.X, y, pos.Z);
-        //}
-
-        ///// <summary>
-        ///// Получает наименьшую высоту участка, на который падает прямой солнечный свет.
-        ///// Не используется
-        ///// </summary>
-        //public int GetChunksLowestHorizon(int x, int z)
-        //{
-        //    if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000)
-        //    {
-        //        if (!IsChunkLoaded(x >> 4, z >> 4))
-        //        {
-        //            return GetChunk(x >> 4, z >> 4).GetLowestHeight();
-        //        }
-        //    }
-        //    return 64;
-        //}
-
-
-        /// <summary>
         /// Очистить кэш чанков
         /// TODO:: может вызвать ошибку изменения массива в цикле другого потока
         /// </summary>
         public void ChunksClear()
         {
             ChunkPr.Clear();
-        }
-
-        /// <summary>
-        /// Запуск  Удалить дальние чанки
-        /// </summary>
-        public void PackageCleaning()
-        {
-            Task.Factory.StartNew(() => { Cleaning(); });
-        }
-
-        /// <summary>
-        /// Удалить дальние чанки из массива кэша и регионы
-        /// </summary>
-        public void Cleaning()
-        {
-            vec2i positionCam = OpenGLF.GetInstance().Cam.ChunkPos;
-            List<vec2i> chunks = new List<vec2i>();
-            
-            // дальность чанков с учётом кэша
-            int visiblityCache = VE.CHUNK_VISIBILITY + 4;
-            int xMin = positionCam.x - visiblityCache;
-            int xMax = positionCam.x + visiblityCache;
-            int zMin = positionCam.y - visiblityCache;
-            int zMax = positionCam.y + visiblityCache;
-            // Собираем массив чанков которые уже не попадают в видимость
-            foreach (ChunkBase cr in ChunkPr.Values)
-            {
-                if (cr.X < xMin || cr.X > xMax || cr.Z < zMin || cr.Z > zMax)
-                {
-                    chunks.Add(new vec2i(cr.X, cr.Z));
-                }
-            }
-            // Удаляем
-            if (chunks.Count > 0)
-            {
-                foreach (vec2i key in chunks)
-                {
-                    ChunkPr.UnloadChunk(key.x, key.y);
-                }
-            }
-            Debug.GetInstance().CacheChunk = ChunkPr.Count();
-
-            List<vec2i> regions = new List<vec2i>();
-            foreach (RegionBinary rf in RegionPr.Values)
-            {
-                if (rf.X < xMin >> 5 || rf.X > xMax >> 5 || rf.Z < zMin >> 5 || rf.Z > zMax >> 5)
-                {
-                    regions.Add(new vec2i(rf.X, rf.Z));
-                }
-            }
-            // Удаляем
-            if (regions.Count > 0)
-            {
-                foreach (vec2i key in regions)
-                {
-                    RegionPr.RegionRemove(key.x, key.y);
-                }
-            }
-
-            OnCleaned();
         }
 
         /// <summary>
@@ -928,12 +752,14 @@ namespace VoxelEngine.World
                     if (steppedIndex == 1) norm.y = -stepy;
                     if (steppedIndex == 2) norm.z = -stepz;
 
-                    if (t < EntityDis.Distance)
+                    if (EntityDis != null)
                     {
-                        return new MovingObjectPosition(block, end, iend, norm);
+                        if (t < EntityDis.Distance)
+                        {
+                            return new MovingObjectPosition(block, end, iend, norm);
+                        }
+                        return new MovingObjectPosition(EntityDis.Entity);
                     }
-
-                    return new MovingObjectPosition(EntityDis.Entity);
                 }
                 if (txMax < tyMax)
                 {
@@ -1015,33 +841,20 @@ namespace VoxelEngine.World
             Debug.GetInstance().Entities = Entities.Count;
         }
 
-        
-
-
         #region  Event
 
-        protected void Entity_HitBoxLookAtChanged(object sender, EventArgs e)
-        {
-            OnLookAtChanged();
-        }
+        protected void Entity_HitBoxLookAtChanged(object sender, EventArgs e) => OnLookAtChanged();
+        private void Entity_HitBoxChanged(object sender, EntityEventArgs e) => OnHitBoxChanged(e);
+
         /// <summary>
         /// Событие изменена позиция камеры
         /// </summary>
         public event EventHandler LookAtChanged;
-
         /// <summary>
-        /// Изменена позиция камеры
+        /// Событие изменена позиция камеры
         /// </summary>
-        protected void OnLookAtChanged()
-        {
-            LookAtChanged?.Invoke(this, new EventArgs());
-        }
-
-        private void Entity_HitBoxChanged(object sender, EntityEventArgs e)
-        {
-            OnHitBoxChanged(e);
-        }
-
+        protected void OnLookAtChanged() => LookAtChanged?.Invoke(this, new EventArgs());
+        
         /// <summary>
         /// Событие изменён хитбокс сущьности
         /// </summary>
@@ -1049,43 +862,26 @@ namespace VoxelEngine.World
         /// <summary>
         /// Событие изменён хитбокс сущьности
         /// </summary>
-        protected void OnHitBoxChanged(EntityEventArgs e)
-        {
-            HitBoxChanged?.Invoke(this, e);
-        }
+        protected void OnHitBoxChanged(EntityEventArgs e) => HitBoxChanged?.Invoke(this, e);
 
         /// <summary>
         /// Событие изменен воксель
         /// </summary>
         public event VoxelEventHandler VoxelChanged;
-
         /// <summary>
-        /// изменен воксель
+        /// Событие изменен воксель
         /// </summary>
-        protected virtual void OnVoxelChanged(vec3i position, vec2i[] beside)
-        {
-            VoxelChanged?.Invoke(this, new VoxelEventArgs(position, beside));
-        }
-
-        /// <summary>
-        /// Событие законченной чистки
-        /// </summary>
-        public event EventHandler Cleaned;
-
-        protected void OnCleaned()
-        {
-            Cleaned?.Invoke(this, new EventArgs());
-        }
+        protected virtual void OnVoxelChanged(vec3i position, vec2i[] beside) 
+            => VoxelChanged?.Invoke(this, new VoxelEventArgs(position, beside));
 
         /// <summary>
         /// Событие законченна обработка тика
         /// </summary>
         public event EventHandler Ticked;
-
-        protected void OnTicked()
-        {
-            Ticked?.Invoke(this, new EventArgs());
-        }
+        /// <summary>
+        /// Событие законченна обработка тика
+        /// </summary>
+        protected void OnTicked() => Ticked?.Invoke(this, new EventArgs());
 
         #endregion
     }

@@ -47,6 +47,9 @@ namespace VoxelEngine.Renderer.Chk
             modifiedToRender = true;
         }
 
+        /// <summary>
+        /// Отрендерин чанк
+        /// </summary>
         public bool IsRender()
         {
             return !modifiedToRender;

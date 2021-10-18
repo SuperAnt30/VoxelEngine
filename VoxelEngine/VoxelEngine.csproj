@@ -39,18 +39,20 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>1</WarningLevel>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NVorbis, Version=0.10.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NVorbis.0.10.3\lib\net45\NVorbis.dll</HintPath>
+    <Reference Include="NVorbis, Version=0.10.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NVorbis.0.10.4\lib\net45\NVorbis.dll</HintPath>
     </Reference>
     <Reference Include="SharpGL, Version=3.1.1.0, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpGL.3.1.1\lib\net45\SharpGL.dll</HintPath>
@@ -163,6 +165,7 @@
     <Compile Include="Renderer\GuiDebug.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Util\AnimationHeir.cs" />
+    <Compile Include="Util\Bit.cs" />
     <Compile Include="Util\BlockPos.cs" />
     <Compile Include="Util\BufferHeir.cs" />
     <Compile Include="Util\CoordEvent.cs" />
@@ -239,6 +242,7 @@
     <Compile Include="World\Blk\EnumBlock.cs" />
     <Compile Include="World\Blk\Model\Box.cs" />
     <Compile Include="World\Blk\Model\Face.cs" />
+    <Compile Include="World\WorldCache.cs" />
     <Compile Include="World\WorldHeirSet.cs" />
     <Compile Include="World\WorldHeir.cs" />
     <Compile Include="World\Chk\ChunkBinary.cs" />

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using VoxelEngine.Util;
 
 namespace VoxelEngine.World.Chk
@@ -45,7 +46,7 @@ namespace VoxelEngine.World.Chk
             ChunkBase chunk = ProvideChunk(x, z);
             if (chunk.IsChunkLoaded)
             {
-                chunk.OnChunkUnload();
+                chunk.ChunkUnload();
             }
             chunkMapping.Remove(x, z);
         }
@@ -57,7 +58,7 @@ namespace VoxelEngine.World.Chk
         {
             ChunkBase chunk = new ChunkBase(world, x, z);
             chunkMapping.Set(chunk);
-            chunk.OnChunkLoad();
+            chunk.ChunkLoad();
             Debug.GetInstance().CacheChunk = Count();
             //return chunk;
         }
@@ -103,6 +104,11 @@ namespace VoxelEngine.World.Chk
         /// <summary>
         /// Вернуть коллекцию
         /// </summary>
-        public virtual ICollection Values { get { return chunkMapping.Values; } }
+        public ICollection Values { get { return chunkMapping.Values; } }
+
+        /// <summary>
+        /// Вернуть копию коллекции
+        /// </summary>
+        public Hashtable CloneHashtable() => chunkMapping.CloneHashtable();
     }
 }

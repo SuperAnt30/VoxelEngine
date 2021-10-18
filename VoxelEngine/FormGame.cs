@@ -56,18 +56,8 @@ namespace VoxelEngine
         /// Таймер для фиксации времени одного кадра
         /// </summary>
         protected Stopwatch stopwatchFrame = new Stopwatch();
-        /// <summary>
-        /// Подготовка к закрытию
-        /// </summary>
-        protected bool isClosing = false;
-        /// <summary>
-        /// Потоки приостановленны для закрытия
-        /// </summary>
-        protected bool isClosed = false;
-        /// <summary>
-        /// Этап очистки, определяется по смене чанка, в этот момент глушится загрузка чанков
-        /// </summary>
-        protected bool isCleaning = false;
+
+        protected bool testStop = false;
 
         public FormGame()
         {
@@ -110,16 +100,8 @@ namespace VoxelEngine
                 return;
             }
 
-            isClosing = true;
-            if (isClosed)
-            {
-                World.RegionPr.RegionsWrite();
-                WinApi.TimeEndPeriod(1);
-            }
-            else
-            {
-                e.Cancel = true;
-            }
+            World.RegionPr.RegionsWrite();
+            WinApi.TimeEndPeriod(1);
         }
 
         private void FormGame_Deactivate(object sender, EventArgs e)
@@ -177,11 +159,8 @@ namespace VoxelEngine
                 World.Entity.RotationYaw,
                 World.Entity.RotationPitch
             );
-            //OpenGLF.GetInstance().Cam.HitBox.HitBoxChanged += HitBox_Changed;
             World.Done += WorldRenderDone;
-            World.VoxelChanged += WorldVoxelChanged;
             World.Rendered += WorldRendered;
-            World.Cleaned += WorldCleaned;
             World.Ticked += WorldTicked;
             World.HitBoxChanged += WorldHitBoxChanged;
             World.LookAtChanged += WorldLookAtChanged;
@@ -192,9 +171,12 @@ namespace VoxelEngine
             Keyboard.GetInstance().SetWorld(World);
             Debug.GetInstance().SetWorld(World);
 
+            World.PackageLoadCache();
             World.PackageRender();
             Tick();
         }
+
+        
 
         private void OpenGLFRemoveChunkMeshChanged(object sender, CoordEventArgs e)
         {
@@ -316,6 +298,10 @@ namespace VoxelEngine
                 Mouse.GetInstance().Move(false);
                 GuiOptions();
             }
+            else if (e.KeyCode == Keys.Insert)
+            {
+                testStop = true;
+            }
         }
 
         private void openGLControl1_KeyUp(object sender, KeyEventArgs e)
@@ -407,14 +393,6 @@ namespace VoxelEngine
         }
 
         /// <summary>
-        /// Изменён воксель
-        /// </summary>
-        private void WorldVoxelChanged(object sender, VoxelEventArgs e)
-        {
-
-        }
-
-        /// <summary>
         /// Изменена камера обзора
         /// </summary>
         private void WorldLookAtChanged(object sender, EventArgs e)
@@ -471,35 +449,16 @@ namespace VoxelEngine
 
         private void WorldRendered(object sender, EventArgs e)
         {
-            if (InvokeRequired) Invoke(new EventHandler(WorldRendered), sender, e);
-            else
+            try
             {
-                if (isClosing)
-                {
-                    isClosed = true;
-                    Close();
-                }
+                if (InvokeRequired) Invoke(new EventHandler(WorldRendered), sender, e);
                 else
                 {
-                    if (isCleaning)
-                    {
-                        World.PackageCleaning();
-                    }
-                    else
-                    {
-                        World.PackageRender();
-                    }
                     counterRc.CalculateFrameRate(false);
                     counterRca.CalculateFrameRate(false);
                 }
             }
-        }
-
-        private void WorldCleaned(object sender, EventArgs e)
-        {
-            isCleaning = false;
-            World.ChunckChanged = VE.CHUNK_RENDER_ALPHA;
-            World.PackageRender();
+            catch { }
         }
 
         /// <summary>
@@ -513,15 +472,18 @@ namespace VoxelEngine
             }
             vec2i c = OpenGLF.GetInstance().Cam.ChunkPos;
             OpenGLF.GetInstance().WorldM.Cleaning(c);
-            isCleaning = true;
+            World.CleaningTrue();
             ChunkRender chunk = World.GetChunkRender(c.x, c.y);
             Debug.GetInstance().ChunkAlpheBlock = chunk == null
                 ? 0 : chunk.CountBlockAlpha();
         }
 
+        /// <summary>
+        /// Изменена позиция блока
+        /// </summary>
         private void Cam_PositionBlockChanged(object sender, EventArgs e)
         {
-            World.ChunckChanged = VE.CHUNK_RENDER_ALPHA_BLOCK;
+            World.ChunkRenderAlphaBlock();
         }
 
         /// <summary>

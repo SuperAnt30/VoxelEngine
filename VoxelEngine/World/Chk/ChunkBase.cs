@@ -265,7 +265,7 @@ namespace VoxelEngine.World.Chk
                 Generation();
                 //GenerateHeightMap();
                 // TODO::TEST
-                GenerateSkylightMap();
+                //GenerateSkylightMap();
                 //StartRecheckGaps(); 
                 //func_177441_y();
                 // и сразу же записываем
@@ -277,7 +277,7 @@ namespace VoxelEngine.World.Chk
         /// <summary>
         /// Загружен чанк
         /// </summary>
-        public void OnChunkLoad()
+        public void ChunkLoad()
         {
             IsChunkLoaded = LoadinData();
             
@@ -301,7 +301,7 @@ namespace VoxelEngine.World.Chk
         /// <summary>
         /// Выгружаем чанк
         /// </summary>
-        public void OnChunkUnload()
+        public void ChunkUnload()
         {
             IsChunkLoaded = false;
             Save();
@@ -366,6 +366,7 @@ namespace VoxelEngine.World.Chk
         {
             ChunkGenerate chunkGenerate = new ChunkGenerate(this);
             chunkGenerate.Generation();
+            //SetChunkModified();
             GeterationStatus = EnumGeterationStatus.Chunk;
         }
 
@@ -374,12 +375,13 @@ namespace VoxelEngine.World.Chk
         /// </summary>
         public void GenerationArea()
         {
-            // Генерация деревьев
             ChunkGenerate chunkGenerate = new ChunkGenerate(this);
-            chunkGenerate.GenerationArea();
+            // Генерация деревьев
+            chunkGenerate.GenerationArea(); // долгий процесс
 
+            //chunkGenerate.Chunk.GenerateHeightMap(); // вместо освещения
             // Проверка освещения
-            StartRecheckGaps(true);
+            StartRecheckGaps(true); // очень долгий процесс
 
             GeterationStatus = EnumGeterationStatus.Area;
             SetChunkModified();
@@ -723,8 +725,6 @@ namespace VoxelEngine.World.Chk
         {
             return Blocks.GetBlockLightOpacity(GetVoxel(x, y, z).GetEBlock());
         }
-
-
 
         /// <summary>
         /// Создает карту высот для блока с нуля

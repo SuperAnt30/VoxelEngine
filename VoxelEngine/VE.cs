@@ -8,11 +8,11 @@
         /// <summary>
         /// Количество FPS (кадров в секунду)
         /// </summary>
-        public static int FPS = 60;
+        public static int FPS = 60; 
         /// <summary>
         /// Сколько чанков видим
         /// </summary>
-        public static int CHUNK_VISIBILITY = 4;
+        public static int CHUNK_VISIBILITY = 16;
         /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// Количество общее число по спирале

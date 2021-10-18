@@ -13,13 +13,8 @@ using VoxelEngine.Util;
 
 namespace VoxelEngine.Renderer
 { 
-    public class WorldRender : WorldBase
+    public class WorldRender : WorldCache
     {
-        /// <summary>
-        /// Изменён чанк, для перегенерации альфа цвета
-        /// </summary>
-        public int ChunckChanged { get; set; } = -1;
-
         /// <summary>
         /// Позиция камеры
         /// </summary>
@@ -30,6 +25,11 @@ namespace VoxelEngine.Renderer
         public vec3 CameraDirection { get; protected set; }
 
         /// <summary>
+        /// Изменён чанк, для перегенерации альфа цвета
+        /// </summary>
+        protected int chunkChanged = -1;
+
+        /// <summary>
         /// Запуск рендер паета
         /// </summary>
         public void PackageRender()
@@ -38,14 +38,15 @@ namespace VoxelEngine.Renderer
         }
 
         /// <summary>
-        /// Пометить что надо перерендерить сетку чанка
-        /// координаты чанка
+        /// Рендер чанка для альфа блока
         /// </summary>
-        public void ModifiedToRenderChunk(vec2i pos)
-        {
-            ChunkRender chunk = GetChunkRender(pos.x, pos.y);
-            if (chunk != null) chunk.ModifiedToRender();
-        }
+        public void ChunkRenderAlphaBlock() => chunkChanged = VE.CHUNK_RENDER_ALPHA_BLOCK;
+
+        /// <summary>
+        /// Рендер чанка для альфа
+        /// </summary>
+        protected override void ChunkRenderAlpha() => chunkChanged = VE.CHUNK_RENDER_ALPHA;
+
 
         /// <summary>
         /// Получить чанк рендера по координатам чанка
@@ -75,55 +76,78 @@ namespace VoxelEngine.Renderer
             Camera cam = OpenGLF.GetInstance().Cam;
             vec2i chunkPos = Entity.HitBox.ChunkPos;
 
-            // Получить массив сектора
-            //ChunkLoading[] chunkLoading = VES.GetInstance().DistSqrtYaw(OpenGLF.GetInstance().Cam.Yaw);
-
+            // Получить массив FrustumCulling
             ChunkLoading[] chunkLoading = cam.ChunkLoadingFC;
             
-            // собираем новые, и удаляем в старье если они есть
+            // собираем новые
             for (int i = 0; i < chunkLoading.Length; i++)
             {
-                int x = chunkLoading[i].X;// + chunkPos.x;
-                int z = chunkLoading[i].Z;// + chunkPos.y;
+                int x = chunkLoading[i].X;
+                int z = chunkLoading[i].Z;
 
-                // Загрузка облости в отдельных потоках
-                AreaLoaded(new vec2i(x, z));
-
-                // Проверка облости на один чанк в округе, для рендера чанка
-                // кэш соседних чанков обязателен!
-                if (IsArea(new vec2i(x, z), 1))
+                // быстрее, за счёт игнорирования IsArea
+                if (IsChunk(x, z))
                 {
                     ChunkRender cr = GetChunkRender(x, z);
                     if (cr.Chunk.GeterationStatus != Gen.EnumGeterationStatus.Area)
                     {
                         // Если у генерации чанка не было 
-                        cr.Chunk.GenerationArea();
+                        if (IsArea(x, z)) cr.Chunk.GenerationArea();
                     }
                     if (!cr.IsRender())
                     {
                         // Рендер чанка, если норм то выходим с массива
-                        if (ChunkRender(cr, false)) break;
+                        if (IsArea(x, z)) if (ChunkRender(cr, false)) break;
                     }
-                    else if (i <= ChunckChanged)
+                    else if (i <= chunkChanged)
                     {
                         // Рендер алфа блоков, без выхода с цикла
-                        ChunkRender(cr, true);
-                        if (ChunckChanged == i)
+                        if (IsArea(x, z))
                         {
-                            ChunckChanged = -1;
+                            ChunkRender(cr, true);
+                            if (chunkChanged == i) chunkChanged = -1;
                         }
                     }
                 }
-                else
-                {
-                    // Если облости не готовы, нет смысла расматривать дальнейшие чанки
-                    // скорее всего просто была подгрузка кэш чанков
-                    break;
-                }
+
+                // медленно
+
+                // Проверка облости на один чанк в округе, для рендера чанка
+                // кэш соседних чанков обязателен!
+                //if (IsArea(new vec2i(x, z), 1))
+                //{
+                //    ChunkRender cr = GetChunkRender(x, z);
+                //    if (cr.Chunk.GeterationStatus != Gen.EnumGeterationStatus.Area)
+                //    {
+                //        // Если у генерации чанка не было 
+                //        cr.Chunk.GenerationArea();
+                //    }
+                //    if (!cr.IsRender())
+                //    {
+                //        // Рендер чанка, если норм то выходим с массива
+                //        if (ChunkRender(cr, false)) break;
+                //    }
+                //    else if (i <= chunkChanged)
+                //    {
+                //        // Рендер алфа блоков, без выхода с цикла
+                //        ChunkRender(cr, true);
+                //        if (chunkChanged == i)
+                //        {
+                //            chunkChanged = -1;
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    // Если облости не готовы, нет смысла расматривать дальнейшие чанки
+                //    // скорее всего просто была подгрузка кэш чанков
+                //   // break;
+                //}
             }
             // ЭТОТ СЛИП чтоб не подвисал проц. И для перехода других потоков.
             System.Threading.Thread.Sleep(1); 
             OnRendered();
+            PackageRender();
         }
 
         /// <summary>
@@ -215,7 +239,6 @@ namespace VoxelEngine.Renderer
             });
         }
 
-
         public override void RemoveEntity(EntityLiving entity)
         {
             base.RemoveEntity(entity);
@@ -275,20 +298,16 @@ namespace VoxelEngine.Renderer
         /// <summary>
         /// Событие чанк сделано
         /// </summary>
-        protected void OnDone(BufferEventArgs e)
-        {
-            Done?.Invoke(this, e);
-        }
+        protected void OnDone(BufferEventArgs e) => Done?.Invoke(this, e);
 
         /// <summary>
         /// Событие сделанного ренер пакета
         /// </summary>
         public event EventHandler Rendered;
-
-        protected void OnRendered()
-        {
-            Rendered?.Invoke(this, new EventArgs());
-        }
+        /// <summary>
+        /// Событие сделанного ренер пакета
+        /// </summary>
+        protected void OnRendered() => Rendered?.Invoke(this, new EventArgs());
 
         #endregion
     }

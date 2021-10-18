@@ -99,8 +99,9 @@ namespace VoxelEngine.Util
         public virtual ICollection Values { get { return _ht.Values; } }
 
         /// <summary>
-        /// Вернуть коллекцию ключей
+        /// Вернуть копию коллекции
         /// </summary>
-        //public virtual ICollection Keys { get { return _ht.Keys; } }
+        public Hashtable CloneHashtable() => _ht.Clone() as Hashtable;
+
     }
 }

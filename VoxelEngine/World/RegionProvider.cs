@@ -72,7 +72,8 @@ namespace VoxelEngine.World
         {
             if (canSave)
             {
-                foreach (ChunkBase chunk in World.ChunkPr.Values)
+                Hashtable hashtable = World.ChunkPr.CloneHashtable();
+                foreach (ChunkBase chunk in hashtable.Values)
                 {
                     chunk.Save();
                 }

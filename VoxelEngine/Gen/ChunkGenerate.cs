@@ -41,6 +41,8 @@ namespace VoxelEngine.Gen
         public void Generation()
         {
             Map();
+            //Chunk.GenerateHeightMap();
+            
             //ReliefHeight();
             //biomeBase.Cave();
             //GenerationOld();
