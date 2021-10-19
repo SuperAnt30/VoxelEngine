@@ -29,7 +29,10 @@ namespace VoxelEngine.Gui
         /// Открыть окно настроек
         /// </summary>
         public void OpenOptions() => WindowOpen(new OptionsControl(FGame));
-
+        /// <summary>
+        /// Открыть инвентарь
+        /// </summary>
+        public void OpenInventory() => WindowOpen(new InventoryControl(FGame));
 
         #endregion
 

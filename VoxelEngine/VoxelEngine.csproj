@@ -148,6 +148,12 @@
     <Compile Include="Gui\GuiControl.Designer.cs">
       <DependentUpon>GuiControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Gui\InventoryControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Gui\InventoryControl.Designer.cs">
+      <DependentUpon>InventoryControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Gui\OptionsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -165,6 +171,7 @@
     <Compile Include="Renderer\GuiDebug.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Util\AnimationHeir.cs" />
+    <Compile Include="Util\ArrayVec2i.cs" />
     <Compile Include="Util\Bit.cs" />
     <Compile Include="Util\BlockPos.cs" />
     <Compile Include="Util\BufferHeir.cs" />
@@ -313,6 +320,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Gui\GuiControl.resx">
       <DependentUpon>GuiControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gui\InventoryControl.resx">
+      <DependentUpon>InventoryControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Gui\OptionsControl.resx">
       <DependentUpon>OptionsControl.cs</DependentUpon>

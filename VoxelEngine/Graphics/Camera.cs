@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
 using VoxelEngine.World.Chk;
@@ -91,6 +89,15 @@ namespace VoxelEngine.Graphics
         /// Объект Frustum Culling
         /// </summary>
         protected Frustum frustum = new Frustum();
+
+        /// <summary>
+        /// Массив чанков которые попадают под FrustumCulling для рендера
+        /// </summary>
+        public vec2i[] ChunkLoadingFC { get; protected set; } = new vec2i[0];
+        /// <summary>
+        /// Массив регионов которые попадают под FrustumCulling для рендера
+        /// </summary>
+        public vec2i[] RegionLoadingFC { get; protected set; } = new vec2i[0];
 
         public Camera(vec3 position, float fov)
         {
@@ -319,6 +326,9 @@ namespace VoxelEngine.Graphics
             return new vec3i(pos);
         }
 
+
+        #region Frustum Culling
+
         /// <summary>
         /// Возвращает true, если прямоугольник находится внутри всех 6 плоскостей отсечения,
         /// в противном случае возвращает false.
@@ -336,32 +346,18 @@ namespace VoxelEngine.Graphics
                 p.x + hitBox.Size.Width, p.y + hitBox.Size.Heigth, p.z + hitBox.Size.Width);
         }
 
-        /// <summary>
-        /// Ключи чанков которые попадают под FrustumCulling для сетки
-        /// </summary>
-        public Hashtable ChunksFC { get; protected set; } = new Hashtable();
-        /// <summary>
-        /// Индексы сущьностей которые попадают под FrustumCulling для сетки
-        /// </summary>
-       // public Hashtable EntitiesFC { get; protected set; } = new Hashtable();
-        /// <summary>
-        /// Массив чанков которые попадают под FrustumCulling для рендера
-        /// </summary>
-        public ChunkLoading[] ChunkLoadingFC { get; protected set; } = new ChunkLoading[0];
-
         protected void InitFrustumCulling()
         {
             if (LookAt == null || Projection == null) return;
 
-            //float[] proj = glm.perspective(glm.radians(25), Width / Height, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f).to_array();
-            //frustum.Init(LookAt, proj);
+            //frustum.Init(LookAt, glm.perspective(glm.radians(25), Width / Height, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f).to_array());
             frustum.Init(LookAt, Projection);
 
             int countAll = 0;
             int countFC = 0;
-            List<ChunkLoading> list = new List<ChunkLoading>();
             ChunkLoading[] distSqrt = VES.GetInstance().DistSqrt;
-            Hashtable ht = new Hashtable();
+            ArrayVec2i listC = new ArrayVec2i();
+            ArrayVec2i listR = new ArrayVec2i();
             for (int i = 0; i < distSqrt.Length; i++)
             {
                 int xc = distSqrt[i].X + ChunkPos.x;
@@ -372,19 +368,38 @@ namespace VoxelEngine.Graphics
                 if (IsBoxInFrustum(xb, 0, zb, xb + 15, 255, zb + 15))
                 {
                     countFC++;
-                    vec2i v = new vec2i(xc, zc);
-                    ht.Add(v.ToString(), v);
-                    list.Add(new ChunkLoading(xc, zc, distSqrt[i].Distance));
+                    // чанки
+                    listC.Add(xc, zc);
+                    // Регион
+                    listR.AddCheck(xc >> 5, zc >> 5);
                 }
                 countAll++;
             }
 
-            ChunkLoadingFC = list.ToArray();
-            ChunksFC = ht;
-            //Debug.GetInstance().BB = string.Format(
-            //    "All:{0} FC:{1}", countAll, countFC
-            //    );
+            // блок для добавления крайних чанков
+            vec2i[] list = listC.ToArray();
+            foreach (vec2i fc in list)
+            {
+                vec2i[] key = new vec2i[]
+                {
+                    new vec2i(fc.x - 1, fc.y),
+                    new vec2i(fc.x + 1, fc.y),
+                    new vec2i(fc.x, fc.y - 1),
+                    new vec2i(fc.x, fc.y + 1)
+                };
+
+                foreach(vec2i k in key)
+                {
+                    listC.AddCheck(k);
+                }
+            }
+
+            RegionLoadingFC = listR.ToArray();
+            ChunkLoadingFC = listC.ToArray();
+            //Debug.GetInstance().BB = string.Format("All:{0} FC:{1}", countAll, countFC);
         }
+
+        #endregion
 
         #region Event
 

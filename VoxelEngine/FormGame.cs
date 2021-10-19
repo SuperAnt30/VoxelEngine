@@ -29,6 +29,10 @@ namespace VoxelEngine
         /// </summary>
         private CounterTick counterTps = new CounterTick();
         /// <summary>
+        /// Счётчик Load чанков
+        /// </summary>
+        private CounterTick counterLc = new CounterTick();
+        /// <summary>
         /// Счётчик Рендер чанков
         /// </summary>
         private CounterTick counterRc = new CounterTick();
@@ -164,6 +168,8 @@ namespace VoxelEngine
             World.Ticked += WorldTicked;
             World.HitBoxChanged += WorldHitBoxChanged;
             World.LookAtChanged += WorldLookAtChanged;
+            World.LoadCache += WorldLoadCache;
+            World.NotLoadCache += WorldNotLoadCache;
 
             Keyboard.GetInstance().MoveChanged += FormGame_MoveChanged;
             Mouse.GetInstance().MoveChanged += FormGame_MoveChanged;
@@ -171,12 +177,17 @@ namespace VoxelEngine
             Keyboard.GetInstance().SetWorld(World);
             Debug.GetInstance().SetWorld(World);
 
-            World.PackageLoadCache();
-            World.PackageRender();
             Tick();
+            World.RunPackings();
         }
 
-        
+        private void WorldNotLoadCache(object sender, EventArgs e)
+        {
+            counterLc.CalculateFrameRate(false);
+            //World.PackageRender();
+        }
+
+        private void WorldLoadCache(object sender, EventArgs e) => counterLc.CalculateFrameRate();
 
         private void OpenGLFRemoveChunkMeshChanged(object sender, CoordEventArgs e)
         {
@@ -293,8 +304,15 @@ namespace VoxelEngine
                 World.ChunksClear();
                 Cam_PositionChunkChanged(sender, new EventArgs());
             }
+            else if (e.KeyCode == Keys.E)
+            {
+                // Инвентарь
+                Mouse.GetInstance().Move(false);
+                GuiInventory();
+            }
             else if (e.KeyCode == Keys.I)
             {
+                // Опции
                 Mouse.GetInstance().Move(false);
                 GuiOptions();
             }
@@ -332,6 +350,10 @@ namespace VoxelEngine
         /// Активация GUI опций
         /// </summary>
         protected void GuiOptions() => guiControl1.OpenOptions();
+        /// <summary>
+        /// Активация GUI инвентарь
+        /// </summary>
+        protected void GuiInventory() => guiControl1.OpenInventory();
 
         #endregion
 
@@ -353,6 +375,7 @@ namespace VoxelEngine
             Debug d = Debug.GetInstance();
             d.Fps = counterFps.CountTick;
             d.Tps = counterTps.CountTick;
+            d.Lc = counterLc.CountTick;
             d.Rc = counterRc.CountTick;
             d.Rca = counterRca.CountTick;
             d.SpeedFrame = d.Fps == 0 ? 0 : d.CountFrame / ((float)d.Fps * System.Diagnostics.Stopwatch.Frequency / 1000f);

@@ -26,19 +26,15 @@ namespace VoxelEngine.World
         /// <summary>
         /// Добавить регион файл и вернуть его ключ
         /// </summary>
-        public vec2i RegionSet(int chunkX, int chunkZ)
+        public void RegionSet(int x, int z)
         {
-            int x = chunkX >> 5;
-            int z = chunkZ >> 5;
-
             if (!regionMapping.Contains(x, z))
             {
-                RegionBinary region = new RegionBinary(chunkX, chunkZ);
+                RegionBinary region = new RegionBinary(x, z);
                 region.ReadFile();
                 regionMapping.Set(region);
                 Debug();
             }
-            return new vec2i(x, z);
         }
 
         /// <summary>

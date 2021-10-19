@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
+using VoxelEngine.Util;
 using VoxelEngine.World.Chk;
 
 namespace VoxelEngine.World
@@ -15,40 +17,43 @@ namespace VoxelEngine.World
         /// <summary>
         /// Переключится на этап очистки чанков
         /// </summary>
-        protected bool isCleaning = false;
+        protected bool isCleaningChunk = false;
+        /// <summary>
+        /// Переключится на этап очистки чанков
+        /// </summary>
+        protected bool isCleaningRegion = false;
 
         /// <summary>
         /// Загрузка области чанков 3*3
         /// true - вся загружена
         /// false - не вся
         /// </summary>
-        public bool AreaLoadingChunk(vec2i pos)
-        {
-            int x0 = pos.x - 1;
-            int x1 = pos.x + 1;
-            int z0 = pos.y - 1;
-            int z1 = pos.y + 1;
+        //public bool AreaLoadingChunk(int cx, int cz)
+        //{
+        //    int x0 = cx - 1;
+        //    int x1 = cx + 1;
+        //    int z0 = cz - 1;
+        //    int z1 = cz + 1;
 
-            for (int x = x0; x <= x1; x++)
-            {
-                for (int z = z0; z <= z1; z++)
-                {
-                    if (!LoadingChunk(x, z)) return false;
-                }
-            }
-            return true;
-        }
+        //    for (int x = x0; x <= x1; x++)
+        //    {
+        //        for (int z = z0; z <= z1; z++)
+        //        {
+        //            if (x == cx && z == cz) continue;
+        //            if (!LoadingChunk(x, z)) return false;
+        //        }
+        //    }
+        //    return true;
+        //}
 
         /// <summary>
         /// Загрузка чанка
         /// true - загружен
         /// false - не вся
         /// </summary>
-        public bool LoadingChunk(int x, int z)
+        protected bool LoadingChunk(int x, int z)
         {
             if (IsChunk(x, z)) return true;
-            // Если не загружен загружаем и выходим
-            RegionPr.RegionSet(x, z);
             ChunkPr.LoadChunk(x, z);
             return false;
         }
@@ -56,45 +61,101 @@ namespace VoxelEngine.World
         /// <summary>
         /// Запуск рендер паета
         /// </summary>
-        public void PackageLoadCache()
+        protected void PackageLoadChunkCache()
         {
-            if (isCleaning)
+            PackageLoadChunkCache(true, true);
+            PackageLoadChunkCache(true, false);
+            PackageLoadChunkCache(false, true);
+            PackageLoadChunkCache(false, false);
+        }
+
+        /// <summary>
+        /// Запуск рендер паета
+        /// </summary>
+        protected void PackageLoadChunkCache(bool isEvenX, bool isEvenZ)
+        {
+            if (isCleaningChunk)
             {
-                Task.Factory.StartNew(() => { Cleaning(); });
+                Task.Factory.StartNew(() => { CleaningChunk(isEvenX, isEvenZ); });
             }
             else
             {
-                Task.Factory.StartNew(() => { LoadingChunkCache(); });
+                Task.Factory.StartNew(() => { LoadingChunkCache(isEvenX, isEvenZ); });
             }
         }
 
         /// <summary>
         /// Запуск генерации меша
         /// </summary>
-        protected void LoadingChunkCache()
+        protected void LoadingChunkCache(bool isEvenX, bool isEvenZ)
         {
-            ChunkLoading[] chunkLoading = OpenGLF.GetInstance().Cam.ChunkLoadingFC;
+            vec2i[] chunkLoading = OpenGLF.GetInstance().Cam.ChunkLoadingFC;
 
             // собираем новые, и удаляем в старье если они есть
-            for (int i = 0; i < chunkLoading.Length; i++)
+            int i = 0;
+            for (i = 0; i < chunkLoading.Length; i++)
             {
-                int x = chunkLoading[i].X;
-                int z = chunkLoading[i].Z;
+                int x = chunkLoading[i].x;
+                if (Bit.IsEven(x) != isEvenX) continue;
+                int z = chunkLoading[i].y;
+                if (Bit.IsEven(z) != isEvenZ) continue;
+
                 if (!LoadingChunk(x, z)) break; // быстро но без крайних чанков
-                //if (!AreaLoadingChunk(new vec2i(x, z))) break; // медленно
+                //if (!AreaLoadingChunk(x, z)) break; // медленно
             }
             // ЭТОТ СЛИП чтоб не подвисал проц. И для перехода других потоков.
             System.Threading.Thread.Sleep(1);
-            OnLoadCache();
-            PackageLoadCache();
+            if (i >= chunkLoading.Length - 1) OnNotLoadCache();
+            else OnLoadCache();
+            PackageLoadChunkCache(isEvenX, isEvenZ);
         }
+
+        #region Region
+
+        /// <summary>
+        /// Запуск пакета загрузки регионов
+        /// </summary>
+        protected void PackageLoadRegionCache()
+        {
+            if (isCleaningRegion)
+            {
+                Task.Factory.StartNew(() => { CleaningRegion(); });
+            }
+            else
+            {
+                Task.Factory.StartNew(() => { LoadingRegionCache(); });
+            }
+        }
+
+        /// <summary>
+        /// Загрузка регионов мира
+        /// </summary>
+        protected void LoadingRegionCache()
+        {
+            vec2i[] regionFC = OpenGLF.GetInstance().Cam.RegionLoadingFC;
+            for (int i = 0; i < regionFC.Length; i++)
+            {
+                int x = regionFC[i].x;
+                int z = regionFC[i].y;
+                RegionPr.RegionSet(x, z);
+            }
+            // ЭТОТ СЛИП чтоб не подвисал проц. И для перехода других потоков.
+            System.Threading.Thread.Sleep(1);
+            PackageLoadRegionCache();
+        }
+
+        #endregion
 
         #region Clean
 
         /// <summary>
         /// Запуск этапа чистки
         /// </summary>
-        public void CleaningTrue() => isCleaning = true;
+        public void CleaningTrue()
+        {
+            isCleaningChunk = true;
+            isCleaningRegion = true;
+        }
 
         /// <summary>
         /// Рендер чанка для альфа
@@ -104,7 +165,7 @@ namespace VoxelEngine.World
         /// <summary>
         /// Удалить дальние чанки из массива кэша и регионы
         /// </summary>
-        public void Cleaning()
+        protected void CleaningChunk(bool isEvenX, bool isEvenZ)
         {
             vec2i positionCam = OpenGLF.GetInstance().Cam.ChunkPos;
             List<vec2i> chunks = new List<vec2i>();
@@ -116,8 +177,12 @@ namespace VoxelEngine.World
             int zMin = positionCam.y - visiblityCache;
             int zMax = positionCam.y + visiblityCache;
             // Собираем массив чанков которые уже не попадают в видимость
-            foreach (ChunkBase cr in ChunkPr.Values)
+            Hashtable ht = ChunkPr.CloneHashtable();
+            foreach (ChunkBase cr in ht.Values)
             {
+                if (Bit.IsEven(cr.X) != isEvenX) continue;
+                if (Bit.IsEven(cr.Z) != isEvenZ) continue;
+
                 if (cr.X < xMin || cr.X > xMax || cr.Z < zMin || cr.Z > zMax)
                 {
                     chunks.Add(new vec2i(cr.X, cr.Z));
@@ -132,11 +197,30 @@ namespace VoxelEngine.World
                 }
             }
             Debug.GetInstance().CacheChunk = ChunkPr.Count();
+            
+            // Закончена чистка
+            isCleaningChunk = false;
+            ChunkRenderAlpha();
+            LoadingChunkCache(isEvenX, isEvenZ);
+        }
+
+        /// <summary>
+        /// Удалить дальние регионы из массива кэша
+        /// </summary>
+        protected void CleaningRegion()
+        {
+            vec2i positionCam = OpenGLF.GetInstance().Cam.ChunkPos;
+            // дальность чанков с учётом кэша
+            int visiblityCache = VE.CHUNK_VISIBILITY + 4;
+            int xMin = (positionCam.x - visiblityCache) >> 5;
+            int xMax = (positionCam.x + visiblityCache) >> 5;
+            int zMin = (positionCam.y - visiblityCache) >> 5;
+            int zMax = (positionCam.y + visiblityCache) >> 5;
 
             List<vec2i> regions = new List<vec2i>();
             foreach (RegionBinary rf in RegionPr.Values)
             {
-                if (rf.X < xMin >> 5 || rf.X > xMax >> 5 || rf.Z < zMin >> 5 || rf.Z > zMax >> 5)
+                if (rf.X < xMin || rf.X > xMax || rf.Z < zMin || rf.Z > zMax)
                 {
                     regions.Add(new vec2i(rf.X, rf.Z));
                 }
@@ -151,9 +235,8 @@ namespace VoxelEngine.World
             }
 
             // Закончена чистка
-            isCleaning = false;
-            ChunkRenderAlpha();
-            LoadingChunkCache();
+            isCleaningRegion = false;
+            LoadingRegionCache();
         }
 
         #endregion
@@ -168,6 +251,14 @@ namespace VoxelEngine.World
         /// Событие сделанного кэш пакета
         /// </summary>
         protected void OnLoadCache() => LoadCache?.Invoke(this, new EventArgs());
+        /// <summary>
+        /// Событие нет загрузки сделанного кэш пакета
+        /// </summary>
+        public event EventHandler NotLoadCache;
+        /// <summary>
+        /// Событие нет загрузки сделанного кэш пакета
+        /// </summary>
+        protected void OnNotLoadCache() => NotLoadCache?.Invoke(this, new EventArgs());
 
         #endregion
     }

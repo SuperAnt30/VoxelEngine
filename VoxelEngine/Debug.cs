@@ -69,6 +69,10 @@ namespace VoxelEngine
         /// </summary>
         public int Tps { get; set; } = 0;
         /// <summary>
+        /// Загрузка чанков в секунду
+        /// </summary>
+        public int Lc { get; set; } = 0;
+        /// <summary>
         /// Рендер чанков в секунду
         /// </summary>
         public int Rc { get; set; } = 0;
@@ -257,10 +261,10 @@ namespace VoxelEngine
             );
 
             string strChunck = string.Format(
-                "Chunk LT: {0} Ah: {1} Rc: {2} Rca: {3}",
+                "Chunk LT: {0} Ah: {1} Lc: {4} Rc: {2} Rca: {3}",
                 ChunkLiquidTicks,
                 ChunkAlpheBlock,
-                Rc, Rca
+                Rc, Rca, Lc
             );
 
             string strMeshMem = string.Format(

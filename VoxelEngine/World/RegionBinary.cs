@@ -22,10 +22,10 @@ namespace VoxelEngine.World
         /// </summary>
         protected RegionBin buffer = new RegionBin();
 
-        public RegionBinary(int chunkX, int chunkZ)
+        public RegionBinary(int rx, int rz)
         {
-            X = chunkX >> 5;
-            Z = chunkZ >> 5;
+            X = rx;
+            Z = rz;
             Path = path + "/r" + X.ToString() + "_" + Z.ToString() + ".dat";
             buffer.Chunks = new byte[32, 32][];
 

@@ -30,11 +30,32 @@ namespace VoxelEngine.Renderer
         protected int chunkChanged = -1;
 
         /// <summary>
+        /// Запуск пакетных оброботчиков для мира
+        /// в разных потоках
+        /// </summary>
+        public void RunPackings()
+        {
+            PackageLoadRegionCache();
+            PackageLoadChunkCache();
+            PackageRender();
+        }
+
+        /// <summary>
         /// Запуск рендер паета
         /// </summary>
-        public void PackageRender()
+        protected void PackageRender()
         {
-            Task.Factory.StartNew(() => { Render(); });
+            Task.Factory.StartNew(() => { Render(true, true); });
+            Task.Factory.StartNew(() => { Render(false, true); });
+            Task.Factory.StartNew(() => { Render(true, false); });
+            Task.Factory.StartNew(() => { Render(false, false); });
+        }
+        /// <summary>
+        /// Запуск рендер паета
+        /// </summary>
+        protected void PackageRender(bool isEvenX, bool isEvenZ)
+        {
+            Task.Factory.StartNew(() => { Render(isEvenX, isEvenZ); });
         }
 
         /// <summary>
@@ -71,19 +92,21 @@ namespace VoxelEngine.Renderer
         /// <summary>
         /// Запуск генерации меша
         /// </summary>
-        protected void Render()
+        protected void Render(bool isEvenX, bool isEvenZ)
         {
             Camera cam = OpenGLF.GetInstance().Cam;
             vec2i chunkPos = Entity.HitBox.ChunkPos;
 
             // Получить массив FrustumCulling
-            ChunkLoading[] chunkLoading = cam.ChunkLoadingFC;
+            vec2i[] chunkFC = cam.ChunkLoadingFC;
             
             // собираем новые
-            for (int i = 0; i < chunkLoading.Length; i++)
+            for (int i = 0; i < chunkFC.Length; i++)
             {
-                int x = chunkLoading[i].X;
-                int z = chunkLoading[i].Z;
+                int x = chunkFC[i].x;
+                if (Bit.IsEven(x) != isEvenX) continue;
+                int z = chunkFC[i].y;
+                if (Bit.IsEven(z) != isEvenZ) continue;
 
                 // быстрее, за счёт игнорирования IsArea
                 if (IsChunk(x, z))
@@ -147,7 +170,7 @@ namespace VoxelEngine.Renderer
             // ЭТОТ СЛИП чтоб не подвисал проц. И для перехода других потоков.
             System.Threading.Thread.Sleep(1); 
             OnRendered();
-            PackageRender();
+            PackageRender(isEvenX, isEvenZ);
         }
 
         /// <summary>

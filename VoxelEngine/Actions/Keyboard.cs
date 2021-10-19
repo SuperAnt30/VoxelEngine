@@ -61,6 +61,9 @@ namespace VoxelEngine.Actions
         {
             switch (keys)
             {
+                case Keys.F2:
+                    OpenGLF.GetInstance().LineOn();
+                    break;
                 case Keys.F3:
                     Debug.GetInstance().IsDraw = !Debug.GetInstance().IsDraw;
                     break;
@@ -126,9 +129,9 @@ namespace VoxelEngine.Actions
             ChunkBase chunk;
             switch (keys)
             {
-                case Keys.E:
-                    OpenGLF.GetInstance().LineOn();
-                    break;
+                //case Keys.E:
+                //    OpenGLF.GetInstance().LineOn();
+                //    break;
                 case Keys.Z:
                     //VEC.GetInstance().Zoom = VEC.GetInstance().Zoom == 1 ? 2 : 1;
                     //Debug.GetInstance().CountTest2 = VEC.GetInstance().Zoom;

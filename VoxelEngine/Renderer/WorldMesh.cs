@@ -54,12 +54,12 @@ namespace VoxelEngine.Renderer
             Debug.GetInstance().CountPoligonChunk = 0;
             Debug.GetInstance().CountMeshChunk = 0;
             Camera cam = OpenGLF.GetInstance().Cam;
-            ChunkLoading[] spiral = cam.ChunkLoadingFC;
+            vec2i[] chunkFC = cam.ChunkLoadingFC;
 
             // Прорисовка для алфы с далека и ближе
-            for (int i = spiral.Length - 1; i >= 0; i--)
+            for (int i = chunkFC.Length - 1; i >= 0; i--)
             {
-                vec2i v = new vec2i(spiral[i].X, spiral[i].Z);
+                vec2i v = new vec2i(chunkFC[i].x, chunkFC[i].y);
                 //if (cam.ChunksFC.ContainsKey(v.ToString())) // эта не надо походу
                 {
                     // Если Frustum Culling прошёл
