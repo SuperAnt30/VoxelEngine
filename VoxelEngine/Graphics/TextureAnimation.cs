@@ -39,9 +39,11 @@ namespace VoxelEngine.Graphics
         /// </summary>
         public int StepWaterFlow { get; protected set; } = 0;
 
-        public TextureAnimation(Bitmap atlas, Bitmap waterStill, Bitmap waterFlow)
+        public TextureAnimation()
         {
-            AtlasBoxOriginal = new Bitmap(atlas);
+            Bitmap waterStill = new Bitmap(VE.TEXTURE_WATER_STILL);
+            Bitmap waterFlow = new Bitmap(VE.TEXTURE_WATER_FLOW);
+            AtlasBoxOriginal = VES.AtlasBoxOriginal;
             WaterStill = new Bitmap(waterStill);
             StepWaterStillMax = WaterStill.Height / WaterStill.Width;
 

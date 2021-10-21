@@ -34,6 +34,7 @@ namespace VoxelEngine.World
                     }
                 }
             };
+            IsOnGrass = true;
             IsCollision = false;
             AllDrawing = true;
             LightingYourself = true;

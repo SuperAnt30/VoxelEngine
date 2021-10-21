@@ -47,13 +47,30 @@ namespace VoxelEngine.Actions
         /// </summary>
         protected float _speedMouse = 1.5f;
 
+        /// <summary>
+        /// Вращение колёсика
+        /// </summary>
+        public void Wheel(int delta)
+        {
+            if (delta < 0) PlayerWidget.IndexNext();
+            else PlayerWidget.IndexBack();
+            OpenGLF.GetInstance().Widget.RefreshDraw();
+        }
+
         public void Down(MouseEventArgs e)
         {
+            if (!IsMove)
+            {
+                Move(true);
+                return;
+            }
+
             Camera camera = OpenGLF.GetInstance().Cam;
             MovingObjectPosition moving = World.RayCast(camera.PosPlus(), camera.Front, VE.MAX_DIST);
 
             if (e.Button == MouseButtons.Left)
             {
+                // Удалить
                 if (moving.IsEntity())
                 {
                     moving.Entity.Kill();
@@ -66,6 +83,7 @@ namespace VoxelEngine.Actions
             }
             else if (e.Button == MouseButtons.Right)
             {
+                // Поставить
                 if (moving.IsBlock() && !moving.Block.IsAir)
                 {
                     if (moving.Block.IsGroupModel)
@@ -78,19 +96,20 @@ namespace VoxelEngine.Actions
                     }
                     else
                     {
+                        EnumBlock enumBlock = PlayerWidget.GetCell();
                         vec3i vec = moving.IEnd + moving.Norm;
-                        if (Debug.GetInstance().NumberBlock == EnumBlock.Door)
+                        if (enumBlock == EnumBlock.Door)
                         {
                             // Дверь
                             GroupDoor door = new GroupDoor(World, vec);
                             door.Put();
                         }
-                        else
+                        else if (enumBlock != EnumBlock.None)
                         {
                             if (!World.Entity.HitBox.IsVoxelBody(vec))
                             {
                                 World.SetBlockState(
-                                    Blocks.GetBlock(Debug.GetInstance().NumberBlock, new BlockPos(vec)), true);
+                                    Blocks.GetBlock(enumBlock, new BlockPos(vec)), true);
                             }
                         }
                     }

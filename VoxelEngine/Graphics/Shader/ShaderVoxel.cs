@@ -70,11 +70,12 @@ void main(){
 	if (tex_color.a < 0.1) 
 	discard;
     vec4 color = a_color * tex_color;
+/*
     float l = length(a_position);
     float l2 = a_length * 0.1;
     float l3 = a_length - l2;
     if (l < l3) {
-      //  color.rgb *= 1.0 - (a_position.z - 64) * 0.01;
+        //color.rgb *= 1.0 - (a_position.z - 64) * 0.01;
         //if (f_color.r >= 0.3 && color.r < 0.3) color.r = 0.3;
         //if (f_color.g >= 0.3 && color.g < 0.3) color.g = 0.3;
         //if (f_color.b >= 0.3 && color.b < 0.3) color.b = 0.3;
@@ -88,12 +89,14 @@ void main(){
     } else { //if (l < a_length) {
         f_color = color;
 
-        //f_color.rgb *= 1.0 - ((l - l3) / (a_length - l3));
-        //if (f_color.r >= 0.3 && color.r < 0.3) color.r = 0.3;
-        //if (f_color.g >= 0.3 && color.g < 0.3) color.g = 0.3;
-        //if (f_color.b >= 0.3 && color.b < 0.3) color.b = 0.3;
-        f_color.a = 1.0 - ((l - l3) / (a_length - l3));
-    }
+        f_color.rgb *= 1.0 - ((l - l3) / (a_length - l3));
+        if (f_color.r >= 0.3 && color.r < 0.3) color.r = 0.3;
+        if (f_color.g >= 0.3 && color.g < 0.3) color.g = 0.3;
+        if (f_color.b >= 0.3 && color.b < 0.3) color.b = 0.3;
+        //f_color.rgb = 1.0 - color.rgb;
+
+       // f_color.a = 1.0 - ((l - l3) / (a_length - l3));
+    }*/
     f_color = color;
         
     

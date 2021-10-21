@@ -171,7 +171,7 @@ namespace VoxelEngine.World
             List<vec2i> chunks = new List<vec2i>();
 
             // дальность чанков с учётом кэша
-            int visiblityCache = VE.CHUNK_VISIBILITY + 4;
+            int visiblityCache = VEC.chunkVisibility + 4;
             int xMin = positionCam.x - visiblityCache;
             int xMax = positionCam.x + visiblityCache;
             int zMin = positionCam.y - visiblityCache;
@@ -211,7 +211,7 @@ namespace VoxelEngine.World
         {
             vec2i positionCam = OpenGLF.GetInstance().Cam.ChunkPos;
             // дальность чанков с учётом кэша
-            int visiblityCache = VE.CHUNK_VISIBILITY + 4;
+            int visiblityCache = VEC.chunkVisibility + 4;
             int xMin = (positionCam.x - visiblityCache) >> 5;
             int xMax = (positionCam.x + visiblityCache) >> 5;
             int zMin = (positionCam.y - visiblityCache) >> 5;

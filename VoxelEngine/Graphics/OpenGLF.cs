@@ -44,7 +44,7 @@ namespace VoxelEngine.Graphics
         /// <summary>
         /// Конфиг
         /// </summary>
-        public VEC Config { get; set; }
+        //public VEC Config { get; set; }
         /// <summary>
         /// Прорисовка текстурами или рёбрами
         /// </summary>
@@ -75,22 +75,10 @@ namespace VoxelEngine.Graphics
         /// Объект рендера линий мира
         /// </summary>
         public WorldLineMesh WorldLineM { get; protected set; } = new WorldLineMesh();
-        
         /// <summary>
-        /// Объект курсора
+        /// Объект виджета
         /// </summary>
-        public GuiCursor guiCursor = new GuiCursor();
-        /// <summary>
-        /// Объект под водой
-        /// </summary>
-        public GuiWater guiWater = new GuiWater();
-        /// <summary>
-        /// Объект под дебага
-        /// </summary>
-        public GuiDebug guiDebug = new GuiDebug();
-
-
-
+        public GuiWidget Widget { get; protected set; } = new GuiWidget();
 
         public TextureAnimation textureAnimation;
 
@@ -108,16 +96,16 @@ namespace VoxelEngine.Graphics
             gl.Enable(OpenGL.GL_BLEND);
             gl.BlendFunc(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA);
 
-            
+
             //gl.Enable(OpenGL.GL_ALPHA_TEST);
             //gl.AlphaFunc(OpenGL.GL_GREATER, 0.8f);
             //gl.Enable(OpenGL.GL_MULTISAMPLE);
 
-            textureAnimation = new TextureAnimation(
-                new Bitmap(@"textures\256.png"),
-                new Bitmap(@"textures\water_still.png"),
-                new Bitmap(@"textures\water_flow.png")
-            );
+            textureAnimation = new TextureAnimation();
+            //    new Bitmap(VE.TEXTURE_ATLAS),
+            //    new Bitmap(VE.TEXTURE_WATER_STILL),
+            //    new Bitmap(VE.TEXTURE_WATER_FLOW)
+            //);
                 
             // генерация индексов для текстуры
             texture.Initialize();
@@ -132,15 +120,13 @@ namespace VoxelEngine.Graphics
             SkyBoxM = new SkyBoxMesh(1f);
             SkyBoxSun = new SkyBoxMesh(0.9f);
 
-            lengthFog = VE.CHUNK_VISIBILITY * 16f - 16f;
+            lengthFog = VEC.chunkVisibility * 16f - 16f;
         }
 
         public void Resized(Size size)
         {
             Cam.SetResized(size.Width, size.Height);
-            guiCursor.Render(size.Width, size.Height);
-            guiWater.Render(size);
-            guiDebug.Render(size);
+            Widget.Resized(size.Width, size.Height);
         }
 
         public void Draw(float timeFrame, float timeAll)
@@ -253,15 +239,13 @@ namespace VoxelEngine.Graphics
         {
             Sh.ShFont.Bind(gl);
             Sh.ShFont.SetUniformMatrix4(gl, "projview", Cam.Ortho2D);
+
             texture.BindTexture("gui");
-
-            // Эффект под водой
-            if (Cam.IsEyesWater) guiWater.Draw();
-            // Курсор
-            guiCursor.Draw();
-
-            //texture.BindTexture("atlas");
-            //guiDebug.Draw();
+            Widget.DrawWidget();
+            texture.BindTexture("atlas");
+            Widget.DrawAtlas();
+            texture.BindTexture("gui");
+            Widget.DrawDarken();
 
             Sh.ShFont.Unbind(gl);
         }
@@ -286,7 +270,7 @@ namespace VoxelEngine.Graphics
             Sh.ShVoxel.Bind(gl);
             Sh.ShVoxel.SetUniformMatrix4(gl, "projection", Cam.Projection);
             Sh.ShVoxel.SetUniformMatrix4(gl, "lookat", Cam.LookAt);
-            Sh.ShVoxel.SetUniform1(gl, "light", Config.LeghtSky);
+            Sh.ShVoxel.SetUniform1(gl, "light", VEC.LeghtSky);
             Sh.ShVoxel.SetUniform1(gl, "length", lengthFog);
             texture.BindTexture("atlas");
             WorldM.Draw();
@@ -298,7 +282,7 @@ namespace VoxelEngine.Graphics
         /// </summary>
         protected void DrawEntity()
         {
-            float leght = Config.LeghtSky + .3f;
+            float leght = VEC.LeghtSky + .3f;
             if (leght > 1f) leght = 1f;
             Sh.ShEntity.Bind(gl);
             Sh.ShEntity.SetUniformMatrix4(gl, "projection", Cam.Projection);
@@ -337,13 +321,13 @@ namespace VoxelEngine.Graphics
             Sh.ShSkyBox.Bind(gl);
             Sh.ShSkyBox.SetUniformMatrix4(gl, "projection", Cam.ProjectionLookAt);
             Sh.ShSkyBox.SetUniformMatrix4(gl, "view", Cam.PositionView);
-            Sh.ShSkyBox.SetUniform1(gl, "light", Config.LeghtSky);
+            Sh.ShSkyBox.SetUniform1(gl, "light", VEC.LeghtSky);
 
             texture.BindTextureSkyBox();
             SkyBoxM.Draw();
             Sh.ShSkyBox.SetUniformMatrix4(gl, "view",
                 (glm.translate(new mat4(1.0f), Cam.Position)
-                * glm.rotate(Config.AngleSun, new vec3(0, 0, 1))).to_array()
+                * glm.rotate(VEC.AngleSun, new vec3(0, 0, 1))).to_array()
             );
             Sh.ShSkyBox.SetUniform1(gl, "light", 1f);
 

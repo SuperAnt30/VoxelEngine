@@ -65,9 +65,9 @@ namespace VoxelEngine
 
         public FormGame()
         {
-            glm.Initialized();
-            VES.GetInstance();
+            VES.Initialized();
             InitializeComponent();
+            openGLControl1.MouseWheel += openGLControl1_MouseWheel;
 
             counterFps.Tick += CounterFps_Tick;
 
@@ -149,7 +149,6 @@ namespace VoxelEngine
             stopwatchFrame.Start();
             Mouse.GetInstance().SetWorld(World);
             OpenGLF.GetInstance().Initialized(openGLControl1.OpenGL);
-            OpenGLF.GetInstance().Config = VEC.GetInstance();
             OpenGLF.GetInstance().Cam = new Camera(new vec3(0, 70, 0), glm.radians(70.0f));
             //OpenGLF.GetInstance().Cam = new Camera(new vec3(100000, 7, 24), glm.radians(70.0f));
             OpenGLF.GetInstance().RemoveChunkMeshChanged += OpenGLFRemoveChunkMeshChanged;
@@ -158,6 +157,7 @@ namespace VoxelEngine
             
             OpenGLF.GetInstance().Cam.PositionChunkChanged += Cam_PositionChunkChanged;
             OpenGLF.GetInstance().Cam.PositionBlockChanged += Cam_PositionBlockChanged;
+            OpenGLF.GetInstance().Cam.WidgetChanged += Cam_WidgetChanged;
             OpenGLF.GetInstance().Cam.SetPosRotation(
                 World.Entity.HitBox.Position,
                 World.Entity.RotationYaw,
@@ -248,6 +248,14 @@ namespace VoxelEngine
         #endregion
 
         #region Mouse
+
+        /// <summary>
+        /// Вращение колёсика
+        /// </summary>
+        private void openGLControl1_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (e.Delta != 0 && !PlayerWidget.IsOpenForm) Mouse.GetInstance().Wheel(e.Delta);
+        }
 
         /// <summary>
         /// Движение мышки
@@ -362,7 +370,7 @@ namespace VoxelEngine
         /// <summary>
         /// Обновить фпс
         /// </summary>
-        public void RefreshFps() => threadFps.SetTps(VE.FPS);
+        public void RefreshFps() => threadFps.SetTps();
         /// <summary>
         /// Обновить угол обзора камеры
         /// </summary>
@@ -510,6 +518,15 @@ namespace VoxelEngine
         }
 
         /// <summary>
+        /// Обновить прорисовку виджета
+        /// </summary>
+        private void Cam_WidgetChanged(object sender, EventArgs e)
+        {
+            if (InvokeRequired) Invoke(new EventHandler(Cam_WidgetChanged), sender, e);
+            else OpenGLF.GetInstance().Widget.RefreshDraw();
+        }
+
+        /// <summary>
         /// Событие завершения такта, и после этого можем приступать к следующему такту
         /// </summary>
         private void WorldTicked(object sender, EventArgs e)
@@ -526,7 +543,7 @@ namespace VoxelEngine
             // Перемещение игрока
             Keyboard.GetInstance().KeyMove.PlCamera.Tick();
             // Счётик и свойства яркости неба и угла солнца
-            VEC.GetInstance().Tick();
+            VEC.Tick();
             // Атлас и дебаг
             OpenGLF.GetInstance().Tick();
 

@@ -591,12 +591,18 @@ namespace VoxelEngine.World.Chk
             {
                 block = Blocks.GetBlock(EnumBlock.Leaves, block.Position);
             }
-            if (block.EBlock == EnumBlock.Sapling || block.EBlock == EnumBlock.TallGrass)
+            if (block.IsOnGrass)
             {
                 // проверка что на землю садим
                 BlockBase blockNew = GetBlock(block.Position.OffsetDown());
                 if (blockNew.EBlock != EnumBlock.Dirt && blockNew.EBlock != EnumBlock.Grass)
                     return null;
+            }
+            if (block.EBlock == EnumBlock.Cactus)
+            {
+                // проверка что на песок садим
+                BlockBase blockNew = GetBlock(block.Position.OffsetDown());
+                if (blockNew.EBlock != EnumBlock.Sand && blockNew.EBlock != EnumBlock.Cactus) return null;
             }
 
             bool var12 = false;

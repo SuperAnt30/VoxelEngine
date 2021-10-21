@@ -22,7 +22,7 @@ namespace VoxelEngine
                 using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open)))
                 {
                     // Время игры
-                    VEC.GetInstance().SetTick(reader.ReadInt64());
+                    VEC.SetTick(reader.ReadInt64());
                     
                     // Позиция камеры
                     world.Entity.HitBox.SetPos(new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()));
@@ -45,7 +45,7 @@ namespace VoxelEngine
             using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.OpenOrCreate)))
             {
                 // Время игры
-                writer.Write(VEC.GetInstance().TickCount);
+                writer.Write(VEC.TickCount);
 
                 // Позиция камеры
                 writer.Write(world.Entity.HitBox.Position.x);

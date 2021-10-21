@@ -15,9 +15,9 @@ namespace VoxelEngine
         /// <summary>
         /// Задать тпс
         /// </summary>
-        public void SetTps(int tps)
+        public void SetTps()
         {
-            Interval = 1000 / tps;
+            Interval = 1000 / VEC.fps;
         }
 
         protected long lastTime;

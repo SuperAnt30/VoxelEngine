@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using VoxelEngine.Actions;
+using VoxelEngine.Graphics;
 
 namespace VoxelEngine.Gui
 {
@@ -40,8 +41,10 @@ namespace VoxelEngine.Gui
         private void Control_Closed(object sender, EventArgs e)
         {
             Visible = false;
+            PlayerWidget.IsOpenForm = false;
             Controls.Clear();
             Mouse.GetInstance().Move(true);
+            OpenGLF.GetInstance().Widget.RefreshDraw();
         }
 
         /// <summary>
@@ -50,10 +53,12 @@ namespace VoxelEngine.Gui
         protected void WindowOpen(BaseControl control)
         {
             Keyboard.GetInstance().KeyMove.CancelAll();
+            PlayerWidget.IsOpenForm = true;
+            OpenGLF.GetInstance().Widget.RefreshDrawDarken();
+            control.Open();
             Size = control.Size;
             control.Closed += Control_Closed;
             Controls.Add(control);
-            control.Open();
             Location = new Point(
                 (FGame.Width - Width) / 2,
                 (FGame.Height - Height) / 2

@@ -6,6 +6,10 @@
     public enum EnumBlock
     {
         /// <summary>
+        /// Пусто
+        /// </summary>
+        None = -1,
+        /// <summary>
         /// Воздух
         /// </summary>
         Air = 0,

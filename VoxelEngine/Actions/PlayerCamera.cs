@@ -140,7 +140,7 @@ namespace VoxelEngine.Actions
         public void KeyUpSneaking()
         {
             if (EntityR.Entity.Moving.HeightCancel()) StrDebug = EntityR.Entity.UpdateMoving();
-            if (VEC.Moving == VEMoving.Survival)
+            if (VEC.moving == VEMoving.Survival)
             {
                 // Встать
                 // Проверка на возможность встать

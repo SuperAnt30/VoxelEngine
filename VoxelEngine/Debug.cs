@@ -185,7 +185,7 @@ namespace VoxelEngine
 
         protected string ToStringTime()
         {
-            long tickCount = VEC.GetInstance().TickCount;
+            long tickCount = VEC.TickCount;
             int h = Mth.Floor(tickCount / 72000f);
             int m = Mth.Floor((tickCount - h * 72000f) / 1200f);
             int s = (int)(tickCount - h * 72000f - m * 1200f);

@@ -95,6 +95,14 @@ namespace VoxelEngine.Util
             Size.LookAtChanged += Size_LookAtChanged;
         }
 
+        /// <summary>
+        /// Обновить блок глазз
+        /// </summary>
+        protected void RefrashBlockEyes()
+        {
+            BlockEyes = new vec3i(Position + new vec3(0, Size.Eyes, 0));
+        }
+
         public void SetPos(vec3 pos)
         {
             if (!Position.Equals(pos))
@@ -102,7 +110,7 @@ namespace VoxelEngine.Util
                 Position = pos;
                 BlockPos = new vec3i(Position);
                 BlockPosDown = new vec3i(new vec3(pos.x, pos.y - 1, pos.z));
-                BlockEyes = new vec3i(Position + new vec3(0, Size.Eyes, 0));
+                RefrashBlockEyes();
                 ChunkPos = new vec2i((BlockPos.x) >> 4, (BlockPos.z) >> 4);
                 ChunkY = (BlockPos.y) >> 4;
 
@@ -183,6 +191,7 @@ namespace VoxelEngine.Util
         /// </summary>
         protected bool UpdateEyes()
         {
+            RefrashBlockEyes();
             bool isEyesWater = World.GetBlock(BlockEyes).IsWater;
             if (IsEyesWater != isEyesWater)
             {

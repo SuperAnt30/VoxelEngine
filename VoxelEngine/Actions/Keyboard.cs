@@ -68,15 +68,15 @@ namespace VoxelEngine.Actions
                     Debug.GetInstance().IsDraw = !Debug.GetInstance().IsDraw;
                     break;
                 case Keys.F4:
-                    VEC.Moving = VEMoving.FreeFlight;
+                    VEC.moving = VEMoving.FreeFlight;
                     World.UpdateModePlayer();
                     break;
                 case Keys.F5:
-                    VEC.Moving = VEMoving.ObstacleFlight;
+                    VEC.moving = VEMoving.ObstacleFlight;
                     World.UpdateModePlayer();
                     break;
                 case Keys.F6:
-                    VEC.Moving = VEMoving.Survival;
+                    VEC.moving = VEMoving.Survival;
                     World.UpdateModePlayer();
                     break;
                 case Keys.F7:
@@ -97,6 +97,10 @@ namespace VoxelEngine.Actions
                         OpenGLF.GetInstance().WorldLineM.RemovePrefix("HitBox");
                     }
                     break;
+                case Keys.F9:
+                    VEC.isDebugTextureAtlas = !VEC.isDebugTextureAtlas;
+                    OpenGLF.GetInstance().Widget.RefreshDraw();
+                break;
                 case Keys.Tab:
                     Mouse.GetInstance().Move();
                     break;
@@ -203,7 +207,7 @@ namespace VoxelEngine.Actions
                     break;
                 case Keys.T:
                     // Плюс четверть дня
-                    VEC.GetInstance().AddQuarterTick();
+                    VEC.AddQuarterTick();
                     break;
                 case Keys.Space: KeyMove.Up(); break;
                 case Keys.ShiftKey: KeyMove.Down(); break;
@@ -211,18 +215,25 @@ namespace VoxelEngine.Actions
                 case Keys.D: KeyMove.Right(); break;
                 case Keys.W: KeyMove.Forward(); break;
                 case Keys.S: KeyMove.Back(); break;
-                case Keys.D1: Debug.GetInstance().NumberBlock = EnumBlock.Stone; break;
-                case Keys.D2: Debug.GetInstance().NumberBlock = EnumBlock.Door; break;
-                case Keys.D3: Debug.GetInstance().NumberBlock = EnumBlock.Sand; break;
-                case Keys.D4: Debug.GetInstance().NumberBlock = EnumBlock.Planks; break;
-                case Keys.D5: Debug.GetInstance().NumberBlock = EnumBlock.Log; break; // 6
-                case Keys.D6: Debug.GetInstance().NumberBlock = EnumBlock.Water; break; // 7
-                case Keys.D7: Debug.GetInstance().NumberBlock = EnumBlock.Glass; break; // 8
-                case Keys.D8: Debug.GetInstance().NumberBlock = EnumBlock.Sapling; break; // 9
-                case Keys.D9: Debug.GetInstance().NumberBlock = EnumBlock.Cactus; break;
-                case Keys.D0: Debug.GetInstance().NumberBlock = EnumBlock.Torch; break;
-
+                case Keys.D1: SetNumberBlock(0); break;
+                case Keys.D2: SetNumberBlock(1); break;
+                case Keys.D3: SetNumberBlock(2); break;
+                case Keys.D4: SetNumberBlock(3); break;
+                case Keys.D5: SetNumberBlock(4); break;
+                case Keys.D6: SetNumberBlock(5); break;
+                case Keys.D7: SetNumberBlock(6); break;
+                case Keys.D8: SetNumberBlock(7); break;
+                case Keys.D9: SetNumberBlock(8); break;
             }
+        }
+
+        /// <summary>
+        /// Задать выбранную ячейку
+        /// </summary>
+        protected void SetNumberBlock(int index)
+        {
+            PlayerWidget.SetIndex(index);
+            OpenGLF.GetInstance().Widget.RefreshDraw();
         }
 
         #region Event

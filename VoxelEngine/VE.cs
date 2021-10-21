@@ -6,14 +6,6 @@
     public class VE
     {
         /// <summary>
-        /// Количество FPS (кадров в секунду)
-        /// </summary>
-        public static int FPS = 60; 
-        /// <summary>
-        /// Сколько чанков видим
-        /// </summary>
-        public static int CHUNK_VISIBILITY = 16;
-        /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// Количество общее число по спирале
         /// </summary>
@@ -42,21 +34,33 @@
         /// <summary>
         /// Ключ текстуры шрифта
         /// </summary>
-        public static string TEXTURE_FONT_KEY = "font_ascii";
+        public const string TEXTURE_FONT_KEY = "font_ascii";
         /// <summary>
         /// Адрес текстуры шрифта
         /// </summary>
-        public static string TEXTURE_FONT_PATH = @"textures\font\ascii4.png";
+        public const string TEXTURE_FONT_PATH = @"textures\font\ascii4.png";
+        /// <summary>
+        /// Основной атлас текстуры
+        /// </summary>
+        public const string TEXTURE_ATLAS = @"textures\256.png";
+        /// <summary>
+        /// Текстура стоячей воды
+        /// </summary>
+        public const string TEXTURE_WATER_STILL = @"textures\water_still.png";
+        /// <summary>
+        /// Текстура течения воды
+        /// </summary>
+        public const string TEXTURE_WATER_FLOW = @"textures\water_flow.png";
 
 
         /// <summary>
         /// На сколько растекается вода (будет на 1 больше)
         /// </summary>
-        public static byte WATER = 5;
+        public const byte WATER = 5;
         /// <summary>
         /// Уровень вады для высот полигона, = 1 / (WATER)
         /// </summary>
-        public static float WATER_LEVEL = 0.19f;
+        public const float WATER_LEVEL = 0.19f;
 
         /// <summary>
         /// Скорость авто прыжка

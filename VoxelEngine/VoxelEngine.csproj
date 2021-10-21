@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\KeyboardMove.cs" />
+    <Compile Include="Actions\PlayerWidget.cs" />
     <Compile Include="Audio\Al.cs" />
     <Compile Include="Audio\Alc.cs" />
     <Compile Include="Audio\AudioBase.cs" />
@@ -168,7 +169,6 @@
     <Compile Include="Graphics\Frustum.cs" />
     <Compile Include="Renderer\Entity\EntityMesh.cs" />
     <Compile Include="Renderer\Entity\EntityRender.cs" />
-    <Compile Include="Renderer\GuiDebug.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="Util\AnimationHeir.cs" />
     <Compile Include="Util\ArrayVec2i.cs" />
@@ -262,13 +262,12 @@
     <Compile Include="World\Chk\ChunkProvider.cs" />
     <Compile Include="World\Chk\ChunkStorage.cs" />
     <Compile Include="Util\Coords.cs" />
-    <Compile Include="Renderer\GuiWater.cs" />
     <Compile Include="World\RegionBinary.cs" />
     <Compile Include="World\RegionMap.cs" />
     <Compile Include="World\RegionProvider.cs" />
     <Compile Include="Util\HitBoxEntity.cs" />
     <Compile Include="Renderer\LineMesh.cs" />
-    <Compile Include="Renderer\GuiCursor.cs" />
+    <Compile Include="Renderer\GuiWidget.cs" />
     <Compile Include="Graphics\RenderMesh.cs" />
     <Compile Include="Graphics\Shader\ShaderVoxel.cs" />
     <Compile Include="Threads\ThreadTick.cs" />

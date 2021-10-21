@@ -49,6 +49,10 @@ namespace VoxelEngine.World.Blk
         /// </summary>
         public bool IsGrass { get; protected set; } = false;
         /// <summary>
+        /// Только на траве
+        /// </summary>
+        public bool IsOnGrass { get; protected set; } = false;
+        /// <summary>
         /// Является ли объект кубом
         /// </summary>
         public bool IsCube { get; protected set; } = true;
@@ -219,6 +223,5 @@ namespace VoxelEngine.World.Blk
         /// Задать группу блоков
         /// </summary>
         public void SetGroup(GroupBase group) => Group = group;
-
     }
 }

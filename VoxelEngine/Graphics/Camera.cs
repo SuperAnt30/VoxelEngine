@@ -1,7 +1,7 @@
 ﻿using System;
+using VoxelEngine.Actions;
 using VoxelEngine.Glm;
 using VoxelEngine.Util;
-using VoxelEngine.World.Chk;
 
 namespace VoxelEngine.Graphics
 {
@@ -65,10 +65,6 @@ namespace VoxelEngine.Graphics
         /// Высота глаз
         /// </summary>
         public float Eyes { get; protected set; } = 0f;
-        /// <summary>
-        /// Под водой ли глаза
-        /// </summary>
-        public bool IsEyesWater { get; protected set; } = false;
         /// <summary>
         /// Угол обзора
         /// </summary>
@@ -179,7 +175,8 @@ namespace VoxelEngine.Graphics
         public void SetEyesWater(float eyes, bool isEyesWater)
         {
             Eyes = eyes;
-            IsEyesWater = isEyesWater;
+            PlayerWidget.IsEyesWater = isEyesWater;
+            OnWidgetChanged();
             ReplacePosition();
         }
 
@@ -195,7 +192,7 @@ namespace VoxelEngine.Graphics
         {
             Fov = fov;
             aspect = Width / Height;
-            Projection = glm.perspective(Fov, aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f).to_array();
+            Projection = glm.perspective(Fov, aspect, 0.001f, VEC.chunkVisibility * 22.624f * 2f).to_array();
         }
 
         protected void UpdateVectors()
@@ -225,7 +222,7 @@ namespace VoxelEngine.Graphics
             Height = height;
             aspect = Width / Height;
 
-            Projection = glm.perspective(Fov, aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f).to_array();
+            Projection = glm.perspective(Fov, aspect, 0.001f, VEC.chunkVisibility * 22.624f * 2f).to_array();
             Ortho2D = glm.ortho(0, Width, Height, 0).to_array();
         }
 
@@ -244,7 +241,7 @@ namespace VoxelEngine.Graphics
             pos = Position;
             lookAt = glm.lookAt(pos, pos + Front, Up);
             PositionView = glm.translate(new mat4(1.0f), pos).to_array();
-            ProjectionLookAt = (glm.perspective(Fov, aspect, 0.001f, VE.CHUNK_VISIBILITY * 22.624f * 2f)
+            ProjectionLookAt = (glm.perspective(Fov, aspect, 0.001f, VEC.chunkVisibility * 22.624f * 2f)
                 * lookAt).to_array();
         }
 
@@ -355,13 +352,13 @@ namespace VoxelEngine.Graphics
 
             int countAll = 0;
             int countFC = 0;
-            ChunkLoading[] distSqrt = VES.GetInstance().DistSqrt;
+            vec2i[] distSqrt = VES.DistSqrt;
             ArrayVec2i listC = new ArrayVec2i();
             ArrayVec2i listR = new ArrayVec2i();
             for (int i = 0; i < distSqrt.Length; i++)
             {
-                int xc = distSqrt[i].X + ChunkPos.x;
-                int zc = distSqrt[i].Z + ChunkPos.y;
+                int xc = distSqrt[i].x + ChunkPos.x;
+                int zc = distSqrt[i].y + ChunkPos.y;
                 int xb = xc << 4;
                 int zb = zc << 4;
 
@@ -427,6 +424,19 @@ namespace VoxelEngine.Graphics
         protected void OnPositionChunkChanged()
         {
             PositionChunkChanged?.Invoke(this, new EventArgs());
+        }
+
+        /// <summary>
+        /// Событие изменен виджет
+        /// </summary>
+        public event EventHandler WidgetChanged;
+
+        /// <summary>
+        /// Событие изменен виджет
+        /// </summary>
+        protected void OnWidgetChanged()
+        {
+            WidgetChanged?.Invoke(this, new EventArgs());
         }
 
         #endregion

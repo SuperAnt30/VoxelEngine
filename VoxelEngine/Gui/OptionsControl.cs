@@ -17,8 +17,8 @@ namespace VoxelEngine.Gui
         /// </summary>
         public override void Open()
         {
-            numericUpDownFPS.Value = VE.FPS;
-            numericUpDownChunk.Value = VE.CHUNK_VISIBILITY;
+            numericUpDownFPS.Value = VEC.fps;
+            numericUpDownChunk.Value = VEC.chunkVisibility;
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
@@ -28,9 +28,9 @@ namespace VoxelEngine.Gui
 
         private void buttonOk_Click(object sender, EventArgs e)
         {
-            VE.CHUNK_VISIBILITY = (int)numericUpDownChunk.Value;
-            VES.GetInstance().DistSqrtRefrash();
-            VE.FPS = (int)numericUpDownFPS.Value;
+            VEC.chunkVisibility = (int)numericUpDownChunk.Value;
+            VES.DistSqrtRefrash();
+            VEC.fps = (int)numericUpDownFPS.Value;
             FGame.RefreshFps();
             FGame.RefreshFov();
             OnClosed();

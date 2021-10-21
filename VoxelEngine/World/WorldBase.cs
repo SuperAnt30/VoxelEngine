@@ -67,7 +67,7 @@ namespace VoxelEngine.World
         public WorldBase()
         {
             stopwatch.Start();
-            timeSave = VEC.GetInstance().TickCount;
+            timeSave = VEC.TickCount;
             ChunkPr = new ChunkProvider(this);
             RegionPr = new RegionProvider(this);
             Noise = new NoiseStorge(this);
@@ -84,7 +84,7 @@ namespace VoxelEngine.World
         /// </summary>
         public void UpdateModePlayer()
         {
-            Entity.SetMode(VEC.Moving);
+            Entity.SetMode(VEC.moving);
         }
 
         protected bool isTickStop = false;
@@ -108,12 +108,12 @@ namespace VoxelEngine.World
         protected virtual void Tick()
         {
             stopwatch.Restart();
-            long tick = VEC.GetInstance().TickCount;
+            long tick = VEC.TickCount;
 
             Audio.Tick();
 
             // для записи
-            if (timeSave + 6000 < VEC.GetInstance().TickCount)
+            if (timeSave + 6000 < VEC.TickCount)
             {
                 timeSave = tick;
                 // Сохраняем миры каждые 5 мин
@@ -123,11 +123,11 @@ namespace VoxelEngine.World
             // Чанк где стоит игрок
             vec2i c = OpenGLF.GetInstance().Cam.ChunkPos;
             // Массив спирали чанков
-            ChunkLoading[] spiral = VES.GetInstance().DistSqrt;
+            vec2i[] distSqrt = VES.DistSqrt;
             // По спирале такты чанков близ лежащих к игроку
             for (int i = 0; i < VE.CHUNKS_TICK; i++)
             {
-                ChunkBase cm = GetChunk(c.x + spiral[i].X, c.y + spiral[i].Z);
+                ChunkBase cm = GetChunk(c.x + distSqrt[i].x, c.y + distSqrt[i].y);
                 if (cm != null) cm.Tick(tick);
             }
 
@@ -805,7 +805,6 @@ namespace VoxelEngine.World
         public void AddEntity()
         {
             Camera cam = OpenGLF.GetInstance().Cam;
-            VEC config = VEC.GetInstance();
             MovingObjectPosition moving = RayCast(cam.PosPlus(), cam.Front, VE.MAX_DIST);
             if (moving.IsBlock())
             {
@@ -813,7 +812,7 @@ namespace VoxelEngine.World
 
                 EntityChicken entity = new EntityChicken(this);
                 entity.HitBoxChanged += Entity_HitBoxChanged;
-                entity.SetChicken(config.EntityIndex, v, cam.Yaw - glm.pi);
+                entity.SetChicken(VEC.EntityIndex, v, cam.Yaw - glm.pi);
                 if (Entities.ContainsKey(entity.HitBox.Index))
                 {
                     Entities[entity.HitBox.Index] = entity;
@@ -823,7 +822,7 @@ namespace VoxelEngine.World
                     Entities.Add(entity.HitBox.Index, entity);
                 }
 
-                config.EntityAdd();
+                VEC.EntityAdd();
                 Debug.GetInstance().Entities = Entities.Count;
             }
             //ModelChicken chicken = new ModelChicken();

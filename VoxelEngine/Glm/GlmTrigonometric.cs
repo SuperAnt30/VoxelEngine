@@ -5,13 +5,13 @@ namespace VoxelEngine.Glm
     // ReSharper disable InconsistentNaming
     public static partial class glm
     {
-        private static float[] _sinTable = new float[65536];
+        private static float[] sinTable = new float[65536];
 
         public static void Initialized()
         {
             for (int i = 0; i < 65536; i++)
             {
-                _sinTable[i] = (float) Math.Sin((double)i * Math.PI * 2.0f / 65536.0f);
+                sinTable[i] = (float) Math.Sin((double)i * Math.PI * 2.0f / 65536.0f);
             }
         }
 
@@ -49,13 +49,13 @@ namespace VoxelEngine.Glm
         public static float cos(float angle)
         {
             angle %= pi360;
-            return _sinTable[(int)(angle * 10430.378f + 16384.0f) & 65535];
+            return sinTable[(int)(angle * 10430.378f + 16384.0f) & 65535];
         }
 
         public static float sin(float angle)
         {
             angle %= pi360;
-            return _sinTable[(int)(angle * 10430.378f) & 65535];
+            return sinTable[(int)(angle * 10430.378f) & 65535];
         }
 
         public static float tan(float angle)

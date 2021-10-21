@@ -153,7 +153,7 @@ namespace VoxelEngine.Renderer
         {
             List<string> vs = new List<string>();
             // дальность чанков с учётом кэша
-            int visiblityCache = VE.CHUNK_VISIBILITY + 2;
+            int visiblityCache = VEC.chunkVisibility + 2;
 
             int xMin = positionCam.x - visiblityCache;
             int xMax = positionCam.x + visiblityCache;

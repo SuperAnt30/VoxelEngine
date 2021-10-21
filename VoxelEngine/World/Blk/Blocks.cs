@@ -9,6 +9,11 @@ namespace VoxelEngine.World.Blk
     /// </summary>
     public class Blocks
     {
+        /// <summary>
+        /// Количество блоков
+        /// </summary>
+        public const int BLOCKS_COUNT = 24;
+
         protected static BlockBase GetBlock(Voxel voxel, GroupBase group)
         {
             if (voxel.IsEmpty) return new BlockBase();

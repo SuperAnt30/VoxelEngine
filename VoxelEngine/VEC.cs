@@ -2,36 +2,34 @@
 {
     /// <summary>
     /// Voxel Engine Configuration
+    /// Объект статический параметров как конфигурации
     /// </summary>
     public class VEC
     {
-        #region Instance
-
-        private static VEC instance;
-        private VEC() { }
-
         /// <summary>
-        /// Передать по ссылке объект если он создан, иначе создать
+        /// Количество FPS (кадров в секунду)
         /// </summary>
-        /// <returns>объект Debag</returns>
-        public static VEC GetInstance()
-        {
-            if (instance == null) instance = new VEC();
-            return instance;
-        }
-
-        #endregion
+        public static int fps = 60;
+        /// <summary>
+        /// Сколько чанков видим
+        /// </summary>
+        public static int chunkVisibility = 6;
 
         /// <summary>
         /// Режим перемещения
         /// </summary>
-        public static VEMoving Moving { get; set; } = VEMoving.Survival;// ObstacleFlight;//.Survival;//.FreeFlight;
+        public static VEMoving moving = VEMoving.Survival;// ObstacleFlight;//.Survival;//.FreeFlight;
 
         /// <summary>
         /// Режим теней у блоках
         /// </summary>
-        public bool AmbientOcclusion { get; set; } = true;
+        public static bool ambientOcclusion = true;
 
+        /// <summary>
+        /// Видем ли на экране дебаг текстурного атласа
+        /// </summary>
+        public static bool isDebugTextureAtlas = false;
+        
         /// <summary>
         /// Размер курсора
         /// </summary>
@@ -42,26 +40,20 @@
         /// <summary>
         /// Счётчик времени игры
         /// </summary>
-        public long TickCount { get; protected set; } = 0;
+        public static long TickCount { get; protected set; } = 0;
         /// <summary>
         /// Задать время тика
         /// </summary>
         /// <param name="tick"></param>
-        public void SetTick(long tick)
-        {
-            TickCount = tick;
-        }
+        public static void SetTick(long tick) => TickCount = tick;
         /// <summary>
         /// Добавить четверть суток
         /// </summary>
-        public void AddQuarterTick()
-        {
-            TickCount += VE.COUNT_TICE_DAY / 4;
-        }
+        public static void AddQuarterTick() => TickCount += VE.COUNT_TICE_DAY / 4;
         /// <summary>
         /// Такт времени
         /// </summary>
-        public void Tick()
+        public static void Tick()
         {
             TickCount++;
 
@@ -76,27 +68,30 @@
 
         #endregion
 
+        #region Entity
+
         /// <summary>
         /// Счётчик порядкового номера сущьностей
         /// </summary>
-        public int EntityIndex { get; protected set; } = 0;
+        public static int EntityIndex { get; protected set; } = 0;
         /// <summary>
         /// Увеличить порядковый номер сущьности
         /// </summary>
-        public void EntityAdd()
-        {
-            EntityIndex++;
-        }
+        public static void EntityAdd() => EntityIndex++;
+
+        #endregion
+
+        #region SkyBox
 
         /// <summary>
         /// Яркость освещения неба
         /// </summary>
-        public float LeghtSky { get; protected set; }
+        public static float LeghtSky { get; protected set; }
         /// <summary>
         /// Угол для вращения солнца
         /// </summary>
-        public float AngleSun { get; protected set; }
+        public static float AngleSun { get; protected set; }
 
-
+        #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using VoxelEngine.Glm;
 
 namespace VoxelEngine.Graphics
 {
@@ -78,5 +79,47 @@ namespace VoxelEngine.Graphics
         {
             Delete();
         }
+
+        #region Rectangle
+
+        /// <summary>
+        /// Нарисовать прямоугольник в 2д
+        /// </summary>
+        /// <param name="v1">угол левый вверх</param>
+        /// <param name="v2">угол правый низ</param>
+        /// <param name="z">глубина</param>
+        /// <param name="u1">текстура угол 1</param>
+        /// <param name="u2">текстура угол 2</param>
+        /// <param name="c">цвет</param>
+        /// <returns></returns>
+        public static float[] Rectangle2d(vec2 v1, vec2 v2, float z, vec2 u1, vec2 u2, vec4 c)
+        {
+            return new float[]
+            {
+                v1.x, v1.y, z, u1.x, u1.y, c.x, c.y, c.z, c.w,
+                v1.x, v2.y, z, u1.x, u2.y, c.x, c.y, c.z, c.w,
+                v2.x, v1.y, z, u2.x, u1.y, c.x, c.y, c.z, c.w,
+
+                v1.x, v2.y, z, u1.x, u2.y, c.x, c.y, c.z, c.w,
+                v2.x, v2.y, z, u2.x, u2.y, c.x, c.y, c.z, c.w,
+                v2.x, v1.y, z, u2.x, u1.y, c.x, c.y, c.z, c.w
+            };
+        }
+
+        /// <summary>
+        /// Нарисовать прямоугольник в 2д
+        /// </summary>
+        /// <param name="v1">угол левый вверх</param>
+        /// <param name="v2">угол правый низ</param>
+        /// <param name="u1">текстура угол 1</param>
+        /// <param name="u2">текстура угол 2</param>
+        /// <param name="c">цвет</param>
+        /// <returns></returns>
+        public static float[] Rectangle2d(vec2 v1, vec2 v2, vec2 u1, vec2 u2, vec4 c)
+        {
+            return Rectangle2d(v1, v2, 0, u1, u2, c);
+        }
+
+        #endregion
     }
 }

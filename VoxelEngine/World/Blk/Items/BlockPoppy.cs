@@ -36,7 +36,7 @@ namespace VoxelEngine.World
                     }
                 }
             };
-
+            IsOnGrass = true;
             IsLeaves = true;
             IsCollision = false;
             AllDrawing = true;

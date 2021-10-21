@@ -144,7 +144,7 @@ namespace VoxelEngine.Renderer.Blk
             // Вершины затемнения
             vec4 lg = new vec4(1.0f);
 
-            if (VEC.GetInstance().AmbientOcclusion && Blk.IsCube)// && Blk.LightValue == 0)
+            if (VEC.ambientOcclusion && Blk.IsCube)// && Blk.LightValue == 0)
             {
                 switch (_side)
                 {
