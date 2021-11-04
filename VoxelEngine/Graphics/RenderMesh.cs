@@ -49,7 +49,7 @@ namespace VoxelEngine.Graphics
         {
             if (_mesh != null)
             {
-                Debug.GetInstance().CountMesh++;
+                Debug.CountMesh++;
                 _mesh.Draw();
             }
         }
@@ -59,7 +59,7 @@ namespace VoxelEngine.Graphics
         /// </summary>
         public void DrawLine()
         {
-            Debug.GetInstance().CountMesh++;
+            Debug.CountMesh++;
             _mesh.DrawLine();
         }
 

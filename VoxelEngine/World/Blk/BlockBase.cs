@@ -159,7 +159,7 @@ namespace VoxelEngine.World.Blk
         }
 
         /// <summary>
-        /// Сколько света вычитается для прохождения этого блока
+        /// Сколько света вычитается для прохождения света Air = 0
         /// </summary>
         public byte GetBlockLightOpacity()
         {

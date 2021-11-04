@@ -43,11 +43,7 @@ namespace VoxelEngine.Actions
                 && EntityR.Entity.Moving.Vertical.Plus)
             {
                 EntityR.Entity.Sprinting();
-                //cam.SetFov(Glm.glm.radians(80));
             }
-            // TODO:: увеличиваем угол обзора от бега на 10-15%
-            // Делаем плавно как старт бега
-            //cam.SetFov(Glm.glm.radians(Entity.IsSprinting ? 80 : 70));
         }
 
         /// <summary>

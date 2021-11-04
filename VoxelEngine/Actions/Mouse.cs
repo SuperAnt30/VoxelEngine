@@ -102,6 +102,7 @@ namespace VoxelEngine.Actions
                         {
                             // Дверь
                             GroupDoor door = new GroupDoor(World, vec);
+                            door.Light();
                             door.Put();
                         }
                         else if (enumBlock != EnumBlock.None)

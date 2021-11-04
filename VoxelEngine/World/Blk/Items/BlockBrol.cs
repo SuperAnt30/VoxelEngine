@@ -26,7 +26,7 @@ namespace VoxelEngine.World
                 }
             };
 
-            LightValue = 14;
+            LightValue = 6;
             soundBreak = "dig.glass";
             soundBreakCount = 3;
         }

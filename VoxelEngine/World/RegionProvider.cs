@@ -15,12 +15,6 @@ namespace VoxelEngine.World
         /// </summary>
         protected RegionMap regionMapping = new RegionMap();
 
-        /// <summary>
-        /// Параметр для тестов, false - сохранение не будет сохранять
-        /// TODO::TEST SAVE 
-        /// </summary>
-        protected readonly bool canSave = true;
-
         public RegionProvider(WorldBase worldIn) : base(worldIn) { }
 
         /// <summary>
@@ -45,7 +39,7 @@ namespace VoxelEngine.World
             if (regionMapping.Contains(rX, rZ))
             {
                 RegionBinary region = regionMapping.Get(rX, rZ);
-                if (canSave) region.WriteFile();
+                if (VE.DEBUG_CAN_SAVE) region.WriteFile();
                 regionMapping.Remove(rX, rZ);
                 Debug();
             }
@@ -66,7 +60,7 @@ namespace VoxelEngine.World
         /// </summary>
         public void RegionsWrite()
         {
-            if (canSave)
+            if (VE.DEBUG_CAN_SAVE)
             {
                 Hashtable hashtable = World.ChunkPr.CloneHashtable();
                 foreach (ChunkBase chunk in hashtable.Values)
@@ -94,8 +88,8 @@ namespace VoxelEngine.World
 
         protected void Debug()
         {
-            VoxelEngine.Debug.GetInstance().CacheRegion = regionMapping.Count;
-            VoxelEngine.Debug.GetInstance().CacheRegionMem = regionMapping.Mem();
+            VoxelEngine.Debug.CacheRegion = regionMapping.Count;
+            VoxelEngine.Debug.CacheRegionMem = regionMapping.Mem();
         }
 
         /// <summary>

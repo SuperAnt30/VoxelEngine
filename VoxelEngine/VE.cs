@@ -6,6 +6,20 @@
     public class VE
     {
         /// <summary>
+        /// Быстрый вариант для рендера чанков, вместо 2 потоков 8
+        /// но глюки пока с TPS
+        /// TODO::21-10-22 решить проблему TPS
+        /// </summary>
+        //public const bool IS_FAST = true;
+        public const bool IS_FAST = false;
+
+        /// <summary>
+        /// Параметр для тестов, false - сохранение не будет сохранять
+        /// </summary>
+        public const bool DEBUG_CAN_SAVE = true;
+        //public const bool DEBUG_CAN_SAVE = false;
+
+        /// <summary>
         /// Сколько чанков обрабатывается для альфы при смене чанка
         /// Количество общее число по спирале
         /// </summary>

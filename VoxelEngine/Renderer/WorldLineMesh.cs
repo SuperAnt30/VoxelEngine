@@ -20,7 +20,7 @@ namespace VoxelEngine.Renderer
         /// </summary>
         public void Draw()
         {
-            Debug.GetInstance().CountMeshLine = items.Count;
+            Debug.CountMeshLine = items.Count;
             foreach (DictionaryEntry s in items)
             {
                 LineMesh cm = s.Value as LineMesh;

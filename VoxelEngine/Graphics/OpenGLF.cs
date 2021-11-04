@@ -151,7 +151,7 @@ namespace VoxelEngine.Graphics
             TickAtlas();
 
             // Генерация дебага
-            Debug.GetInstance().RenderDebug();
+            Debug.RenderDebug();
         }
 
         /// <summary>
@@ -221,7 +221,7 @@ namespace VoxelEngine.Graphics
         /// </summary>
         protected void DrawBegin(float timeFrame, float timeAll)
         {
-            Debug.GetInstance().CountMesh = 0;
+            Debug.CountMesh = 0;
             
             Keyboard.GetInstance().UpdateFPS(timeFrame, timeAll);
 
@@ -258,7 +258,7 @@ namespace VoxelEngine.Graphics
             Sh.ShFont.Bind(gl);
             Sh.ShFont.SetUniformMatrix4(gl, "projview", Cam.Ortho2D);
             texture.BindTexture(VE.TEXTURE_FONT_KEY);
-            Debug.GetInstance().DrawDebug();
+            Debug.DrawDebug();
             Sh.ShFont.Unbind(gl);
         }
 

@@ -4,6 +4,7 @@ using VoxelEngine.Glm;
 using VoxelEngine.Graphics;
 using VoxelEngine.Renderer;
 using VoxelEngine.Renderer.Entity;
+using VoxelEngine.Util;
 using VoxelEngine.World.Blk;
 using VoxelEngine.World.Chk;
 
@@ -65,7 +66,7 @@ namespace VoxelEngine.Actions
                     OpenGLF.GetInstance().LineOn();
                     break;
                 case Keys.F3:
-                    Debug.GetInstance().IsDraw = !Debug.GetInstance().IsDraw;
+                    Debug.IsDraw = !Debug.IsDraw;
                     break;
                 case Keys.F4:
                     VEC.moving = VEMoving.FreeFlight;
@@ -80,15 +81,15 @@ namespace VoxelEngine.Actions
                     World.UpdateModePlayer();
                     break;
                 case Keys.F7:
-                    Debug.GetInstance().IsDrawChunk = !Debug.GetInstance().IsDrawChunk;
-                    if (!Debug.GetInstance().IsDrawChunk)
+                    Debug.IsDrawChunk = !Debug.IsDrawChunk;
+                    if (!Debug.IsDrawChunk)
                         OpenGLF.GetInstance().WorldLineM.Remove("chunk");
                     else
                         OpenGLF.GetInstance().WorldLineM.Chunk();
                     break;
                 case Keys.F8:
-                    Debug.GetInstance().IsDrawCollisium = !Debug.GetInstance().IsDrawCollisium;
-                    if (Debug.GetInstance().IsDrawCollisium)
+                    Debug.IsDrawCollisium = !Debug.IsDrawCollisium;
+                    if (Debug.IsDrawCollisium)
                     {
                         World.Entity.HitBox.RefrashDrawHitBox();
                     }
@@ -159,11 +160,24 @@ namespace VoxelEngine.Actions
                 case Keys.L:
                     ch = OpenGLF.GetInstance().Cam.ChunkPos;
                     //bl = OpenGLF.GetInstance().Cam.ToPositionBlock();
-                    //blk = Debag.GetInstance().RayCastBlock;
+                    MovingObjectPosition movingObject = Debug.RayCastObject;
                     chunk = World.GetChunk(ch.x, ch.y);
 
                     ///World.CheckLight(blk.Position);
-                    chunk.StartRecheckGaps(true);
+                    //chunk.StartRecheckGaps(true);
+                    
+
+
+
+                    if (movingObject.IsBlock())
+                    {
+                        //chunk.Light.RecheckGapsY(movingObject.Block.Position.X & 15, movingObject.Block.Position.Z & 15);
+                        //chunk.Light.GenerateHeightMapSky();
+                        //chunk.Light.StartRecheckGaps();
+                        //World.LightOld.CheckLightFor(movingObject.Block.Position.OffsetUp(), EnumSkyBlock.Sky);
+                    }
+
+
                     //chunk.RecheckGaps();
                     //chunk.GenerateSkylightMap();
                     //World.MarkBlocksDirtyVertical(blk.Position.X, blk.Position.Z, 0, 120);
@@ -181,6 +195,9 @@ namespace VoxelEngine.Actions
                     //        new vec2i(-1, 1), new vec2i(-1, 0), new vec2i(-1, -1),
                     //        new vec2i(0, -1), new vec2i(1, -1)});
                     //OnVoxelChanged(bl, new vec2i[0]);
+                    break;
+                case Keys.J:
+                    //Debug.GetInstance().IsLightOld = !Debug.GetInstance().IsLightOld;
                     break;
                 case Keys.M:
                     //ch = OpenGLF.GetInstance().Cam.ToPositionChunk();

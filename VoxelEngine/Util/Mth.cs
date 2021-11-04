@@ -62,5 +62,13 @@ namespace VoxelEngine.Util
             return v1 > v2 ? v1 : v2;
         }
 
+        /// <summary>
+        /// Возращаем наименьшее
+        /// </summary>
+        public static int Min(int v1, int v2)
+        {
+            return v1 > v2 ? v2 : v1;
+        }
+
     }
 }

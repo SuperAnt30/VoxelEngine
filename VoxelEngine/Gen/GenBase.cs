@@ -4,6 +4,7 @@ using VoxelEngine.Util;
 using VoxelEngine.World;
 using VoxelEngine.World.Blk;
 using VoxelEngine.World.Chk;
+using VoxelEngine.World.Chk.Light;
 
 namespace VoxelEngine.Gen
 {
@@ -16,25 +17,42 @@ namespace VoxelEngine.Gen
         /// Позиция в глобальном мире
         /// </summary>
         public vec3i Position { get; protected set; }
+        /// <summary>
+        /// Объект обработки освещения
+        /// </summary>
+        protected WorkingLight light;
+        /// <summary>
+        /// Объект облости изменения
+        /// </summary>
+        protected RangeModified modified;
+        /// <summary>
+        /// Надо ли обрабатывать освещение
+        /// </summary>
+        public bool IsLight { get; protected set; } = false;
 
         protected GenBase() { }
-        public GenBase(WorldBase world, vec3i pos) : base(world) => Position = pos;
+        public GenBase(WorldBase world, vec3i pos) : base(world)
+        {
+            Position = pos;
+            modified = new RangeModified(world, new BlockPos(pos));
+        }
+
+        public void Light()
+        {
+            IsLight = true;
+            light = new WorkingLight(World.GetChunk(Position.x >> 4, Position.z >> 4));
+        }
 
         /// <summary>
         /// Поставить
         /// </summary>
         public virtual bool Put() => Put(new Random());
-
+        
         /// <summary>
         /// Поставить
         /// </summary>
         public virtual bool Put(Random random) => false;
-
-        /// <summary>
-        /// Массив чанков используемых в генерации
-        /// </summary>
-        protected ChunkMap chunks = new ChunkMap();
-
+        
         /// <summary>
         /// Задать блок на прямую к вокселю
         /// </summary>
@@ -58,35 +76,29 @@ namespace VoxelEngine.Gen
                 ChunkBase chunk = World.GetChunk(cx, cz);
                 chunk.SetBlockState(vx, pos.Y, vz, eBlock);
                 chunk.SetParam4bit(vx, pos.Y, vz, (byte)properties);
-                if (eBlock != EnumBlock.Air && pos.Y > chunk.GetHeight(vx, vz))
+                // Проверка освещения
+                if (IsLight)
                 {
-                    chunk.SetUpBlock(vx, pos.Y, vz);
-                    chunk.PropagateSkylightOcclusion(vx, vz);
+                    chunk.Light.CheckLightSetBlock(pos, Blocks.GetBlockLightOpacity(eBlock), light);
                 }
-                chunks.Set(chunk);
+                else
+                {
+                    modified.BlockModify(pos);
+                }
             }
         }
 
         /// <summary>
         /// Проверка освещение и прочего, по итогу как поставим
         /// </summary>
-        protected void RecheckGaps()
+        protected void ModifiedRender()
         {
-            foreach (ChunkBase chunk in chunks.Values)
+            if (IsLight)
             {
-                chunk.RecheckGaps();
-                chunk.SetChunkModified();
-            }
-        }
-
-        /// <summary>
-        /// Создает карту высот для блока с нуля
-        /// </summary>
-        protected void GenerateHeightMap()
-        {
-            foreach (ChunkBase chunk in chunks.Values)
+                light.ModifiedRender();
+            } else
             {
-                chunk.GenerateHeightMap();
+                modified.ModifiedRender();
             }
         }
     }

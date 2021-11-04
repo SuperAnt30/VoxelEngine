@@ -1,6 +1,6 @@
 ﻿namespace VoxelEngine.World.Chk
 {
-    public class ChunkHeir
+    public class ChunkHeir : WorldHeir
     {
         /// <summary>
         /// Объект кэш чанка
@@ -12,6 +12,7 @@
         public ChunkHeir(ChunkBase chunk)
         {
             Chunk = chunk;
+            World = chunk.World;
         }
     }
 }

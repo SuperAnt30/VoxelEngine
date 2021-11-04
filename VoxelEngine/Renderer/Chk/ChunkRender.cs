@@ -75,7 +75,9 @@ namespace VoxelEngine.Renderer.Chk
         {
             Camera camera = OpenGLF.GetInstance().Cam;
 
-            int yMax = Chunk.GetHighestHeight() >> 4;
+            //int yMax = Chunk.HighestHeight >> 4;
+            //int yMax = Chunk.Light.HeightMapMax >> 4;
+            int yMax = 15;
             for (int i = 0; i <= yMax; i++)// Chunk.StorageArrays.Length; i++)
             {
                 if (Chunk.StorageArrays[i].Buffer.IsModifiedRender)

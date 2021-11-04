@@ -79,7 +79,7 @@ namespace VoxelEngine.World.Blk
             return eBlock == EnumBlock.Water || eBlock == EnumBlock.WaterFlowing;
         }
         /// <summary>
-        /// Сколько света вычитается для прохождения этого блока
+        /// Сколько света вычитается для прохождения этого блока Air = 0
         /// </summary>
         public static byte GetBlockLightOpacity(EnumBlock eblock)
         {
@@ -88,7 +88,7 @@ namespace VoxelEngine.World.Blk
                 case EnumBlock.Air: return 0;
                 case EnumBlock.Glass: return 2;
                 case EnumBlock.Cactus: return 0;
-                case EnumBlock.Water: return 2;
+                case EnumBlock.Water: return 1;
                 case EnumBlock.WaterFlowing: return 2;
                 case EnumBlock.Leaves: return 3;
                 case EnumBlock.Sapling: return 0;
@@ -96,8 +96,9 @@ namespace VoxelEngine.World.Blk
                 case EnumBlock.TallGrass: return 0;
                 case EnumBlock.Poppy: return 0;
                 case EnumBlock.Dandelion: return 0;
-                case EnumBlock.Torch: return 2;
-                case EnumBlock.Door: return 1; // 1 вместо 0, чтоб при удалении двери корректно обновлялись блоки под дверью
+                case EnumBlock.Torch: return 0;
+                case EnumBlock.Brol: return 3;
+                case EnumBlock.Door: return 0; // 1 вместо 0, чтоб при удалении двери корректно обновлялись блоки под дверью
             }
             return 15;
         }

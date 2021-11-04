@@ -13,7 +13,7 @@
         /// <summary>
         /// Сколько чанков видим
         /// </summary>
-        public static int chunkVisibility = 6;
+        public static int chunkVisibility = 8;
 
         /// <summary>
         /// Режим перемещения

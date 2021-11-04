@@ -11,6 +11,7 @@ using VoxelEngine.Entity;
 using System.Diagnostics;
 using System.Threading;
 using System.Drawing;
+using VoxelEngine.World.Chk;
 
 namespace VoxelEngine
 {
@@ -163,6 +164,7 @@ namespace VoxelEngine
                 World.Entity.RotationYaw,
                 World.Entity.RotationPitch
             );
+            World.UpdateModePlayer();
             World.Done += WorldRenderDone;
             World.Rendered += WorldRendered;
             World.Ticked += WorldTicked;
@@ -175,7 +177,7 @@ namespace VoxelEngine
             Mouse.GetInstance().MoveChanged += FormGame_MoveChanged;
 
             Keyboard.GetInstance().SetWorld(World);
-            Debug.GetInstance().SetWorld(World);
+            Debug.Instance(World);
 
             Tick();
             World.RunPackings();
@@ -228,7 +230,7 @@ namespace VoxelEngine
             counterFps.CalculateFrameRate();
             OpenGLF.GetInstance().Draw(timeFrame, timeAll);
 
-            Debug.GetInstance().CountFrame += stopwatchFrame.ElapsedTicks;
+            Debug.CountFrame += stopwatchFrame.ElapsedTicks;
         }
 
 
@@ -380,14 +382,13 @@ namespace VoxelEngine
         /// </summary>
         private void CounterFps_Tick(object sender, EventArgs e)
         {
-            Debug d = Debug.GetInstance();
-            d.Fps = counterFps.CountTick;
-            d.Tps = counterTps.CountTick;
-            d.Lc = counterLc.CountTick;
-            d.Rc = counterRc.CountTick;
-            d.Rca = counterRca.CountTick;
-            d.SpeedFrame = d.Fps == 0 ? 0 : d.CountFrame / ((float)d.Fps * System.Diagnostics.Stopwatch.Frequency / 1000f);
-            d.CountFrame = 0;
+            Debug.Fps = counterFps.CountTick;
+            Debug.Tps = counterTps.CountTick;
+            Debug.Lc = counterLc.CountTick;
+            Debug.Rc = counterRc.CountTick;
+            Debug.Rca = counterRca.CountTick;
+            Debug.SpeedFrame = Debug.Fps == 0 ? 0 : Debug.CountFrame / ((float)Debug.Fps * Stopwatch.Frequency / 1000f);
+            Debug.CountFrame = 0;
         }
 
         /// <summary>
@@ -404,23 +405,39 @@ namespace VoxelEngine
                 vec3 size = moving.Block.HitBox.Size;
                 //vec3 size2 = size;
                 vec3 bias = size / 2f;
-                size += new vec3(.01f);
+                vec3 sizeB = size + new vec3(.01f);
+                vec3 sizeO = size + new vec3(.015f);
+                vec3 sizeY = size + new vec3(.02f);
                 //size2 -= new vec3(.01f);
                 openGLF.WorldLineM.Box("cursor",
                     moving.IEnd.x + bias.x + from.x, moving.IEnd.y + bias.y + from.y, moving.IEnd.z + bias.z + from.z, 
-                    size.x, size.y, size.z, .2f, .2f, .2f, 1.0f);
+                    sizeB.x, sizeB.y, sizeB.z, .8f, .8f, .2f, 1.0f);
+                openGLF.WorldLineM.Box("cursoro",
+                    moving.IEnd.x + bias.x + from.x, moving.IEnd.y + bias.y + from.y, moving.IEnd.z + bias.z + from.z,
+                    sizeO.x, sizeO.y, sizeO.z, .9f, .9f, .2f, 1.0f);
+                openGLF.WorldLineM.Box("cursory",
+                    moving.IEnd.x + bias.x + from.x, moving.IEnd.y + bias.y + from.y, moving.IEnd.z + bias.z + from.z,
+                    sizeY.x, sizeY.y, sizeY.z, 1.0f, 1.0f, .2f, 1.0f);
                 //openGLF.WorldLineM.Box("cursor2",
                 //    iend.x + bias.x + from.x, iend.y + bias.y + from.y, iend.z + bias.z + from.z,
                 //    size2.x, size2.y, size2.z, .9f, .9f, .1f, .6f);
-                Debug.GetInstance().RayCastBlockUp = World.GetBlock(new BlockPos(moving.Block.Position.X, moving.Block.Position.Y + 1f, moving.Block.Position.Z));
+                Debug.RayCastBlockUp = World.GetBlock(new BlockPos(moving.Block.Position.X, moving.Block.Position.Y + 1f, moving.Block.Position.Z));
+                ChunkBase chunk = World.GetChunk(moving.Block.Position);
+                Debug.BB = string.Format(
+                    "h:{0} maxh:{1}",
+                    chunk.Light.GetHeight(moving.Block.Position.X & 15, moving.Block.Position.Z & 15),
+                    chunk.Light.HeightMapMax);
             }
             else
             {
                 openGLF.WorldLineM.Remove("cursor");
+                openGLF.WorldLineM.Remove("cursoro");
+                openGLF.WorldLineM.Remove("cursory");
                 //openGLF.WorldLineM.Remove("cursor2");
-                Debug.GetInstance().RayCastBlockUp = null;
+                Debug.RayCastBlockUp = null;
+                //Debug.GetInstance().BB = "";
             }
-            Debug.GetInstance().RayCastObject = moving;
+            Debug.RayCastObject = moving;
         }
 
         /// <summary>
@@ -497,7 +514,7 @@ namespace VoxelEngine
         /// </summary>
         private void Cam_PositionChunkChanged(object sender, EventArgs e)
         {
-            if (Debug.GetInstance().IsDrawChunk) 
+            if (Debug.IsDrawChunk) 
             {
                 OpenGLF.GetInstance().WorldLineM.Chunk();
             }
@@ -505,7 +522,7 @@ namespace VoxelEngine
             OpenGLF.GetInstance().WorldM.Cleaning(c);
             World.CleaningTrue();
             ChunkRender chunk = World.GetChunkRender(c.x, c.y);
-            Debug.GetInstance().ChunkAlpheBlock = chunk == null
+            Debug.ChunkAlpheBlock = chunk == null
                 ? 0 : chunk.CountBlockAlpha();
         }
 

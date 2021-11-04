@@ -10,6 +10,7 @@ using VoxelEngine.Models;
 using System.Collections;
 using VoxelEngine.Renderer.Entity;
 using VoxelEngine.Util;
+using VoxelEngine.Gen;
 
 namespace VoxelEngine.Renderer
 { 
@@ -45,10 +46,13 @@ namespace VoxelEngine.Renderer
         /// </summary>
         protected void PackageRender()
         {
-            Task.Factory.StartNew(() => { Render(true, true); });
-            Task.Factory.StartNew(() => { Render(false, true); });
-            Task.Factory.StartNew(() => { Render(true, false); });
-            Task.Factory.StartNew(() => { Render(false, false); });
+            PackageRender(true, true);
+            if (VE.IS_FAST)
+            {
+                PackageRender(false, true);
+                PackageRender(true, false);
+                PackageRender(false, false);
+            }
         }
         /// <summary>
         /// Запуск рендер паета
@@ -104,68 +108,30 @@ namespace VoxelEngine.Renderer
             for (int i = 0; i < chunkFC.Length; i++)
             {
                 int x = chunkFC[i].x;
-                if (Bit.IsEven(x) != isEvenX) continue;
                 int z = chunkFC[i].y;
-                if (Bit.IsEven(z) != isEvenZ) continue;
-
-                // быстрее, за счёт игнорирования IsArea
-                if (IsChunk(x, z))
+                if (VE.IS_FAST)
                 {
-                    ChunkRender cr = GetChunkRender(x, z);
-                    if (cr.Chunk.GeterationStatus != Gen.EnumGeterationStatus.Area)
+                    if (Bit.IsEven(x) != isEvenX) continue;
+                    if (Bit.IsEven(z) != isEvenZ) continue;
+                }
+                ChunkRender cr = GetChunkRender(x, z);
+                if (cr != null)
+                {
+                    if (cr.Chunk.PreparationStatus == EnumGeterationStatus.Ready)
                     {
-                        // Если у генерации чанка не было 
-                        if (IsArea(x, z)) cr.Chunk.GenerationArea();
-                    }
-                    if (!cr.IsRender())
-                    {
-                        // Рендер чанка, если норм то выходим с массива
-                        if (IsArea(x, z)) if (ChunkRender(cr, false)) break;
-                    }
-                    else if (i <= chunkChanged)
-                    {
-                        // Рендер алфа блоков, без выхода с цикла
-                        if (IsArea(x, z))
+                        if (!cr.IsRender())
                         {
+                            // Рендер чанка, если норм то выходим с массива
+                            if (ChunkRender(cr, false)) break;
+                        }
+                        else if (i <= chunkChanged)
+                        {
+                            // Рендер алфа блоков, без выхода с цикла
                             ChunkRender(cr, true);
                             if (chunkChanged == i) chunkChanged = -1;
                         }
                     }
                 }
-
-                // медленно
-
-                // Проверка облости на один чанк в округе, для рендера чанка
-                // кэш соседних чанков обязателен!
-                //if (IsArea(new vec2i(x, z), 1))
-                //{
-                //    ChunkRender cr = GetChunkRender(x, z);
-                //    if (cr.Chunk.GeterationStatus != Gen.EnumGeterationStatus.Area)
-                //    {
-                //        // Если у генерации чанка не было 
-                //        cr.Chunk.GenerationArea();
-                //    }
-                //    if (!cr.IsRender())
-                //    {
-                //        // Рендер чанка, если норм то выходим с массива
-                //        if (ChunkRender(cr, false)) break;
-                //    }
-                //    else if (i <= chunkChanged)
-                //    {
-                //        // Рендер алфа блоков, без выхода с цикла
-                //        ChunkRender(cr, true);
-                //        if (chunkChanged == i)
-                //        {
-                //            chunkChanged = -1;
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    // Если облости не готовы, нет смысла расматривать дальнейшие чанки
-                //    // скорее всего просто была подгрузка кэш чанков
-                //   // break;
-                //}
             }
             // ЭТОТ СЛИП чтоб не подвисал проц. И для перехода других потоков.
             System.Threading.Thread.Sleep(1); 
@@ -294,14 +260,6 @@ namespace VoxelEngine.Renderer
                 }
             }
             return new EntityDistance();
-        }
-
-        /// <summary>
-        /// Изменена сущьность попавшая под луч
-        /// </summary>
-        protected override void RayCastEntityChange()
-        {
-            RayCast(CameraPosition, CameraDirection, VE.MAX_DIST);
         }
 
         /// <summary>

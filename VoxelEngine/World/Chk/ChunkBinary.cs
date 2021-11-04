@@ -34,7 +34,7 @@ namespace VoxelEngine.World.Chk
                     Chunk.SetBiome(x, z, (EnumBiome)chunk.Biome[x, z]);
                 }
             }
-            Chunk.GeterationStatus = (EnumGeterationStatus)chunk.GeterationStatus;
+            Chunk.SetGenerationStatus(chunk.GeterationStatus);
             Chunk.SetBlockTickBins(chunk.BlockTickBins);
             Chunk.SetGroupModels(chunk.GroupBins);
             //Chunk.GeterationStatus = EnumGeterationStatus.Chunk;
@@ -69,7 +69,7 @@ namespace VoxelEngine.World.Chk
                     chunk.Biome[x, z] = (byte)Chunk.GetBiome(x, z);
                 }
             }
-            chunk.GeterationStatus = (byte)Chunk.GeterationStatus;
+            chunk.GeterationStatus = Chunk.GetGenerationStatus();
             chunk.BlockTickBins = Chunk.GetBlockTickBins();
             chunk.GroupBins = Chunk.GetGroupBins();
             return Serialize(chunk);

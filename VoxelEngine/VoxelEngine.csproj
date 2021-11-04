@@ -249,6 +249,10 @@
     <Compile Include="World\Blk\EnumBlock.cs" />
     <Compile Include="World\Blk\Model\Box.cs" />
     <Compile Include="World\Blk\Model\Face.cs" />
+    <Compile Include="World\Chk\Light\ChunkLight.cs" />
+    <Compile Include="World\Chk\Light\LightStruct.cs" />
+    <Compile Include="World\Chk\Light\WorkingLight.cs" />
+    <Compile Include="World\RangeModified.cs" />
     <Compile Include="World\WorldCache.cs" />
     <Compile Include="World\WorldHeirSet.cs" />
     <Compile Include="World\WorldHeir.cs" />
@@ -349,7 +353,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Tasks.txt" />
+  </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
       <Visible>False</Visible>

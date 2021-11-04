@@ -54,13 +54,13 @@ namespace VoxelEngine.World.Chk
         /// <summary>
         /// Загрузить чанк
         /// </summary>
-        public void LoadChunk(int x, int z)
+        public ChunkBase LoadChunk(int x, int z)
         {
             ChunkBase chunk = new ChunkBase(world, x, z);
             chunkMapping.Set(chunk);
             chunk.ChunkLoad();
-            Debug.GetInstance().CacheChunk = Count();
-            //return chunk;
+            Debug.CacheChunk = Count();
+            return chunk;
         }
 
         /// <summary>

@@ -261,13 +261,10 @@ namespace VoxelEngine.Glm
             return result;
         }
 
-
-        //  TODO: this is actually defined as an extension, put in the right file.
         public static mat4 rotate(float angle, vec3 v)
         {
             return rotate(mat4.identity(), angle, v);
         }
-
 
         /// <summary>
         /// Applies a scale transformation to matrix <paramref name="m"/> by vector <paramref name="v"/>.

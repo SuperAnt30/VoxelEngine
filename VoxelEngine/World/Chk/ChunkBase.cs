@@ -11,6 +11,7 @@ using VoxelEngine.Util;
 using VoxelEngine.Vxl;
 using VoxelEngine.World.Biome;
 using VoxelEngine.World.Blk;
+using VoxelEngine.World.Chk.Light;
 
 namespace VoxelEngine.World.Chk
 {
@@ -33,10 +34,9 @@ namespace VoxelEngine.World.Chk
         /// </summary>
         public bool IsChunkLoaded { get; protected set; } = false;
         /// <summary>
-        /// Генерация чанка
+        /// Подготовка чанка к рендеру
         /// </summary>
-        public EnumGeterationStatus GeterationStatus { get; set; } = EnumGeterationStatus.None;
-
+        public EnumGeterationStatus PreparationStatus { get; protected set; } = EnumGeterationStatus.Chunk;
         /// <summary>
         /// Прячем при необходимости чанк рендера
         /// </summary>
@@ -54,12 +54,16 @@ namespace VoxelEngine.World.Chk
         /// Колекция групповых моделей
         /// </summary>
         public GroupMap GroupModel { get; protected set; } = new GroupMap();
+        /// <summary>
+        /// Объект работы с освещением
+        /// </summary>
+        public ChunkLight Light { get; protected set; }
 
         protected ChunkBase() { }
         public ChunkBase(WorldBase worldIn, int x, int z)
         {
-            Initialize(x, z);
             World = worldIn;
+            Initialize(x, z);
         }
 
         protected void Initialize(int x, int z)
@@ -67,14 +71,8 @@ namespace VoxelEngine.World.Chk
             X = x;
             Z = z;
             for (int i = 0; i < StorageArrays.Length; i++) StorageArrays[i] = new ChunkStorage();
-            //for (int x = 0; x < 16; x++)
-            //{
-            //    for (int z = 0; z < 16; z++)
-            //    {
-            //        eBiomes[x, z]
-            //    }
-            //}
             chunkBinary = new ChunkBinary(this);
+            Light = new ChunkLight(this);
         }
 
         /// <summary>
@@ -210,7 +208,7 @@ namespace VoxelEngine.World.Chk
             {
                 voxel.SetParam4bit(param);
                 SetVoxel(x, y, z, voxel);
-                SetChunkModified();
+               // SetChunkModified();
             }
         }
 
@@ -224,7 +222,9 @@ namespace VoxelEngine.World.Chk
             {
                 voxel.SetLightFor(type, light);
                 SetVoxel(x, y, z, voxel);
-                SetChunkModified();
+                // TODO::211022 узнать и вынести за пределы, обработчика всех вокселей. По команде
+                //SetChunkModified(); 
+                
             }
         }
 
@@ -239,6 +239,9 @@ namespace VoxelEngine.World.Chk
         }
 
         #endregion
+
+
+        public bool IsLoad { get; protected set; } = false;
 
         /// <summary>
         /// Загрузить или сгенерировать данные чанка
@@ -256,13 +259,14 @@ namespace VoxelEngine.World.Chk
             if (b != null)
             {
                 chunkBinary.Read(b);
-                GenerateHeightMap();
+                IsLoad = true;
+                //Light.GenerateHeightMap();
                 //StartRecheckGaps(); // TODO::Под вопросом, возможно записать данные в файл
             }
             else
             {
                 // Если его нет, то генерируем
-                Generation();
+                GenerationChunk();
                 //GenerateHeightMap();
                 // TODO::TEST
                 //GenerateSkylightMap();
@@ -351,7 +355,7 @@ namespace VoxelEngine.World.Chk
         {
             // TODO:: пробежаться по блокам и убрать блоки с освещением и после этого генерацию
 
-            Generation();
+            GenerationChunk();
             GenerationArea();
             //GenerateSkylightMap();
             
@@ -360,18 +364,40 @@ namespace VoxelEngine.World.Chk
         }
 
         /// <summary>
-        /// Генерация тикущего чанка без соседних
+        /// Получить параметр генерации чанка
         /// </summary>
-        public void Generation()
+        /// <returns></returns>
+        public byte GetGenerationStatus()
         {
-            ChunkGenerate chunkGenerate = new ChunkGenerate(this);
-            chunkGenerate.Generation();
-            //SetChunkModified();
-            GeterationStatus = EnumGeterationStatus.Chunk;
+            byte status = (byte)PreparationStatus;
+            if (status > 2) status = 2;
+            return status;
         }
 
         /// <summary>
-        /// Генерация с соседними чанками, деревья освещение
+        /// Получить параметр генерации чанка
+        /// </summary>
+        /// <returns></returns>
+        public void SetGenerationStatus(byte status)
+        {
+            if (status > 2) status = 2;
+            PreparationStatus = (EnumGeterationStatus)status;
+        }
+
+        #region Generation
+
+        /// <summary>
+        /// Генерация тикущего чанка без соседних
+        /// </summary>
+        public void GenerationChunk()
+        {
+            ChunkGenerate chunkGenerate = new ChunkGenerate(this);
+            chunkGenerate.Generation();
+            PreparationStatus = EnumGeterationStatus.Chunk;
+        }
+
+        /// <summary>
+        /// Генерация с соседними чанками, деревья
         /// </summary>
         public void GenerationArea()
         {
@@ -379,13 +405,36 @@ namespace VoxelEngine.World.Chk
             // Генерация деревьев
             chunkGenerate.GenerationArea(); // долгий процесс
 
-            //chunkGenerate.Chunk.GenerateHeightMap(); // вместо освещения
-            // Проверка освещения
-            StartRecheckGaps(true); // очень долгий процесс
-
-            GeterationStatus = EnumGeterationStatus.Area;
-            SetChunkModified();
+            //Light.GenerateHeightMap();
+            PreparationStatus = EnumGeterationStatus.Area;
         }
+
+        /// <summary>
+        /// Генерация с соседними чанками, деревья освещение
+        /// </summary>
+        public void GenerationDoubleArea()
+        {
+            //LightOld.GenerateHeightMapSky();
+            //LightOld.StartRecheckGaps();
+
+            if (IsLoad) Light.GenerateHeightMap();
+            else Light.GenerateHeightMapSky();
+            //GenerateHeightMap(); // вместо освещения
+            // Проверка освещения
+            // StartRecheckGaps(true); // очень долгий процесс
+            PreparationStatus = EnumGeterationStatus.DoubleArea;
+        }
+
+        /// <summary>
+        /// Генерация подготовка для рендера
+        /// </summary>
+        public void GenerationReady()
+        {
+            if (!IsLoad) Light.StartRecheckGaps();
+            PreparationStatus = EnumGeterationStatus.Ready;
+        }
+
+        #endregion
 
         /// <summary>
         /// Генерация чанка
@@ -505,55 +554,7 @@ namespace VoxelEngine.World.Chk
         //    }
         //}
 
-        #region Light
-
-        protected int heightMapMinimum = 256;
-        protected int heightMapMaximum = 0;
-
-        /// <summary>
-        /// Возвращает низкое значение карты высот
-        /// </summary>
-        public int GetLowestHeight()
-        {
-            return heightMapMinimum;
-        }
-        /// <summary>
-        /// Возвращает высокое значение карты высот
-        /// </summary>
-        public int GetHighestHeight()
-        {
-            return heightMapMaximum;
-        }
-
-        /// <summary>
-        /// Возвращает значение карты высот в этой координате x, z в чанке. 
-        /// </summary>
-        public int GetHeight(int x, int z)
-        {
-            return heightMap[x, z];
-        }
-
-        /// <summary>
-        /// Обновить высоту если это надо
-        /// </summary>
-        public void UpdateHeight(int x, int y, int z)
-        {
-            if (heightMap[x, z] < y) heightMap[x, z] = y;
-            if (heightMapMaximum < y) heightMapMaximum = y;
-        }
-        /// <summary>
-        /// Карта высот по чанку, XZ
-        /// </summary>
-        protected int[,] heightMap = new int[16, 16];
-
-        /// <summary>
-        /// Может ли видеть небо
-        /// </summary>
-        /// <param name="pos"></param>
-        public bool CanSeeSky(BlockPos pos)
-        {
-            return pos.Y >= heightMap[pos.X & 15, pos.Z & 15];
-        }
+        
 
         /// <summary>
         /// Заменить блок
@@ -572,7 +573,7 @@ namespace VoxelEngine.World.Chk
             //    this.precipitationHeightMap[var6] = -999;
             //}
 
-            int var7 = heightMap[x, z];
+            //int yh = Light.GetHeight(x, z);
             BlockBase blockOld = GetBlock0(new vec3i(x, y, z));
 
             //EnumBlock eBlockOld = GetBlockState(pos);
@@ -605,7 +606,7 @@ namespace VoxelEngine.World.Chk
                 if (blockNew.EBlock != EnumBlock.Sand && blockNew.EBlock != EnumBlock.Cactus) return null;
             }
 
-            bool var12 = false;
+           // bool var12 = false;
             if (block.EBlock == EnumBlock.Water)
             {
                 //block.Voxel.SetParam4bit(2);
@@ -649,38 +650,40 @@ namespace VoxelEngine.World.Chk
                 }
             }
 
-            if (var12)
-            {
-                // Если не было генерации
-                GenerateSkylightMap();
-            }
-            else
+            //if (y >= yh)
+            //{
+            //    // Если не было генерации
+            //    Light.GenerateHeightMapSky();
+            //    //GenerateSkylightMap();
+            //}
+            //else
             {
                 //int var13 = block.Voxel.GetBlockLightOpacity();
                 //int var14 = blockOld.Voxel.GetBlockLightOpacity();
-                int var13 = block.GetBlockLightOpacity();
-                int var14 = blockOld.GetBlockLightOpacity();
+                /**
+                int opacity = block.GetBlockLightOpacity();
+                int opacityOld = blockOld.GetBlockLightOpacity();
 
-                if (var13 > 0)
+                if (opacity > 0)
                 {
-                    if (y >= var7)
+                    if (y >= yh)
                     {
-                        _RelightBlock(x, y + 1, z);
+                        Light.RelightBlock(x, y + 1, z);
                     }
                 }
-                else if (y == var7 - 1)
+                else if (y == yh - 1)
                 {
-                    _RelightBlock(x, y, z);
+                    Light.RelightBlock(x, y, z);
                 }
-
-                if (var13 != var14 && (var13 < var14 || GetLightFor(x, y, z, EnumSkyBlock.Sky) > 0 || GetLightFor(x, y, z, EnumSkyBlock.Block) > 0))
-                {
-                    //PropagateSkylightOcclusion(x, z);
-                }
+                */
+                //if (opacity != opacityOld && (opacity < opacityOld || GetLightFor(x, y, z, EnumSkyBlock.Sky) > 0 || GetLightFor(x, y, z, EnumSkyBlock.Block) > 0))
+                //{
+                //    //PropagateSkylightOcclusion(x, z);
+                //}
             }
 
             // пометка на редактирование
-            SetChunkModified();
+            //SetChunkModified();
 
             return blockOld;
         }
@@ -713,332 +716,10 @@ namespace VoxelEngine.World.Chk
         }
 
         /// <summary>
-        /// Задать верхний блок на x, z
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        public void SetUpBlock(int x, int y, int z)
-        {
-            heightMap[x, z] = y;
-            if (heightMapMaximum < y) heightMapMaximum = y;
-        }
-
-        /// <summary>
-        /// Сколько света вычитается для прохождения этого блока
-        /// </summary>
-        public byte GetBlockLightOpacity(int x, int y, int z)
-        {
-            return Blocks.GetBlockLightOpacity(GetVoxel(x, y, z).GetEBlock());
-        }
-
-        /// <summary>
-        /// Создает карту высот для блока с нуля
-        /// </summary>
-        public void GenerateHeightMap()
-        {
-            int y0 = 239;// this.getTopFilledSegment();
-            heightMapMinimum = 1024;
-            heightMapMaximum = 0;
-
-            for (int x = 0; x < 16; ++x)
-            {
-                int z = 0;
-
-                while (z < 16)
-                {
-                    // this.precipitationHeightMap[x + (z << 4)] = -999;
-                    int y = y0 + 16;
-
-                    while (true)
-                    {
-                        if (y > 0)
-                        {
-                            //Block block = GetBlock0(new vec3i(x, y -1, z));
-
-                            //if (block.Voxel.GetBlockLightOpacity() == 0)
-                            if (GetBlockLightOpacity(x, y - 1, z) == 0)
-
-                            {
-                                --y;
-                                continue;
-                            }
-
-                            heightMap[x, z] = y;
-
-                            if (y < heightMapMinimum) heightMapMinimum = y;
-                            if (y > heightMapMaximum) heightMapMaximum = y;
-                        }
-
-                        ++z;
-                        break;
-                    }
-                }
-            }
-
-            //this.isModified = true;
-        }
-        /// <summary>
-        /// Создает начальную карту светового чанка для блока при генерации или загрузке.
-        /// </summary>
-        public void GenerateSkylightMap()
-        {
-            // return;
-            //GenerateHeightMap();
-            // Возвращает самый верхний экземпляр ExtendedBlockStorage для этого Chunk, который фактически содержит блок.
-            int y0 = 239;// 239;// this.getTopFilledSegment();
-            heightMapMinimum = 1024;// Integer.MAX_VALUE;
-
-            for (int x = 0; x < 16; ++x)
-            {
-                int z = 0;
-
-                while (z < 16)
-                {
-                    // this.precipitationHeightMap[x + (z << 4)] = -999;
-                    int y = y0 + 16;
-
-                    while (true)
-                    {
-                        if (y > 0)
-                        {
-                            if (GetBlockLightOpacity(x, y - 1, z) == 0)
-                            {
-                                --y;
-                                continue;
-                            }
-                            heightMap[x, z] = y;
-
-                            if (y < heightMapMinimum) heightMapMinimum = y;
-                            if (y > heightMapMaximum) heightMapMaximum = y;
-                        }
-
-                        y = 15;
-                        int y2 = y0 + 16 - 1;
-
-                        do
-                        {
-                            int lightOp = GetBlockLightOpacity(x, y2, z);
-                            if (lightOp == 0 && y != 15) lightOp = 1;
-                            y -= lightOp;
-
-                            if (y > 0)
-                            {
-                                SetLightFor(x, y2, z, EnumSkyBlock.Sky, (byte)y);
-                                World.CheckLightFor(EnumSkyBlock.Sky, new BlockPos(X << 4 + x, y2, Z << 4 + z));
-                            }
-
-                            --y2;
-                        }
-                        while (y2 > 0 && y > 0);
-
-                        ++z;
-                        break;
-                    }
-                }
-            }
-
-            return;
-            //  this.isModified = true;
-        }
-
-        
-
-        /// <summary>
-        /// Инициирует пересчет как блочного света, так и небесного света для данного блока внутри блока.
-        /// </summary>
-        /// <param name="x">в чанке 0-15</param>
-        /// <param name="y">в чанке 0-15</param>
-        /// <param name="z">в чанке 0-15</param>
-        public void _RelightBlock(int x, int y, int z)
-        {
-            int yh = heightMap[x, z] & 255;
-            int yh0 = yh;
-
-            if (y > yh)
-            {
-                yh0 = y;
-            }
-
-            while (yh0 > 0 && GetBlockLightOpacity(x, yh0 - 1, z) == 0)
-            {
-                --yh0;
-            }
-
-            // if (var5 != var4)
-            {
-                int xReal = X << 4 | x;
-                int zReal = Z << 4 | z;
-                World.MarkBlocksDirtyVertical(xReal, zReal, yh0, yh);
-                heightMap[x, z] = yh0;
-                int y0;
-                int var13;
-
-                // if (!this.worldObj.provider.getHasNoSky())
-                {
-
-                    if (yh0 < yh)
-                    {
-                        for (y0 = yh0; y0 < yh; ++y0)
-                        {
-                            SetLightFor(x, y0 & 15, z, EnumSkyBlock.Sky, 15);
-                        }
-                    }
-                    else
-                    {
-                        for (y0 = yh; y0 < yh0; ++y0)
-                        {
-                            SetLightFor(x, y0 & 15, z, EnumSkyBlock.Sky, 0);
-                        }
-                    }
-
-                    y0 = 15;
-
-                    while (yh0 > 0 && y0 > 0)
-                    {
-                        --yh0;
-                        var13 = GetBlockLightOpacity(x, yh0, z);
-                        if (var13 == 0) var13 = 1;
-                        y0 -= var13;
-                        if (y0 < 0) y0 = 0;
-                        SetLightFor(x, y0 & 15, z, EnumSkyBlock.Sky, (byte)y0);
-                    }
-                }
-
-                y0 = heightMap[x, z];
-                var13 = yh;
-                int var14 = y0;
-
-                if (y0 < yh)
-                {
-                    var13 = y0;
-                    var14 = yh;
-                }
-
-                if (y0 < heightMapMinimum) heightMapMinimum = y0;
-                if (y0 > heightMapMaximum) heightMapMaximum = y0;
-
-                for (int i = 0; i < 4; i++)
-                {
-                    vec3i var12 = EnumFacing.DirectionHorizontalVec(EnumFacing.GetHorizontal(i));
-                    UpdateSkylightNeighborHeight(xReal + var12.x, zReal + var12.z, var13, var14);
-                }
-
-                UpdateSkylightNeighborHeight(xReal, zReal, var13, var14);
-
-                //this.isModified = true;
-            }
-        }
-
-        protected void UpdateSkylightNeighborHeight(int x, int z, int startY, int endY)
-        {
-            //if (endY > startY)
-            if (endY > startY && World.IsArea(new BlockPos(x, 64, z), 16))
-            {
-                for (int y = startY; y < endY; y++)
-                {
-                    World.CheckLightFor(EnumSkyBlock.Sky, new BlockPos(x, y, z));
-                }
-                //SetChunkModified(); // TODO::проверить, событие скорее всего не надо
-            }
-        }
-
-        /// <summary>
-        /// Проверяет высоту блока рядом с видимым с неба блоком и при необходимости планирует обновление освещения. 
-        /// TODO::#
-        /// </summary>
-        //protected void CheckSkylightNeighborHeight(int x, int z, int startY)
-        //{
-        //    int y = World.GetHorizon(new BlockPos(x, 0, z)).Y;
-
-        //    if (y > startY)
-        //    {
-        //        UpdateSkylightNeighborHeight(x, z, startY, y + 1);
-        //    }
-        //    else if (y < startY)
-        //    {
-        //        UpdateSkylightNeighborHeight(x, z, y, startY + 1);
-        //    }
-        //}
-
-        /// <summary>
-        /// Какие столбцы нуждаются в обновлении skylightMaps 
-        /// </summary>
-        protected bool[,] updateSkylightColumns = new bool[16,16];
-        /// <summary>
-        /// Надо ли обновлять дневной свет под перекрытием
-        /// </summary>
-        protected bool isGapLightingUpdated = true;
-
-        /// <summary>
-        /// Запуск проверки бокового небесного освещения
-        /// </summary>
-        public void StartRecheckGaps(bool isHeight)
-        {
-            if (isHeight) GenerateHeightMap();
-
-            for (int x = 0; x < 16; x++)
-            {
-                for (int z = 0; z < 16; z++)
-                {
-                    updateSkylightColumns[x, z] = true;
-                }
-            }
-            isGapLightingUpdated = true;
-            RecheckGaps();
-        }
-
-        /// <summary>
-        /// Распространяет значение освещенности заданного видимого неба блока вниз и вверх на соседние блоки по мере необходимости. 
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="z"></param>
-        public void PropagateSkylightOcclusion(int x, int z)
-        {
-            updateSkylightColumns[x, z] = true;
-            isGapLightingUpdated = true;
-        }
-
-        /// <summary>
-        /// Проверка бокового небесного освещения
-        /// </summary>
-        public void RecheckGaps()
-        {
-            if (!isGapLightingUpdated) return;
-            int posX = X * 16;
-            int posZ = Z * 16;
-            if (World.IsArea(new BlockPos(posX + 8, 64, posZ + 8), 16))
-            {
-                for (int x = 0; x < 16; x++)
-                {
-                    for (int z = 0; z < 16; z++)
-                    {
-                        if (updateSkylightColumns[x, z])
-                        {
-                            updateSkylightColumns[x, z] = false;
-                            int yl = GetLowestHeight();
-                            if (yl > 16) yl -= 8;
-                            int yh = GetHighestHeight() + 1;
-                            UpdateSkylightNeighborHeight(posX + x, posZ + z, yl, yh);
-                            //UpdateSkylightNeighborHeight(posX + x, posZ + z, 16, 200);
-                            // TODO:: алгоритм не доработан, надо пробегать точнее проверяя реальные блоки
-                        }
-                    }
-                }
-                isGapLightingUpdated = false;
-                Save();
-            }
-        }
-
-        #endregion
-
-        /// <summary>
         /// Такт 20 в секунду
         /// </summary>
         public void Tick(long tick)
         {
-            // Проверка рендера и освещения
-            RecheckGaps();
             // Блоки для тактов
             BlocksTick();
         }
@@ -1047,8 +728,6 @@ namespace VoxelEngine.World.Chk
         /// Массив действий в чанке надо блоками жидкостей ()
         /// </summary>
         protected Hashtable liquidTicks = new Hashtable();
-
-       
 
         /// <summary>
         /// Вернуть массив задач
@@ -1123,6 +802,7 @@ namespace VoxelEngine.World.Chk
                     {
                         // ростёт дерево
                         GenTrees trees = new GenTrees(World, block.Position.ToVec3i());
+                        trees.Light();
                         if (!trees.Put())
                         {
                             AddTicks(liquidTicksNew, new BlockTick(block.Position, block.EBlock, VE.TICK_TREE_REPEAT));
@@ -1132,6 +812,7 @@ namespace VoxelEngine.World.Chk
                     {
                         // проверка листвы в 5 блоков от древесины
                         GenTrees trees = new GenTrees(World, block.Position.ToVec3i());
+                        trees.Light();
                         if (!trees.IsWood(block.Position))
                         {
                             BlockBase blockNew = Blocks.GetAir(block.Position);
@@ -1167,7 +848,7 @@ namespace VoxelEngine.World.Chk
             liquidTicksNew.Clear();
             if (OpenGLF.GetInstance().Cam.ChunkPos == new vec2i(X, Z))
             {
-                Debug.GetInstance().ChunkLiquidTicks = liquidTicks.Count;
+                Debug.ChunkLiquidTicks = liquidTicks.Count;
             }
         }
 

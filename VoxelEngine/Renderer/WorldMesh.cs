@@ -30,7 +30,7 @@ namespace VoxelEngine.Renderer
         /// </summary>
         public void DrawEntities()
         {
-            Debug.GetInstance().CountMeshEntities = entities.Count;
+            Debug.CountMeshEntities = entities.Count;
 
             foreach (EntityMesh entity in entities.Values)
             {
@@ -51,8 +51,8 @@ namespace VoxelEngine.Renderer
         /// </summary>
         public void Draw()
         {
-            Debug.GetInstance().CountPoligonChunk = 0;
-            Debug.GetInstance().CountMeshChunk = 0;
+            Debug.CountPoligonChunk = 0;
+            Debug.CountMeshChunk = 0;
             Camera cam = OpenGLF.GetInstance().Cam;
             vec2i[] chunkFC = cam.ChunkLoadingFC;
 
@@ -70,13 +70,13 @@ namespace VoxelEngine.Renderer
                         ChunkMeshs cm = chunks[key] as ChunkMeshs;
                         // Прорисовка чанка сплошных блоков
                         cm.MeshDense.Draw();
-                        Debug.GetInstance().CountMeshChunk++;
-                        Debug.GetInstance().CountPoligonChunk += cm.MeshDense.CountPoligon;
+                        Debug.CountMeshChunk++;
+                        Debug.CountPoligonChunk += cm.MeshDense.CountPoligon;
                         if (cm.MeshAlpha.CountPoligon > 0)
                         {
                             // Прорисовка чанка альфа блоков если такие имеются
                             cm.MeshAlpha.Draw();
-                            Debug.GetInstance().CountPoligonChunk += cm.MeshAlpha.CountPoligon;
+                            Debug.CountPoligonChunk += cm.MeshAlpha.CountPoligon;
                         }
                     }
                 }
@@ -92,7 +92,7 @@ namespace VoxelEngine.Renderer
             if (!chunks.ContainsKey(key))
             {
                 chunks.Add(key, new ChunkMeshs(x, z));
-                Debug.GetInstance().RenderChunk = chunks.Count;
+                Debug.RenderChunk = chunks.Count;
             }
 
             return chunks[key] as ChunkMeshs;
@@ -181,7 +181,7 @@ namespace VoxelEngine.Renderer
                 }
             }
 
-            Debug.GetInstance().RenderChunk = chunks.Count;
+            Debug.RenderChunk = chunks.Count;
         }
 
         /// <summary>

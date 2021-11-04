@@ -215,7 +215,7 @@ namespace VoxelEngine.Util
         /// </summary>
         public void RefrashDrawHitBox()
         {
-            if (Debug.GetInstance().IsDrawCollisium) BufferHitBox();
+            if (Debug.IsDrawCollisium) BufferHitBox();
         }
 
         /// <summary>

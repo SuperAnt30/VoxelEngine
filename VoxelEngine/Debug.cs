@@ -9,171 +9,191 @@ using VoxelEngine.World.Blk;
 using VoxelEngine.World.Chk;
 using VoxelEngine.Graphics.Font;
 using VoxelEngine.Graphics;
-using System.Windows.Forms;
-using VoxelEngine.Entity;
 
 namespace VoxelEngine
 {
     /// <summary>
     /// Одиночный объект отладки
     /// </summary>
-    public class Debug : WorldHeirSet
+    public class Debug
     {
-        #region Instance
-
-        private static Debug instance;
-        private Debug()
-        {
-            Version ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            Version = string.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
-            Revision = ver.Revision.ToString();
-        }
+        #region Свойства
 
         /// <summary>
-        /// Передать по ссылке объект если он создан, иначе создать
+        /// Объект кэш чанка
         /// </summary>
-        /// <returns>объект Debag</returns>
-        public static Debug GetInstance()
-        {
-            if (instance == null) instance = new Debug();
-            return instance;
-        }
+        public static WorldBase World { get; protected set; }
+        /// <summary>
+        /// Версия продукта
+        /// </summary>
+        public static string Version { get; protected set; }
+        /// <summary>
+        /// Версия ребилдинга
+        /// </summary>
+        public static string Revision { get; protected set; }
+        /// <summary>
+        /// Кадры в секунду
+        /// </summary>
+        public static int Fps { get; set; } = 0;
+        /// <summary>
+        /// Тики в секунду (20)
+        /// </summary>
+        public static int Tps { get; set; } = 0;
+        /// <summary>
+        /// Загрузка чанков в секунду
+        /// </summary>
+        public static int Lc { get; set; } = 0;
+        /// <summary>
+        /// Рендер чанков в секунду
+        /// </summary>
+        public static int Rc { get; set; } = 0;
+        /// <summary>
+        /// Рендер чанков альфа в секунду
+        /// </summary>
+        public static int Rca { get; set; } = 0;
+        /// <summary>
+        /// Скорость кадра 
+        /// </summary>
+        public static float SpeedFrame { get; set; } = 0;
+        /// <summary>
+        /// Количество кадров за секунду
+        /// </summary>
+        public static long CountFrame { get; set; } = 0;
+        /// <summary>
+        /// Куда смотрит курсор
+        /// </summary>
+        public static MovingObjectPosition RayCastObject { get; set; }
+        /// <summary>
+        /// Куда смотрит курсор блок сверху
+        /// </summary>
+        public static BlockBase RayCastBlockUp { get; set; }
+        /// <summary>
+        /// Выводить ли на экран
+        /// </summary>
+        public static bool IsDraw { get; set; } = true;
+        /// <summary>
+        /// Выводить ли на экран колизию
+        /// </summary>
+        public static bool IsDrawCollisium { get; set; } = false;
+        /// <summary>
+        /// Выводить ли на экран чанк
+        /// </summary>
+        public static bool IsDrawChunk { get; set; } = false;
+        /// <summary>
+        /// Количество мешей
+        /// </summary>
+        public static long CountMesh { get; set; } = 0;
+        /// <summary>
+        /// Количество мешей в чанках
+        /// </summary>
+        public static long CountMeshChunk { get; set; } = 0;
+        /// <summary>
+        /// Количество мешей в чанках
+        /// </summary>
+        public static int CountPoligonChunk { get; set; } = 0;
+        /// <summary>
+        /// Количество отрендереных линий
+        /// </summary>
+        public static int CountMeshLine { get; set; } = 0;
+        /// <summary>
+        /// Количество отрендереных чанков
+        /// </summary>
+        public static int RenderChunk { get; set; } = 0;
+        /// <summary>
+        /// Количество кэш чанков
+        /// </summary>
+        public static int CacheChunk { get; set; } = 0;
+        /// <summary>
+        /// Количество кэш regionFile
+        /// </summary>
+        public static int CacheRegion { get; set; } = 0;
+        /// <summary>
+        /// Количество памяти кэш regionFile
+        /// </summary>
+        public static int CacheRegionMem { get; set; } = 0;
+        /// <summary>
+        /// Жидкие задачи в чанке
+        /// </summary>
+        public static int ChunkLiquidTicks { get; set; } = 0;
+        /// <summary>
+        /// Количество альфа блоков в текущем чанке
+        /// </summary>
+        public static int ChunkAlpheBlock { get; set; } = 0;
+        /// <summary>
+        /// Количество мобов
+        /// </summary>
+        public static int Entities { get; set; } = 0;
+        /// <summary>
+        /// Количество мешей мобов
+        /// </summary>
+        public static long CountMeshEntities { get; set; } = 0;
+        /// <summary>
+        /// Количество блоков изменённых освещения при операции
+        /// </summary>
+        public static int CountSetBlockLight { get; set; } = 0;
+        /// <summary>
+        /// Милисекунд затраченых на изменённых освещения при операции
+        /// </summary>
+        public static long TimeSetBlockLight { get; set; } = 0;
+        /// <summary>
+        /// Тип блока в руке
+        /// </summary>
+        public static EnumBlock NumberBlock { get; set; } = EnumBlock.Stone;
+
+        public static string BB { get; set; } = "";
+        public static float CountTest { get; set; } = 0;
+        public static int CountTest2 { get; set; } = 0;
 
         #endregion
 
+        /// <summary>
+        /// Объект 
+        /// </summary>
+        protected static TextRender textRender;
+
         public static void Log(string fileName, string logMessage, params object[] args)
         {
-
             using (StreamWriter w = File.AppendText(fileName + ".txt"))
             {
                 w.Write($"{DateTime.Now.ToLongTimeString()} {DateTime.Now.ToShortDateString()}");
                 w.WriteLine(" :" + string.Format(logMessage, args));
             }
-
         }
 
         /// <summary>
-        /// Версия продукта
+        /// Задать объект мира
         /// </summary>
-        public string Version { get; protected set; }
-        /// <summary>
-        /// Версия ребилдинга
-        /// </summary>
-        public string Revision { get; protected set; }
-        /// <summary>
-        /// Кадры в секунду
-        /// </summary>
-        public int Fps { get; set; } = 0;
-        /// <summary>
-        /// Тики в секунду (20)
-        /// </summary>
-        public int Tps { get; set; } = 0;
-        /// <summary>
-        /// Загрузка чанков в секунду
-        /// </summary>
-        public int Lc { get; set; } = 0;
-        /// <summary>
-        /// Рендер чанков в секунду
-        /// </summary>
-        public int Rc { get; set; } = 0;
-        /// <summary>
-        /// Рендер чанков альфа в секунду
-        /// </summary>
-        public int Rca { get; set; } = 0;
-        /// <summary>
-        /// Скорость кадра 
-        /// </summary>
-        public float SpeedFrame { get; set; } = 0;
-        /// <summary>
-        /// Количество кадров за секунду
-        /// </summary>
-        public long CountFrame { get; set; } = 0;
-        /// <summary>
-        /// Куда смотрит курсор
-        /// </summary>
-        public MovingObjectPosition RayCastObject { get; set; }
-        /// <summary>
-        /// Куда смотрит курсор блок сверху
-        /// </summary>
-        public BlockBase RayCastBlockUp { get; set; }
+        public static void Instance(WorldBase world)
+        {
+            World = world;
+            Version ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            Version = string.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
+            Revision = ver.Revision.ToString();
+        }
 
-        //public long TickCount { get; set; } = 0;
+        public static void RenderDebug()
+        {
+            if (IsDraw)
+            {
+                if (textRender == null)
+                {
+                    textRender = new TextRender(2, 3, ToStringAll(), new vec4(1f, 1f, .8f, 0.8f));
+                }
+                else
+                {
+                    textRender.Render(ToStringAll());
+                }
+            }
+        }
 
-        /// <summary>
-        /// Выводить ли на экран
-        /// </summary>
-        public bool IsDraw { get; set; } = true;
-        /// <summary>
-        /// Выводить ли на экран колизию
-        /// </summary>
-        public bool IsDrawCollisium { get; set; } = false;
-        /// <summary>
-        /// Выводить ли на экран чанк
-        /// </summary>
-        public bool IsDrawChunk { get; set; } = false;
+        public static void DrawDebug()
+        {
+            if (IsDraw && textRender != null) textRender.Draw();
+        }
 
-        /// <summary>
-        /// Количество мешей
-        /// </summary>
-        public long CountMesh { get; set; } = 0;
-        /// <summary>
-        /// Количество мешей в чанках
-        /// </summary>
-        public long CountMeshChunk { get; set; } = 0;
-        /// <summary>
-        /// Количество мешей в чанках
-        /// </summary>
-        public int CountPoligonChunk { get; set; } = 0;
-        /// <summary>
-        /// Количество отрендереных линий
-        /// </summary>
-        public int CountMeshLine { get; set; } = 0;
+        #region Methods protected
 
-        /// <summary>
-        /// Количество отрендереных чанков
-        /// </summary>
-        public int RenderChunk { get; set; } = 0;
-        /// <summary>
-        /// Количество кэш чанков
-        /// </summary>
-        public int CacheChunk { get; set; } = 0;
-        /// <summary>
-        /// Количество кэш regionFile
-        /// </summary>
-        public int CacheRegion { get; set; } = 0;
-        /// <summary>
-        /// Количество памяти кэш regionFile
-        /// </summary>
-        public int CacheRegionMem { get; set; } = 0;
-
-        /// <summary>
-        /// Жидкие задачи в чанке
-        /// </summary>
-        public int ChunkLiquidTicks { get; set; } = 0;
-        /// <summary>
-        /// Количество альфа блоков в текущем чанке
-        /// </summary>
-        public int ChunkAlpheBlock { get; set; } = 0;
-        /// <summary>
-        /// Количество мобов
-        /// </summary>
-        public int Entities { get; set; } = 0;
-        /// <summary>
-        /// Количество мешей мобов
-        /// </summary>
-        public long CountMeshEntities { get; set; } = 0;
-
-        /// <summary>
-        /// Объект 
-        /// </summary>
-        protected TextRender textRender;
-
-        /// <summary>
-        /// Тип блока в руке
-        /// </summary>
-        public EnumBlock NumberBlock { get; set; } = EnumBlock.Stone;
-
-        protected string ToStringInfo()
+        protected static string ToStringInfo()
         {
             OpenGL gl = OpenGLF.GetInstance().gl;
             return string.Format("OpenGL version {0}",//\r\nVendor: {1}\r\nRenderer: {2}",
@@ -183,17 +203,16 @@ namespace VoxelEngine
             );
         }
 
-        protected string ToStringTime()
+        protected static string ToStringTime()
         {
             long tickCount = VEC.TickCount;
             int h = Mth.Floor(tickCount / 72000f);
             int m = Mth.Floor((tickCount - h * 72000f) / 1200f);
             int s = (int)(tickCount - h * 72000f - m * 1200f);
             return string.Format("Time {0}:{1}:{2:0}", h, m, s / 20f);
-            //return string.Format("Время {0:0.00}", TickCount / 20f);
         }
 
-        protected string ToStringMem()
+        protected static string ToStringMem()
         {
             float memRegion = CacheRegionMem / 1048576f;
             float memChunk = CacheChunk * 0.2500762f;// ((16 * 16 * 256 + 20) * 4 / 1024) 20 хз может от того что массив [,,]
@@ -205,7 +224,7 @@ namespace VoxelEngine
                 );
         }
 
-        protected string ToRayCast(MovingObjectPosition moving)
+        protected static string ToRayCast(MovingObjectPosition moving)
         {
             if (moving != null)
             {
@@ -226,7 +245,7 @@ namespace VoxelEngine
             return "";
         }
 
-        protected string ToStringAll()
+        protected static string ToStringAll()
         {
             Camera cam = OpenGLF.GetInstance().Cam;
             
@@ -280,6 +299,10 @@ namespace VoxelEngine
                 "Entities: {0} M: {1}\r\nSound: {2}",
                 Entities, CountMeshEntities, World.Audio.StrDebug);
 
+            string strLight = string.Format(
+                "Освещение Time: {0}: Count: {1}", TimeSetBlockLight, CountSetBlockLight 
+            );
+
             string strAnother = string.Format(
                 "В руке: {0}\r\nBB: {1} CT: {2:0.00} CT2: {3}",
                 NumberBlock, BB, CountTest, CountTest2
@@ -291,32 +314,10 @@ namespace VoxelEngine
                 + strEntity + "\r\n\r\n" 
                 + strPosition + "\r\n" 
                 + strCursor + "\r\n"
+                + strLight + "\r\n"
                 + strAnother;
         }
 
-        public void RenderDebug()
-        {
-            if (IsDraw)
-            {
-                if (textRender == null)
-                {
-                    textRender = new TextRender(2, 3, ToStringAll(), new vec4(1f, 1f, .8f, 0.8f));
-                }
-                else
-                {
-                    textRender.Render(ToStringAll());
-                }
-            }
-        }
-
-        public string BB { get; set; } = "";
-        public float CountTest { get; set; } = 0;
-        public int CountTest2 { get; set; } = 0;
-
-        public void DrawDebug()
-        {
-            if (IsDraw && textRender != null) textRender.Draw();
-        }
-
+        #endregion
     }
 }

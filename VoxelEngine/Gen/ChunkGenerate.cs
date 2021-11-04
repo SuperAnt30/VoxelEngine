@@ -69,7 +69,7 @@ namespace VoxelEngine.Gen
                     EnumBiome eBiome = Chunk.GetBiome(x, z);
                     if (eBiome == EnumBiome.Forest)
                     {
-                        Tree(x, z, eBiome, .46f);
+                        Tree(x, z, eBiome, .465f);
                     }
                     else if (eBiome == EnumBiome.GreenPlain)
                     {

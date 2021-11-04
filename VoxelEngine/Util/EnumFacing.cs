@@ -83,6 +83,15 @@ namespace VoxelEngine.Util
             }
         }
 
+        /// <summary>
+        /// Нормализованный горизонтальный вектор, (0-3). Заказ S-W-N-E.
+        /// </summary>
+        /// <param name="index">индекс (0-3)</param>
+        public static vec3i DirectionHorizontalVec(int index)
+        {
+            return DirectionHorizontalVec(GetHorizontal(index));
+        }
+
         ///// <summary>
         ///// Массив сторон для растекания жидкости с дном
         ///// </summary>

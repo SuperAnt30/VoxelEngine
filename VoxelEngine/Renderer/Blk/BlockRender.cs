@@ -451,8 +451,10 @@ namespace VoxelEngine.Renderer.Blk
             // Соседний блок в соседнем чанке
             //ChunkRender chunk = null;
 
+            ChunkBase chunk = ChunkRend.World.GetChunk(xc, zc);
+            if (chunk != null) return chunk.GetVoxel(xv, y, zv);
 
-            ChunkBase chunkD = ChunkRend.Chunk.World.ChunkPr.ProvideChunk(xc, zc);
+            //ChunkBase chunkD = ChunkRend.World.ChunkPr.ProvideChunk(xc, zc);
 
             //if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z + 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkSouth();
             //else if (xc == ChunkRend.X - 1 && zc == ChunkRend.Z - 1 && ChunkRend.ChunkWest() != null) chunk = ChunkRend.ChunkWest().ChunkNorth();
@@ -465,7 +467,7 @@ namespace VoxelEngine.Renderer.Blk
 
 
 
-            if (chunkD != null) return chunkD.GetVoxel(xv, y, zv);
+            //if (chunkD != null) return chunkD.GetVoxel(xv, y, zv);
 
             return new Voxel();
         }

@@ -105,7 +105,7 @@ namespace VoxelEngine.World
         /// <summary>
         /// Такт
         /// </summary>
-        protected virtual void Tick()
+        protected void Tick()
         {
             stopwatch.Restart();
             long tick = VEC.TickCount;
@@ -156,8 +156,6 @@ namespace VoxelEngine.World
             if (EntityDis != edNew)
             {
                 EntityDis = edNew;
-                RayCastEntityChange();
-                // TODO:: Тут нужен метот RatCast() для проверки блок или сущность выбрана
             }
 
             long ms = stopwatch.ElapsedMilliseconds;
@@ -233,13 +231,37 @@ namespace VoxelEngine.World
             int z0 = (pos.Z - radius) >> 4;
             int z1 = (pos.Z + radius) >> 4;
 
-            if (pos.Y < 1 || pos.Y > 255) return false;
+            if (pos.Y < 0 || pos.Y > 255) return false;
 
             for (int x = x0; x <= x1; x++)
             {
                 for (int z = z0; z <= z1; z++)
                 {
                     if (!IsChunk(x, z)) return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Проверка облости загрузки чанков 3*3 c 3*3 генерацией, для рендера
+        /// </summary>
+        public bool IsGeterationArea(int chx, int chz, EnumGeterationStatus status)
+        {
+            int x0 = chx - 1;
+            int x1 = chx + 1;
+            int z0 = chz - 1;
+            int z1 = chz + 1;
+
+            for (int x = x0; x <= x1; x++)
+            {
+                for (int z = z0; z <= z1; z++)
+                {
+                    ChunkBase chunk = GetChunk(x, z);
+                    if (chunk == null || (int)chunk.PreparationStatus < (int)status)
+                    {
+                        return false;
+                    }
                 }
             }
             return true;
@@ -275,16 +297,6 @@ namespace VoxelEngine.World
         }
 
         /// <summary>
-        /// Может ли видеть небо (CanSeeSky)
-        /// </summary>
-        public bool IsAgainstSky(BlockPos pos)
-        {
-            ChunkBase chunk = GetChunk(pos);
-            if (chunk == null) return false;
-            return chunk.CanSeeSky(pos);
-        }
-
-        /// <summary>
         /// Получить звуковое положение 
         /// </summary>
         public vec3 GetPositionSound(BlockPos bpos)
@@ -301,6 +313,22 @@ namespace VoxelEngine.World
         /// <returns></returns>
         public void SetBlockState(BlockBase newBlock, bool notTick)//, int flags)
         {
+            // Через поток так как при удалении и меняется освещение, подвисает
+            Task.Factory.StartNew(() => { SetBlockState0(newBlock, notTick); });
+        }
+
+        public void SetBlock(BlockPos pos, EnumBlock eBlock, byte b)
+        {
+            ChunkBase chunk = GetChunk(pos);
+            if (chunk != null)
+            {
+                chunk.SetBlockState(pos.X & 15, pos.Y, pos.Z & 15, eBlock);
+                chunk.SetParam4bit(pos.X & 15, pos.Y, pos.Z & 15, b);
+            }
+        }
+
+        protected void SetBlockState0(BlockBase newBlock, bool notTick)//, int flags)
+        {
             //if (newBlock.EBlock == EnumBlock.Water) newBlock.Voxel.SetParam4bit(2);
             List<vec2i> p = new List<vec2i>();
             int vx = newBlock.Position.X & 15;
@@ -313,6 +341,7 @@ namespace VoxelEngine.World
             if (blockOld.EBlock == EnumBlock.Door)
             {
                 GroupDoor door = new GroupDoor(this, blockOld.Position.ToVec3i());
+                door.Light();
                 door.Remove(blockOld);
             }
             else
@@ -329,32 +358,40 @@ namespace VoxelEngine.World
                         GetPositionSound(newBlock.Position), 1f, 1f);
                 }
 
-                if (newBlock.GetBlockLightOpacity() != blockOld.GetBlockLightOpacity() || newBlock.LightValue != blockOld.LightValue)
-                {
-                    CheckLight(newBlock.Position);
-                }
+                // Проверка высот
+                
+                chunk.Light.CheckLightSetBlock(
+                    newBlock.Position, 
+                    newBlock.GetBlockLightOpacity(), 
+                    blockOld.GetBlockLightOpacity(), 
+                    newBlock.LightValue != blockOld.LightValue
+                );
 
-                // Пометить соседний псевдо чанк на рендер
-                int cy = newBlock.Position.Y >> 4;
-                int vy = newBlock.Position.Y & 15;
-                if (cy > 0 && vy == 0) SetModifiedRender(new vec3i(ch.x, cy - 1, ch.y));
-                if (cy < 15 && vy == 15) SetModifiedRender(new vec3i(ch.x, cy + 1, ch.y));
-                if (vx == 0)
-                {
-                    SetModifiedRender(new vec3i(ch.x - 1, cy, ch.y));
-                    if (vz == 0) SetModifiedRender(new vec3i(ch.x - 1, cy, ch.y - 1));
-                    if (vz == 15) SetModifiedRender(new vec3i(ch.x - 1, cy, ch.y + 1));
-                }
-                if (vx == 15)
-                {
-                    SetModifiedRender(new vec3i(ch.x + 1, cy, ch.y));
-                    if (vz == 0) SetModifiedRender(new vec3i(ch.x + 1, cy, ch.y - 1));
-                    if (vz == 15) SetModifiedRender(new vec3i(ch.x + 1, cy, ch.y + 1));
-                }
-                if (vz == 0) SetModifiedRender(new vec3i(ch.x, cy, ch.y - 1));
-                if (vz == 15) SetModifiedRender(new vec3i(ch.x, cy, ch.y + 1));
-
-
+                //CheckLight(newBlock.Position);
+                //}
+                //else
+                //{
+                //    // Пометить соседний псевдо чанк на рендер
+                //    int cy = newBlock.Position.Y >> 4;
+                //    int vy = newBlock.Position.Y & 15;
+                //    SetModifiedRender(new vec3i(ch.x, cy, ch.y));
+                //    if (cy > 0 && vy == 0) SetModifiedRender(new vec3i(ch.x, cy - 1, ch.y));
+                //    if (cy < 15 && vy == 15) SetModifiedRender(new vec3i(ch.x, cy + 1, ch.y));
+                //    if (vx == 0)
+                //    {
+                //        SetModifiedRender(new vec3i(ch.x - 1, cy, ch.y));
+                //        if (vz == 0) SetModifiedRender(new vec3i(ch.x - 1, cy, ch.y - 1));
+                //        if (vz == 15) SetModifiedRender(new vec3i(ch.x - 1, cy, ch.y + 1));
+                //    }
+                //    if (vx == 15)
+                //    {
+                //        SetModifiedRender(new vec3i(ch.x + 1, cy, ch.y));
+                //        if (vz == 0) SetModifiedRender(new vec3i(ch.x + 1, cy, ch.y - 1));
+                //        if (vz == 15) SetModifiedRender(new vec3i(ch.x + 1, cy, ch.y + 1));
+                //    }
+                //    if (vz == 0) SetModifiedRender(new vec3i(ch.x, cy, ch.y - 1));
+                //    if (vz == 15) SetModifiedRender(new vec3i(ch.x, cy, ch.y + 1));
+                //}
                 //if ((flags & 2) != 0 && (!this.isRemote || (flags & 4) == 0) && var4.isPopulated())
                 //{
                 //    this.markBlockForUpdate(pos);
@@ -380,300 +417,15 @@ namespace VoxelEngine.World
         /// Задать изменение для рендера псевдо чанка
         /// </summary>
         /// <param name="c">x,z чанк, y псевдочанк</param>
-        protected void SetModifiedRender(vec3i c)
+        public void SetModifiedRender(vec3i c)
         {
             ChunkBase chunk = GetChunk(c.x, c.z);
             if (chunk != null)
             {
-                chunk.SetChunkModified();
                 chunk.StorageArrays[c.y].SetModifiedRender();
+                chunk.SetChunkModified();
             }
         }
-
-        #region Light minecraft
-
-        /// <summary>
-        /// возвращает уровень яркости который будет от соседних блоков
-        /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        private int func_175638_a(BlockPos pos, EnumSkyBlock type)
-        {
-            if (type == EnumSkyBlock.Sky && IsAgainstSky(pos))
-            {
-                return 15;
-            }
-            else
-            {
-                BlockBase block = GetBlock(pos);
-                // Количество излучаемого света
-                int light = type == EnumSkyBlock.Sky ? 0 : block.LightValue;
-
-                // Сколько света вычитается для прохождения этого блока
-                int opacity = block.GetBlockLightOpacity();
-
-                if (opacity >= 15 && block.LightValue > 0)
-                {
-                    opacity = 1;
-                }
-
-                if (opacity < 1)
-                {
-                    opacity = 1;
-                }
-
-                if (opacity >= 15)
-                {
-                    return 0;
-                }
-                else
-                if (light >= 14)
-                {
-                    return light;
-                }
-                else
-                {
-                    for (int i = 0; i < 6; i++)
-                    {
-                        BlockPos pos2 = pos.Offset((Pole)i);// new BlockPos(pos.ToVec3i() + EnumFacing.DirectionVec((Pole)i));
-                        int var11 = (GetLightFor(type, pos2) - opacity);
-
-                        if (var11 > light)
-                        {
-                            light = var11;
-                        }
-
-                        if (light >= 14)
-                        {
-                            return light;// + 1);
-                        }
-                    }
-                    return light;
-                }
-            }
-        }
-
-        public bool CheckLight(BlockPos pos)
-        {
-            bool var2 = false;
-            var2 |= CheckLightFor(EnumSkyBlock.Sky, pos);
-            var2 |= CheckLightFor(EnumSkyBlock.Block, pos);
-            return var2;
-        }
-
-        
-
-        /// <summary>
-        /// Генерация освещения блока
-        /// </summary>
-        public bool CheckLightFor(EnumSkyBlock type, BlockPos pos)
-        {
-            // Проверка загруженности чанков в области 
-            if (!IsArea(pos, 17))
-            {
-                return false;
-            }
-            else
-            {
-                uint[] lightUpdateBlockList = new uint[32768];
-
-                int var3 = 0;
-                int var4 = 0;
-                //this.theProfiler.startSection("getBrightness");
-                // var5 возвращает уровень яркости тикущего блока
-                int lightVox = GetLightFor(type, pos);
-                // var6 возвращает уровень яркости который будет от соседних блоков
-                int lightVoxs = func_175638_a(pos, type);
-
-                int x = pos.X;
-                int y = pos.Y;
-                int z = pos.Z;
-                uint var10;
-                int x2;
-                int y2;
-                int z2;
-                int var16;
-                int x3;
-                int y3;
-                int z3;
-
-                if (lightVoxs > lightVox)
-                {
-                    lightUpdateBlockList[var4++] = 133152;
-                }
-                else if (lightVoxs < lightVox)
-                {
-                    lightUpdateBlockList[var4++] = (uint)(133152 | lightVox << 18);
-
-                    while (var3 < var4)
-                    {
-                        var10 = lightUpdateBlockList[var3++];
-                        x2 = (int)((var10 & 63) - 32 + x);
-                        y2 = (int)((var10 >> 6 & 63) - 32 + y);
-                        z2 = (int)((var10 >> 12 & 63) - 32 + z);
-                        int var14 = (int)(var10 >> 18 & 15);
-                        BlockPos pos2 = new BlockPos(x2, y2, z2);
-                        var16 = GetLightFor(type, pos2);
-
-                        if (var16 == var14)
-                        {
-                            SetLightFor(type, pos2, 0);
-
-                            if (var14 > 0)
-                            {
-                                x3 = Mth.Abs(x2 - x);
-                                y3 = Mth.Abs(y2 - y);
-                                z3 = Mth.Abs(z2 - z);
-
-                                if (x3 + y3 + z3 < 17)
-                                {
-                                    for (int var22 = 0; var22 < 6; var22++)
-                                    {
-                                        vec3i v = EnumFacing.DirectionVec((Pole)var22);
-                                        int x4 = x2 + v.x;
-                                        int y4 = y2 + v.y;
-                                        int z4 = z2 + v.z;
-
-                                        BlockPos pos3 = new BlockPos(x4, y4, z4);
-                                        int var28 = Mth.Max(1, GetBlock(pos3).GetBlockLightOpacity());
-                                        var16 = GetLightFor(type, pos3);
-
-                                        if (var16 == var14 - var28 && var4 < lightUpdateBlockList.Length)
-                                        {
-                                            lightUpdateBlockList[var4++] = (uint)(x4 - x + 32 | y4 - y + 32 << 6 | z4 - z + 32 << 12 | var14 - var28 << 18);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    var3 = 0;
-                }
-
-                //this.theProfiler.endSection();
-                //this.theProfiler.startSection("checkedPosition < toCheckCount");
-
-                while (var3 < var4)
-                {
-                    var10 = lightUpdateBlockList[var3++];
-                    x2 = (int)((var10 & 63) - 32 + x);
-                    y2 = (int)((var10 >> 6 & 63) - 32 + y);
-                    z2 = (int)((var10 >> 12 & 63) - 32 + z);
-                    BlockPos pos3 = new BlockPos(x2, y2, z2);
-                    int var30 = GetLightFor(type, pos3);
-                    var16 = func_175638_a(pos3, type);
-
-                    if (var16 != var30)
-                    {
-                        SetLightFor(type, pos3, (byte)var16);
-
-                        if (var16 > var30)
-                        {
-                            x3 = Mth.Abs(x2 - x);
-                            y3 = Mth.Abs(y2 - y);
-                            z3 = Mth.Abs(z2 - z);
-                            bool var31 = var4 < lightUpdateBlockList.Length - 6;
-
-                            //BlockPos pos2 = pos.Offset((Pole)i);
-                            if (x3 + y3 + z3 < 17 && var31)
-                            {
-                                if (GetLightFor(type, pos3.Offset(Pole.West)) < var16)
-                                {
-                                    lightUpdateBlockList[var4++] = (uint)(x2 - 1 - x + 32 + (y2 - y + 32 << 6) + (z2 - z + 32 << 12));
-                                }
-
-                                if (GetLightFor(type, pos3.Offset(Pole.East)) < var16)
-                                {
-                                    lightUpdateBlockList[var4++] = (uint)(x2 + 1 - x + 32 + (y2 - y + 32 << 6) + (z2 - z + 32 << 12));
-                                }
-
-                                if (GetLightFor(type, pos3.Offset(Pole.Down)) < var16)
-                                {
-                                    lightUpdateBlockList[var4++] = (uint)(x2 - x + 32 + (y2 - 1 - y + 32 << 6) + (z2 - z + 32 << 12));
-                                }
-
-                                if (GetLightFor(type, pos3.Offset(Pole.Up)) < var16)
-                                {
-                                    lightUpdateBlockList[var4++] = (uint)(x2 - x + 32 + (y2 + 1 - y + 32 << 6) + (z2 - z + 32 << 12));
-                                }
-
-                                if (GetLightFor(type, pos3.Offset(Pole.North)) < var16)
-                                {
-                                    lightUpdateBlockList[var4++] = (uint)(x2 - x + 32 + (y2 - y + 32 << 6) + (z2 - 1 - z + 32 << 12));
-                                }
-
-                                if (GetLightFor(type, pos3.Offset(Pole.South)) < var16)
-                                {
-                                    lightUpdateBlockList[var4++] = (uint)(x2 - x + 32 + (y2 - y + 32 << 6) + (z2 + 1 - z + 32 << 12));
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // this.theProfiler.endSection();
-                return true;
-            }
-        }
-
-
-        /// <summary>
-        /// Получить уровень яркости тикущего блока
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="pos"></param>
-        /// <returns></returns>
-        public byte GetLightFor(EnumSkyBlock type, BlockPos pos)
-        {
-            if (pos.Y < 0) pos = new BlockPos(pos.X, 0, pos.Z);
-            ChunkBase chunk = GetChunk(pos.X >> 4, pos.Z >> 4);
-            if (chunk == null) return (byte)type;
-            return chunk.GetLightFor(pos.X & 15, pos.Y, pos.Z & 15, type);
-        }
-
-        /// <summary>
-        /// Задать уровень яркости тикущего блока
-        /// </summary>
-        public void SetLightFor(EnumSkyBlock type, BlockPos pos, byte lightValue)
-        {
-            if (pos.Y < 0) pos = new BlockPos(pos.X, 0, pos.Z);
-            ChunkBase chunk = GetChunk(pos.X >> 4, pos.Z >> 4);
-            if (chunk != null) chunk.SetLightFor(pos.X & 15, pos.Y, pos.Z & 15, type, lightValue);
-        }
-
-        /// <summary>
-        /// отмечает вертикальную линию блоков как тёмную
-        /// </summary>
-        /// <param name="x1"></param>
-        /// <param name="z1"></param>
-        /// <param name="x2"></param>
-        /// <param name="y2"></param>
-        public void MarkBlocksDirtyVertical(int x1, int z1, int y1, int y2)
-        {
-            int var5;
-
-            if (y1 > y2)
-            {
-                var5 = y2;
-                y2 = y1;
-                y1 = var5;
-            }
-
-            //if (!this.provider.getHasNoSky())
-            {
-                for (var5 = y1; var5 <= y2; ++var5)
-                {
-                    CheckLightFor(EnumSkyBlock.Sky, new BlockPos(x1, var5, z1));
-                }
-            }
-
-            // обновить сетку
-            //this.markBlockRangeForRenderUpdate(x1, x2, z1, x1, y2, z1);
-        }
-
-        #endregion
 
         /// <summary>
         /// Пересечение луча с сущностью
@@ -681,21 +433,12 @@ namespace VoxelEngine.World
         protected virtual EntityDistance RayCrossEntity(EntityLiving entity) => new EntityDistance();
 
         /// <summary>
-        /// Изменена сущьность попавшая под луч
-        /// </summary>
-        protected virtual void RayCastEntityChange() { }
-
-        /// <summary>
         /// Пересечения лучей с визуализируемой поверхностью
         /// </summary>
         /// <param name="a">точка от куда идёт лучь</param>
         /// <param name="dir">вектор луча</param>
         /// <param name="maxDist">максимальная дистания</param>
-        /// <param name="end">координата пересечения</param>
-        /// <param name="norm">нормаль стороны на какую смотрим блока</param>
-        /// <param name="iend">позиция ближайшего блока</param>
-        /// <returns></returns>
-        public MovingObjectPosition RayCast(vec3 a, vec3 dir, float maxDist)//, out vec3 end, out vec3i norm, out vec3i iend)
+        public MovingObjectPosition RayCast(vec3 a, vec3 dir, float maxDist)
         {
             float px = a.x;
             float py = a.y;
@@ -823,7 +566,7 @@ namespace VoxelEngine.World
                 }
 
                 VEC.EntityAdd();
-                Debug.GetInstance().Entities = Entities.Count;
+                Debug.Entities = Entities.Count;
             }
             //ModelChicken chicken = new ModelChicken();
             //chicken.Render(entity, 0, 0, 0, 0, 0, VE.UV_SIZE);// 0.12f);
@@ -837,7 +580,7 @@ namespace VoxelEngine.World
         public virtual void RemoveEntity(EntityLiving entity)
         {
             Entities.Remove(entity.HitBox.Index);
-            Debug.GetInstance().Entities = Entities.Count;
+            Debug.Entities = Entities.Count;
         }
 
         #region  Event

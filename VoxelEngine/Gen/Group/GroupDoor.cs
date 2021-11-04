@@ -80,7 +80,7 @@ namespace VoxelEngine.Gen.Group
             if (Check(Position))
             {
                 Generation(true);
-                RecheckGaps();
+                ModifiedRender();
                 return true;
             }
             return false;
@@ -109,8 +109,7 @@ namespace VoxelEngine.Gen.Group
                     }
                 }
             }
-            GenerateHeightMap();
-            RecheckGaps();
+            ModifiedRender();
         }
 
         /// <summary>
@@ -170,6 +169,7 @@ namespace VoxelEngine.Gen.Group
                     for (int z = pos.z; z < max.z; z++)
                     {
                         BlockPos blockPos = new BlockPos(x, y, z);
+                        if (IsLight) light.BlockModify(blockPos);
                         if (addGroup) SetGroupChunk(blockPos);
                         // Тут при !addGroup надо просто пометка обновить прорисовку блока
                         SetBlockState(blockPos, EnumBlock.Door, pr);
@@ -240,6 +240,7 @@ namespace VoxelEngine.Gen.Group
                 World.Entity.GetPositionSound(), 1f, 1f);
             isOpen = !isOpen;
             Generation(false);
+            ModifiedRender();
         }
 
         /// <summary>

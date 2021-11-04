@@ -30,7 +30,7 @@ namespace VoxelEngine.Actions
             cells = new EnumBlock[]
             {
                 EnumBlock.Stone,
-                EnumBlock.Door,
+                EnumBlock.Brol,
                 EnumBlock.Sand,
                 EnumBlock.Planks,
                 EnumBlock.Log,
@@ -69,7 +69,7 @@ namespace VoxelEngine.Actions
             {
                 Index = index;
             }
-            Debug.GetInstance().NumberBlock = GetCell();
+            Debug.NumberBlock = GetCell();
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace VoxelEngine.Actions
             }
             if (index == Index)
             {
-                Debug.GetInstance().NumberBlock = enumBlock;
+                Debug.NumberBlock = enumBlock;
             }
         }
     }

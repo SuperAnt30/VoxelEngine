@@ -68,7 +68,7 @@ namespace VoxelEngine.Gen
             wl += random.Next(3);
             hl += random.Next(3);
             ht = (int)((float)h * 1.6f);
-            chunks.Clear();
+            //chunks.Clear();
 
             if (Position.y < 1 || Position.y > 200) return false;
 
@@ -148,9 +148,7 @@ namespace VoxelEngine.Gen
                     }
                 }
 
-                RecheckGaps();
-                //SetBlock(pos, EnumBlock.Log);
-
+                ModifiedRender();
 
                 return true;
             }
