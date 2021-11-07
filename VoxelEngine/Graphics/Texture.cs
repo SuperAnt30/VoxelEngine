@@ -53,8 +53,19 @@ namespace VoxelEngine.Graphics
         /// <param name="key">ключ текстуры</param>
         public void BindTexture(string key)
         {
+            BindTexture(key, 0);
+        }
+
+        /// <summary>
+        /// Запустить текстуру
+        /// </summary>
+        /// <param name="key">ключ текстуры</param>
+        /// <param name="texture">OpenGL.GL_TEXTURE0 + texture</param>
+        public void BindTexture(string key, uint texture)
+        {
             if (hashtable.ContainsKey(key))
             {
+                OpenGLF.GetInstance().gl.ActiveTexture(OpenGL.GL_TEXTURE0 + texture);
                 OpenGLF.GetInstance().gl.BindTexture(OpenGL.GL_TEXTURE_2D, GetData(key));
             }
         }
@@ -99,7 +110,7 @@ namespace VoxelEngine.Graphics
         /// <param name="bitmap">рисунок</param>
         public uint SetTexture(string key, Bitmap bitmap)
         {
-            Bitmap iw = bitmap;
+            Bitmap iw = new Bitmap(bitmap);
             
             OpenGL gl = OpenGLF.GetInstance().gl;
 

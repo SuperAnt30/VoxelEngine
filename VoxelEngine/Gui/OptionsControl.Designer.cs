@@ -34,6 +34,7 @@
             this.numericUpDownChunk = new System.Windows.Forms.NumericUpDown();
             this.buttonOk = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
+            this.buttonClose = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFPS)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownChunk)).BeginInit();
             this.SuspendLayout();
@@ -60,6 +61,7 @@
             0,
             0,
             0});
+            this.numericUpDownFPS.KeyDown += new System.Windows.Forms.KeyEventHandler(this.numericUpDown_KeyDown);
             // 
             // label1
             // 
@@ -101,6 +103,7 @@
             0,
             0,
             0});
+            this.numericUpDownChunk.KeyDown += new System.Windows.Forms.KeyEventHandler(this.numericUpDown_KeyDown);
             // 
             // buttonOk
             // 
@@ -114,9 +117,11 @@
             this.buttonOk.Text = "Применить";
             this.buttonOk.UseVisualStyleBackColor = true;
             this.buttonOk.Click += new System.EventHandler(this.buttonOk_Click);
+            this.buttonOk.KeyDown += new System.Windows.Forms.KeyEventHandler(this.numericUpDown_KeyDown);
             // 
             // buttonCancel
             // 
+            this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.buttonCancel.Location = new System.Drawing.Point(112, 77);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
@@ -124,6 +129,17 @@
             this.buttonCancel.Text = "Отмена";
             this.buttonCancel.UseVisualStyleBackColor = true;
             this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
+            this.buttonCancel.KeyDown += new System.Windows.Forms.KeyEventHandler(this.numericUpDown_KeyDown);
+            // 
+            // buttonClose
+            // 
+            this.buttonClose.Location = new System.Drawing.Point(15, 111);
+            this.buttonClose.Name = "buttonClose";
+            this.buttonClose.Size = new System.Drawing.Size(172, 23);
+            this.buttonClose.TabIndex = 6;
+            this.buttonClose.Text = "Выйти из мира";
+            this.buttonClose.UseVisualStyleBackColor = true;
+            this.buttonClose.Click += new System.EventHandler(this.buttonClose_Click);
             // 
             // OptionsControl
             // 
@@ -131,6 +147,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.LightGray;
             this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
             this.Controls.Add(this.numericUpDownChunk);
@@ -139,7 +156,7 @@
             this.Controls.Add(this.numericUpDownFPS);
             this.Name = "OptionsControl";
             this.Padding = new System.Windows.Forms.Padding(12);
-            this.Size = new System.Drawing.Size(202, 115);
+            this.Size = new System.Drawing.Size(202, 149);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownFPS)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownChunk)).EndInit();
             this.ResumeLayout(false);
@@ -155,5 +172,6 @@
         private System.Windows.Forms.NumericUpDown numericUpDownChunk;
         private System.Windows.Forms.Button buttonOk;
         private System.Windows.Forms.Button buttonCancel;
+        private System.Windows.Forms.Button buttonClose;
     }
 }

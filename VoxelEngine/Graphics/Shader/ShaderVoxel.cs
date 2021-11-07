@@ -5,7 +5,6 @@
     /// </summary>
     public class ShaderVoxel : ShaderVE
     {
-        // TODO::TEST
         protected override string _VertexShaderSource { get; } = @"#version 330 core
 #extension GL_EXT_gpu_shader4 : enable
 
@@ -17,40 +16,30 @@ layout(location = 3) in vec2 v_light;
 out vec4 a_color;
 out vec2 a_texCoord;
 out vec4 a_position;
-out float a_length;
+out float a_light;
+out float fog_factor;
 
 uniform mat4 projection;
 uniform mat4 lookat;
 uniform float light;
 uniform float length;
-
-float light2;
-float lightS;
-
+uniform vec3 camera;
 
 void main()
 {
-    //b = (a_color.a & 0xF);
-    //ls = (a_color.a & 0xF) / 15.0;
-    //lb = ((a_color.a & 0xF0) >> 4) / 15.0;
-    //lb = a_color.a / 15.0;
     a_position = projection * lookat * vec4(v_position, 1.0);
-    //a_l = projection.y;
-    
-    lightS = v_light.y * light;
-    //light2 = light * v_color.a;
-    //light2 = (light > v_color.a) ? light + 0.2 : v_color.a + 0.2;
-    light2 = (lightS > v_light.x) ? lightS + 0.2 : v_light.x + 0.2;
-    //light2 = light * v_color.a + 0.2;
+    float camera_distance = distance(camera, vec3(v_position));
+    fog_factor = pow(clamp(camera_distance / length, 0.0, 1.0), 4.0);
+    float lightS = v_light.y * light;
+    float light2 = (lightS > v_light.x) ? lightS + 0.2 : v_light.x + 0.2;
     if (light2 > 1.0) light2 = 1.0;
-// TODO::TEST
     a_color.r = v_color.r * light2;
     a_color.g = v_color.g * light2;
     a_color.b = v_color.b * light2;
     a_color.a = 1.0;
     a_texCoord = v_texCoord;
     gl_Position = a_position;
-    a_length = length;
+    a_light = light;
 }";
         //0.3f
         protected override string _FragmentShaderSource { get; } = @"#version 330 core
@@ -58,48 +47,26 @@ void main()
 in vec4 a_color;
 in vec4 a_position;
 in vec2 a_texCoord;
-in float a_length;
+in float a_light;
+in float fog_factor;
 
 out vec4 f_color;
 
-uniform sampler2D u_texture0;
-
+uniform sampler2D sky_sampler;
+uniform sampler2D atlas;
 
 void main(){
-	vec4 tex_color = texture(u_texture0, a_texCoord);
-	if (tex_color.a < 0.1) 
-	discard;
+	vec4 tex_color = texture(atlas, a_texCoord);
+	if (tex_color.a < 0.1) discard;
     vec4 color = a_color * tex_color;
-/*
-    float l = length(a_position);
-    float l2 = a_length * 0.1;
-    float l3 = a_length - l2;
-    if (l < l3) {
-        //color.rgb *= 1.0 - (a_position.z - 64) * 0.01;
-        //if (f_color.r >= 0.3 && color.r < 0.3) color.r = 0.3;
-        //if (f_color.g >= 0.3 && color.g < 0.3) color.g = 0.3;
-        //if (f_color.b >= 0.3 && color.b < 0.3) color.b = 0.3;
-        //color.rgb += 0.5;
-        //f_color.rgb += 0.3;
-        //f_color = vec4(0.3, 0.3, 0.3, 1.0);
-        //f_color.r = 0.3;
-        //f_color.g = 0.3;
-        //f_color.b = 0.3;
-        f_color = color;
-    } else { //if (l < a_length) {
-        f_color = color;
-
-        f_color.rgb *= 1.0 - ((l - l3) / (a_length - l3));
-        if (f_color.r >= 0.3 && color.r < 0.3) color.r = 0.3;
-        if (f_color.g >= 0.3 && color.g < 0.3) color.g = 0.3;
-        if (f_color.b >= 0.3 && color.b < 0.3) color.b = 0.3;
-        //f_color.rgb = 1.0 - color.rgb;
-
-       // f_color.a = 1.0 - ((l - l3) / (a_length - l3));
-    }*/
-    f_color = color;
-        
-    
+    vec3 col3 = vec3(color);
+    //vec4 sky_color = texture(sky_sampler, vec2(0.07, 0.07));
+    vec3 cols = vec3(0.73, 0.83, 1.0);
+    cols.r = cols.r * a_light;
+    cols.g = cols.g * a_light;
+    cols.b = cols.b * a_light;
+    col3 = mix(col3, cols, fog_factor);
+    f_color = vec4(col3, color.a);
 }";
     }
 }

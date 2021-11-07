@@ -26,6 +26,7 @@ namespace VoxelEngine.World.Chk.Light
         /// Впомогательная коллекция
         /// </summary>
         protected List<LightStruct> listCache;
+        protected MapLight mapLight = new MapLight();
 
         public WorkingLight(ChunkBase chunk, BlockPos pos) : base(chunk)
         {
@@ -45,6 +46,15 @@ namespace VoxelEngine.World.Chk.Light
         public void ModifiedRender()
         {
             Debug.TimeSetBlockLight = stopwatch.ElapsedMilliseconds;
+
+            if (mapLight.Count > 0)
+            {
+                foreach(LightStruct light in mapLight.Values)
+                {
+                    SetLight0(new BlockPos(light.Pos), light.Sky ? EnumSkyBlock.Sky : EnumSkyBlock.Block, light.Light);
+                }
+            }
+
             modified.ModifiedRender();
         }
 
@@ -58,12 +68,15 @@ namespace VoxelEngine.World.Chk.Light
         /// <returns>яркость</returns>
         public byte GetLight(BlockPos pos, EnumSkyBlock type)
         {
+            vec3i pos0 = pos.ToVec3i();
+            LightStruct light = mapLight.Get(pos0, type == EnumSkyBlock.Sky);
+            if (!light.IsEmpty()) return light.Light;
+
             if (pos.Y < 0) pos = new BlockPos(pos.X, 0, pos.Z);
             ChunkBase chunk = World.GetChunk(pos.X >> 4, pos.Z >> 4);
             if (chunk == null) return (byte)type;
             return chunk.GetLightFor(pos.X & 15, pos.Y, pos.Z & 15, type);
         }
-
         /// <summary>
         /// Задать уровень яркости тикущего блока
         /// </summary>
@@ -71,6 +84,20 @@ namespace VoxelEngine.World.Chk.Light
         /// <param name="pos">позиция блока</param>
         /// <param name="lightValue">яркость 0-15</param>
         public void SetLight(BlockPos pos, EnumSkyBlock type, int lightValue)
+        {
+            int light = GetLight(pos, type);
+            if (light != lightValue)
+            {
+                mapLight.Set(new LightStruct(pos.ToVec3i(), (byte)lightValue, type == EnumSkyBlock.Sky));
+            }
+        }
+        /// <summary>
+        /// Задать уровень яркости тикущего блока
+        /// </summary>
+        /// <param name="type">тип света</param>
+        /// <param name="pos">позиция блока</param>
+        /// <param name="lightValue">яркость 0-15</param>
+        public void SetLight0(BlockPos pos, EnumSkyBlock type, int lightValue)
         {
             if (pos.Y < 0) pos = new BlockPos(pos.X, 0, pos.Z);
             ChunkBase chunk = World.GetChunk(pos.X >> 4, pos.Z >> 4);
@@ -187,7 +214,7 @@ namespace VoxelEngine.World.Chk.Light
             // Планируемая световая яркость
             int light = LevelBright(pos, type);
 
-            if (lightVox < light || lightVox == 15)
+            if (lightVox < light || (lightVox == 15 && type == EnumSkyBlock.Sky))
             {
                 // Осветлить
                 BrighterLightFor(pos, type, (byte)light, yUp);

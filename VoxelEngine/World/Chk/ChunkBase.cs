@@ -22,10 +22,6 @@ namespace VoxelEngine.World.Chk
         /// </summary>
         public ChunkStorage[] StorageArrays { get; protected set; } = new ChunkStorage[16];
         /// <summary>
-        /// Пометка для перенести данные для записи
-        /// </summary>
-        protected bool isModified = false;
-        /// <summary>
         /// Сылка на объект мира
         /// </summary>
         public WorldBase World { get; protected set; }
@@ -41,6 +37,14 @@ namespace VoxelEngine.World.Chk
         /// Прячем при необходимости чанк рендера
         /// </summary>
         public ChunkRender ChunkTag { get; set; }
+        /// <summary>
+        /// Колекция групповых моделей
+        /// </summary>
+        public GroupMap GroupModel { get; protected set; } = new GroupMap();
+        /// <summary>
+        /// Объект работы с освещением
+        /// </summary>
+        public ChunkLight Light { get; protected set; }
 
         /// <summary>
         /// Для записи в файл
@@ -51,13 +55,13 @@ namespace VoxelEngine.World.Chk
         /// </summary>
         protected EnumBiome[,] eBiomes = new EnumBiome[16, 16];
         /// <summary>
-        /// Колекция групповых моделей
+        /// Только создан чанк - true, если уже загружен - false
         /// </summary>
-        public GroupMap GroupModel { get; protected set; } = new GroupMap();
+        protected bool isOnlyCreated = true;
         /// <summary>
-        /// Объект работы с освещением
+        /// Пометка для перенести данные для записи
         /// </summary>
-        public ChunkLight Light { get; protected set; }
+        protected bool isModified = false;
 
         protected ChunkBase() { }
         public ChunkBase(WorldBase worldIn, int x, int z)
@@ -97,7 +101,6 @@ namespace VoxelEngine.World.Chk
         {
             return eBiomes[pos.X & 15, pos.Z & 15];
         }
-
 
         #region Block Storage
 
@@ -240,9 +243,6 @@ namespace VoxelEngine.World.Chk
 
         #endregion
 
-
-        public bool IsLoad { get; protected set; } = false;
-
         /// <summary>
         /// Загрузить или сгенерировать данные чанка
         /// </summary>
@@ -259,21 +259,12 @@ namespace VoxelEngine.World.Chk
             if (b != null)
             {
                 chunkBinary.Read(b);
-                IsLoad = true;
-                //Light.GenerateHeightMap();
-                //StartRecheckGaps(); // TODO::Под вопросом, возможно записать данные в файл
+                isOnlyCreated = false;
             }
             else
             {
                 // Если его нет, то генерируем
                 GenerationChunk();
-                //GenerateHeightMap();
-                // TODO::TEST
-                //GenerateSkylightMap();
-                //StartRecheckGaps(); 
-                //func_177441_y();
-                // и сразу же записываем
-                //region.SetChunk(X, Z, chunkBinary.Write());
             }
             return true;
         }
@@ -337,7 +328,7 @@ namespace VoxelEngine.World.Chk
         /// </summary>
         public void Save()
         {
-            if (isModified)
+            if (isModified && PreparationStatus == EnumGeterationStatus.Ready)
             {
                 RegionBinary region = World.RegionPr.GetRegion(X, Z);
                 if (region != null)
@@ -397,164 +388,39 @@ namespace VoxelEngine.World.Chk
         }
 
         /// <summary>
-        /// Генерация с соседними чанками, деревья
+        /// Генерация с соседними чанками 3*3, деревья
         /// </summary>
         public void GenerationArea()
         {
-            ChunkGenerate chunkGenerate = new ChunkGenerate(this);
-            // Генерация деревьев
-            chunkGenerate.GenerationArea(); // долгий процесс
-
-            //Light.GenerateHeightMap();
+            if (isOnlyCreated)
+            {
+                // Генерация деревьев
+                ChunkGenerate chunkGenerate = new ChunkGenerate(this);
+                chunkGenerate.GenerationArea();
+            }
             PreparationStatus = EnumGeterationStatus.Area;
         }
 
         /// <summary>
-        /// Генерация с соседними чанками, деревья освещение
+        /// Генерация с соседними чанками 5*5, небесная высота
         /// </summary>
         public void GenerationDoubleArea()
         {
-            //LightOld.GenerateHeightMapSky();
-            //LightOld.StartRecheckGaps();
-
-            if (IsLoad) Light.GenerateHeightMap();
-            else Light.GenerateHeightMapSky();
-            //GenerateHeightMap(); // вместо освещения
-            // Проверка освещения
-            // StartRecheckGaps(true); // очень долгий процесс
+            if (isOnlyCreated) Light.GenerateHeightMapSky();
+            else Light.GenerateHeightMap(); 
             PreparationStatus = EnumGeterationStatus.DoubleArea;
         }
 
         /// <summary>
-        /// Генерация подготовка для рендера
+        /// Генерация подготовка для рендера 7*7, боковое освещение
         /// </summary>
         public void GenerationReady()
         {
-            if (!IsLoad) Light.StartRecheckGaps();
+            if (isOnlyCreated) Light.StartRecheckGaps();
             PreparationStatus = EnumGeterationStatus.Ready;
         }
 
         #endregion
-
-        /// <summary>
-        /// Генерация чанка
-        /// </summary>
-        //public void GenerationOld()
-        //{
-        //    Perlin noise = new Perlin();
-        //    noise.Perlin2D(2);
-        //    float size = 0.01f;
-        //    for (int z = 0; z < 16; z++)
-        //    {
-        //        for (int x = 0; x < 16; x++)
-        //        {
-        //            int realX = X << 4 | x;
-        //            int realZ = Z << 4 | z;
-
-        //            float fn = noise.Noise(size * realX, size * realZ, 5, 0.1f); // -1 .. 1
-        //            //float n = (fn + 1f) * 24f + 48f;
-        //            float n = (fn + 1f) * 64f;// + 18f;
-
-        //            for (int y = 0; y < 256; y++)
-        //            {
-        //                //int realY = y;
-
-        //                int id = 0;
-        //                // byte alphe = 0x00;
-        //                if (y <= n)
-        //                {
-        //                    // если не воздух
-        //                    if (y < 46)
-        //                    {
-        //                        // принудительно камень
-        //                        id = 1;
-        //                    }
-        //                    else if (y < 67 && n < 67)
-        //                    {
-        //                        // камень
-        //                        if (y < n - 3) id = 1;
-        //                        // песок
-        //                        else id = 4;
-        //                    }
-        //                    else if (y > 80)
-        //                    {
-        //                        // камень
-        //                        id = 1;
-        //                    }
-        //                    else
-        //                    {
-        //                        // камень
-        //                        if (y < n - 3) id = 1;
-        //                        // земля
-        //                        else if (y < n - 1) id = 2;
-        //                        // дёрн
-        //                        else id = 3;
-        //                    }
-
-        //                }
-        //                else
-        //                {
-        //                    if (y < 65 && n < 67)
-        //                    {
-        //                        // вода
-        //                        id = 11;
-        //                    }
-        //                }
-        //                //id = 3;
-        //                //if (id > 0 && realY > 4) id = 3;
-
-        //                //if (realX == -15 && realZ == -15 && realY == 6) id = 4;
-        //                //if (realX == -15 && realZ == -15 && realY == 7) id = 4;
-
-        //                //if (realX == 0 && realZ == 0 && realY == 8) id = 34;
-
-        //                //if (realX == 58 && realZ == 58 && realY == 5) id = 2;
-        //                //if (realX == 58 && realZ == 58 && realY == 6) id = 2;
-        //                //if (realX == 58 && realZ == 58 && realY == 7) id = 2;
-        //                //if (realX == 58 && realZ == 58 && realY == 8) id = 2;
-
-        //                //if (realX == 58 && realZ == 56 && realY == 5) id = 2;
-        //                //if (realX == 58 && realZ == 56 && realY == 6) id = 2;
-        //                //if (realX == 58 && realZ == 56 && realY == 7) id = 2;
-        //                //if (realX == 58 && realZ == 56 && realY == 8) id = 2;
-
-        //                //if (realX == 56 && realZ == 58 && realY == 5) id = 2;
-        //                //if (realX == 56 && realZ == 58 && realY == 6) id = 2;
-        //                //if (realX == 56 && realZ == 58 && realY == 7) id = 2;
-        //                //if (realX == 56 && realZ == 58 && realY == 8) id = 2;
-
-        //                //if (realX == 56 && realZ == 56 && realY == 5) id = 2;
-        //                //if (realX == 56 && realZ == 56 && realY == 6) id = 2;
-        //                //if (realX == 56 && realZ == 56 && realY == 7) id = 2;
-        //                //if (realX == 56 && realZ == 56 && realY == 8) id = 2;
-
-        //                //if (realX == 56 && realZ == 56 && realY == 4) id = 4;
-        //                //if (realX == 57 && realZ == 56 && realY == 4) id = 5;
-        //                //if (realX == 58 && realZ == 56 && realY == 4) id = 5;
-
-        //                //if (id == 2 || id == 143) alphe = 0x01;
-
-        //                //int index = (y * VE.CHUNK_WIDTH + z) * VE.CHUNK_WIDTH + x;
-        //                //Voxel voxel = new Voxel(Voxels[index])
-        //                //Voxel voxel = new Voxel(Voxels[y, x, z].GetId())
-        //                ////Voxel voxel = new Voxel(Voxels[y,x,z])
-        //                //{
-        //                //    Id = (byte)id
-        //                //  //  B1 = alphe
-        //                //};
-        //                //Voxels[index] = voxel.GetKey();
-        //                //Voxels[y, x, z] = voxel.GetKey();
-        //                SetVoxelId(x, y, z, (byte)id);
-        //                //GetVoxel(x, y, z).SetIdByte((byte)id);
-        //                //Voxels[y, x, z].SetIdByte((byte)id);//.SetId(voxel.GetKey());
-        //                //Voxels[y << 8 | z << 4 | x].SetIdByte((byte)id);//.SetId(voxel.GetKey());
-
-        //            }
-        //        }
-        //    }
-        //}
-
-        
 
         /// <summary>
         /// Заменить блок
@@ -758,7 +624,6 @@ namespace VoxelEngine.World.Chk
                 }
             }
         }
-
 
         protected void AddTicks(Hashtable lt, BlockTick blockTick)
         {

@@ -29,11 +29,21 @@
         /// Видем ли на экране дебаг текстурного атласа
         /// </summary>
         public static bool isDebugTextureAtlas = false;
-        
+
         /// <summary>
-        /// Размер курсора
+        /// Пауза для загрузки чанков, корректирует TPS
         /// </summary>
-        //public int Zoom { get; set; } = 1;
+        public static int pauseLoadingChunk = 1;
+
+        /// <summary>
+        /// Имя мира
+        /// </summary>
+        public static string Name { get; protected set; } = "1";
+
+        /// <summary>
+        /// Задать имя мира
+        /// </summary>
+        public static void SetName(string name) => Name = name;
 
         #region Tick
 

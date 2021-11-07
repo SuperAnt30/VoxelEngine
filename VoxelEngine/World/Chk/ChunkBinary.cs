@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using VoxelEngine.Binary;
-using VoxelEngine.Gen;
 using VoxelEngine.Vxl;
 using VoxelEngine.World.Biome;
 
@@ -41,15 +40,6 @@ namespace VoxelEngine.World.Chk
             //Chunk.SetChunkModified();
         }
 
-        protected ChunkBin Deserialize(byte[] buffer)
-        {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            {
-                BinaryFormatter formatter = new BinaryFormatter();
-                return formatter.Deserialize(ms) as ChunkBin;
-            }
-        }
-
         /// <summary>
         /// Запись чанка
         /// </summary>
@@ -73,6 +63,15 @@ namespace VoxelEngine.World.Chk
             chunk.BlockTickBins = Chunk.GetBlockTickBins();
             chunk.GroupBins = Chunk.GetGroupBins();
             return Serialize(chunk);
+        }
+
+        protected ChunkBin Deserialize(byte[] buffer)
+        {
+            using (MemoryStream ms = new MemoryStream(buffer))
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                return formatter.Deserialize(ms) as ChunkBin;
+            }
         }
 
         protected byte[] Serialize(ChunkBin chunk)

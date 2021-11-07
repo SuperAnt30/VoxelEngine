@@ -10,8 +10,8 @@
         /// но глюки пока с TPS
         /// TODO::21-10-22 решить проблему TPS
         /// </summary>
-        //public const bool IS_FAST = true;
-        public const bool IS_FAST = false;
+        public const bool IS_FAST = true;
+        //public const bool IS_FAST = false;
 
         /// <summary>
         /// Параметр для тестов, false - сохранение не будет сохранять

@@ -50,8 +50,8 @@ namespace VoxelEngine.Renderer
             if (VE.IS_FAST)
             {
                 PackageRender(false, true);
-                PackageRender(true, false);
-                PackageRender(false, false);
+                //PackageRender(true, false);
+                //PackageRender(false, false);
             }
         }
         /// <summary>
@@ -59,7 +59,10 @@ namespace VoxelEngine.Renderer
         /// </summary>
         protected void PackageRender(bool isEvenX, bool isEvenZ)
         {
-            Task.Factory.StartNew(() => { Render(isEvenX, isEvenZ); });
+            if (!isTickStop)
+            {
+                Task.Factory.StartNew(() => { Render(isEvenX, isEvenZ); });
+            }
         }
 
         /// <summary>
@@ -112,7 +115,7 @@ namespace VoxelEngine.Renderer
                 if (VE.IS_FAST)
                 {
                     if (Bit.IsEven(x) != isEvenX) continue;
-                    if (Bit.IsEven(z) != isEvenZ) continue;
+                    //if (Bit.IsEven(z) != isEvenZ) continue;
                 }
                 ChunkRender cr = GetChunkRender(x, z);
                 if (cr != null)
@@ -134,7 +137,7 @@ namespace VoxelEngine.Renderer
                 }
             }
             // ЭТОТ СЛИП чтоб не подвисал проц. И для перехода других потоков.
-            System.Threading.Thread.Sleep(1); 
+            System.Threading.Thread.Sleep(VEC.chunkVisibility); 
             OnRendered();
             PackageRender(isEvenX, isEvenZ);
         }

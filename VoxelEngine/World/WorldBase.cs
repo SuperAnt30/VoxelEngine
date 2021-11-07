@@ -75,8 +75,21 @@ namespace VoxelEngine.World
             Entity = new EntityPlayer(this);
             Entity.HitBoxChanged += Entity_HitBoxChanged;
             Entity.LookAtChanged += Entity_HitBoxLookAtChanged;
-            Audio = new AudioBase(this);
-            Audio.Initialize();
+        }
+
+        /// <summary>
+        /// Задать объект звука
+        /// </summary>
+        public void SetAudio(AudioBase audio) => Audio = audio;
+
+        /// <summary>
+        /// Задать сид
+        /// </summary>
+        /// <param name="seed"></param>
+        public void SetSeed(int seed)
+        {
+            Seed = seed;
+            Noise = new NoiseStorge(this);
         }
 
         /// <summary>
@@ -161,7 +174,11 @@ namespace VoxelEngine.World
             long ms = stopwatch.ElapsedMilliseconds;
             if (ms < 50)
             {
+                VEC.pauseLoadingChunk = ms < 25 ? 1 : 100;
                 System.Threading.Thread.Sleep(50 - (int)ms);
+            } else
+            {
+                VEC.pauseLoadingChunk = 500;
             }
             if (!isTickStop) OnTicked();
         }
@@ -353,6 +370,10 @@ namespace VoxelEngine.World
             {
                 if (notTick)
                 {
+                    // Рендер нужных чанков
+                    RangeModified modified = new RangeModified(this, blockOld.Position);
+                    modified.ModifiedRender();
+
                     // Звук установленного блока или разрушенного
                     Audio.PlaySound(newBlock.IsAir ? blockOld.SoundBreak() : newBlock.SoundPut(),
                         GetPositionSound(newBlock.Position), 1f, 1f);

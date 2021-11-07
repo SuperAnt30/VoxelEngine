@@ -72,11 +72,7 @@ namespace VoxelEngine.Gui
 
         private void listView1_KeyDown(object sender, KeyEventArgs e)
         {
-            e.SuppressKeyPress = true;
-            if (e.KeyCode == Keys.E || e.KeyCode == Keys.Escape)
-            {
-                OnClosed();
-            }
+            KeyDownClose(e, Keys.Escape, Keys.E, Keys.Enter);
         }
 
         private void pictureBox_Click(object sender, EventArgs e)

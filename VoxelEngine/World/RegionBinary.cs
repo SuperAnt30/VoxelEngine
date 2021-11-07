@@ -13,9 +13,11 @@ namespace VoxelEngine.World
         /// <summary>
         /// Путь к файлу
         /// </summary>
+        public string PathFile { get; protected set; }
+        /// <summary>
+        /// Путь папки
+        /// </summary>
         public string Path { get; protected set; }
-
-        protected static string path = "map";
 
         /// <summary>
         /// Файловый буфер каждого чанка
@@ -26,7 +28,9 @@ namespace VoxelEngine.World
         {
             X = rx;
             Z = rz;
-            Path = path + "/r" + X.ToString() + "_" + Z.ToString() + ".dat";
+            Path = WorldFile.ToPathRegions();
+            WorldFile.CheckPath(Path);
+            PathFile = Path + "r" + X.ToString() + "_" + Z.ToString() + ".dat";
             buffer.Chunks = new byte[32, 32][];
 
             for (int x = 0; x < 32; x++)
@@ -59,14 +63,16 @@ namespace VoxelEngine.World
         /// </summary>
         public void ReadFile()
         {
-            if (File.Exists(Path))
-            {
-                using (FileStream ms = new FileStream(Path, FileMode.Open))
+            //try {
+                if (File.Exists(PathFile))
                 {
-                    BinaryFormatter formatter = new BinaryFormatter();
-                    buffer = formatter.Deserialize(ms) as RegionBin;
+                    using (FileStream ms = new FileStream(PathFile, FileMode.Open))
+                    {
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        buffer = formatter.Deserialize(ms) as RegionBin;
+                    }
                 }
-            }
+            //} catch { }
         }
 
         /// <summary>
@@ -75,11 +81,11 @@ namespace VoxelEngine.World
         public void WriteFile()
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-            using (FileStream ms = new FileStream(Path, FileMode.Create))
+            //if (!Directory.Exists(path))
+            //{
+            //    Directory.CreateDirectory(path);
+            //}
+            using (FileStream ms = new FileStream(PathFile, FileMode.Create))
             {
                 formatter.Serialize(ms, buffer);
             }

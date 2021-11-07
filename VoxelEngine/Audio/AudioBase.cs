@@ -8,7 +8,7 @@ namespace VoxelEngine.Audio
     /// <summary>
     /// Базовый класс звуков
     /// </summary>
-    public class AudioBase : WorldHeir
+    public class AudioBase : WorldHeirSet
     {
         /// <summary>
         /// Карта всех семплов
@@ -23,7 +23,14 @@ namespace VoxelEngine.Audio
         /// </summary>
         public string StrDebug { get; protected set; }
 
-        public AudioBase(WorldBase world) : base(world) { }
+        /// <summary>
+        /// Задать объект мира
+        /// </summary>
+        public new void SetWorld(WorldBase world)
+        {
+            World = world;
+            World.SetAudio(this);
+        }
 
         public void Initialize()
         {

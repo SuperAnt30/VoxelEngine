@@ -114,13 +114,18 @@ namespace VoxelEngine.Graphics
 
             Sh.Create(gl);
 
+            WorldBegin();
+        }
+
+        public void WorldBegin()
+        {
             WorldM = new WorldMesh();
             WorldM.RemoveChanged += WorldMRemoveChanged;
 
             SkyBoxM = new SkyBoxMesh(1f);
             SkyBoxSun = new SkyBoxMesh(0.9f);
 
-            lengthFog = VEC.chunkVisibility * 16f - 16f;
+            ChunkVisibilityChanged();
         }
 
         public void Resized(Size size)
@@ -161,7 +166,14 @@ namespace VoxelEngine.Graphics
         {
             if (await Task.Run(() => textureAnimation.Render()))
             {
-                texture.SetTexture("atlas", textureAnimation.AtlasBox);
+                if (textureAnimation.AtlasBox != null)
+                {
+                    try
+                    {
+                        texture.SetTexture("atlas", textureAnimation.AtlasBox);
+                    }
+                    catch { }
+                }
             }
         }
 
@@ -272,9 +284,29 @@ namespace VoxelEngine.Graphics
             Sh.ShVoxel.SetUniformMatrix4(gl, "lookat", Cam.LookAt);
             Sh.ShVoxel.SetUniform1(gl, "light", VEC.LeghtSky);
             Sh.ShVoxel.SetUniform1(gl, "length", lengthFog);
-            texture.BindTexture("atlas");
+            Sh.ShVoxel.SetUniform3(gl, "camera", Cam.Position.x, Cam.Position.y, Cam.Position.z);
+
+
+            //int atlas = gl.GetUniformLocation(Sh.ShVoxel.ShaderProgramObject, "atlas");
+            //int sky = gl.GetUniformLocation(Sh.ShVoxel.ShaderProgramObject, "sky_sampler");
+            int atlas = Sh.ShVoxel.GetUniformLocation(gl, "atlas");
+            int sky = Sh.ShVoxel.GetUniformLocation(gl, "sky_sampler");
+            //gl.UseProgram(Sh.ShVoxel.ShaderProgramObject);
+            //gl.Uniform1(t1, OpenGL.GL_TEXTURE0);
+            //gl.Uniform1(t2, OpenGL.GL_TEXTURE1);
+            //Sh.ShVoxel.SetUniform1(gl, )
+            //Sh.ShVoxel.Uni
+
+            texture.BindTexture("atlas", 0);
+            gl.Uniform1(atlas, 0);
+            texture.BindTexture("gui", 1);
+            gl.Uniform1(sky, 1);
+            
+            // texture.BindTexture("atlas");
+            //texture.BindTexture("gui");
             WorldM.Draw();
             Sh.ShVoxel.Unbind(gl);
+            
         }
 
         /// <summary>
@@ -339,5 +371,13 @@ namespace VoxelEngine.Graphics
         }
 
         #endregion
+
+        /// <summary>
+        /// Изменен обзор чанков
+        /// </summary>
+        public void ChunkVisibilityChanged()
+        {
+            lengthFog = VEC.chunkVisibility * 16f - 16f;
+        }
     }
 }

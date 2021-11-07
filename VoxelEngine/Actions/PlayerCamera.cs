@@ -166,9 +166,12 @@ namespace VoxelEngine.Actions
         /// </summary>
         public void Update(float timeFrame, float timeAll)
         {
-            StrDebug = EntityR.UpdateDraw(timeFrame, timeAll);
-            EntityR.Entity.HitBox.Size.Update(timeAll);
-            cam.SetPos(EntityR.Entity.HitBox.Position);
+            if (EntityR != null)
+            {
+                StrDebug = EntityR.UpdateDraw(timeFrame, timeAll);
+                EntityR.Entity.HitBox.Size.Update(timeAll);
+                cam.SetPos(EntityR.Entity.HitBox.Position);
+            }
         }
 
         /// <summary>

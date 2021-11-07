@@ -162,9 +162,9 @@ namespace VoxelEngine.World
             PackageLoadChunkCache(true, true);
             if (VE.IS_FAST)
             {
-                PackageLoadChunkCache(true, false);
+                //PackageLoadChunkCache(true, false);
                 PackageLoadChunkCache(false, true);
-                PackageLoadChunkCache(false, false);
+                //PackageLoadChunkCache(false, false);
             }
         }
 
@@ -173,13 +173,16 @@ namespace VoxelEngine.World
         /// </summary>
         protected void PackageLoadChunkCache(bool isEvenX, bool isEvenZ)
         {
-            if (isCleaningChunk)
+            if (!isTickStop)
             {
-                Task.Factory.StartNew(() => { CleaningChunk(isEvenX, isEvenZ); });
-            }
-            else
-            {
-                Task.Factory.StartNew(() => { LoadingChunkCache(isEvenX, isEvenZ); });
+                if (isCleaningChunk)
+                {
+                    Task.Factory.StartNew(() => { CleaningChunk(isEvenX, isEvenZ); });
+                }
+                else
+                {
+                    Task.Factory.StartNew(() => { LoadingChunkCache(isEvenX, isEvenZ); });
+                }
             }
         }
 
@@ -188,7 +191,7 @@ namespace VoxelEngine.World
             if (VE.IS_FAST)
             {
                 if (Bit.IsEven(x) != isEvenX) return false;
-                if (Bit.IsEven(z) != isEvenZ) return false;
+               // if (Bit.IsEven(z) != isEvenZ) return false;
             }
             return !LoadingChunk(x, z);
         }
@@ -246,7 +249,7 @@ namespace VoxelEngine.World
                 //if (!AreaLoadingChunk(x, z)) break; // медленно
             }
             // ЭТОТ СЛИП чтоб не подвисал проц. И для перехода других потоков.
-            System.Threading.Thread.Sleep(1);
+            System.Threading.Thread.Sleep(VEC.chunkVisibility);
             if (i >= chunkFC.Length - 1) OnNotLoadCache();
             else OnLoadCache();
             PackageLoadChunkCache(isEvenX, isEvenZ);
@@ -259,13 +262,16 @@ namespace VoxelEngine.World
         /// </summary>
         protected void PackageLoadRegionCache()
         {
-            if (isCleaningRegion)
+            if (!isTickStop)
             {
-                Task.Factory.StartNew(() => { CleaningRegion(); });
-            }
-            else
-            {
-                Task.Factory.StartNew(() => { LoadingRegionCache(); });
+                if (isCleaningRegion)
+                {
+                    Task.Factory.StartNew(() => { CleaningRegion(); });
+                }
+                else
+                {
+                    Task.Factory.StartNew(() => { LoadingRegionCache(); });
+                }
             }
         }
 
@@ -325,7 +331,7 @@ namespace VoxelEngine.World
                 if (VE.IS_FAST)
                 {
                     if (Bit.IsEven(cr.X) != isEvenX) continue;
-                    if (Bit.IsEven(cr.Z) != isEvenZ) continue;
+                    //if (Bit.IsEven(cr.Z) != isEvenZ) continue;
                 }
 
                 if (cr.X < xMin || cr.X > xMax || cr.Z < zMin || cr.Z > zMax)

@@ -10,8 +10,8 @@ using VoxelEngine.Graphics;
 using VoxelEngine.Entity;
 using System.Diagnostics;
 using System.Threading;
-using System.Drawing;
 using VoxelEngine.World.Chk;
+using VoxelEngine.Audio;
 
 namespace VoxelEngine
 {
@@ -50,6 +50,10 @@ namespace VoxelEngine
         /// </summary>
         public WorldRender World { get; protected set; } = new WorldRender();
         /// <summary>
+        /// Запущен ли мир
+        /// </summary>
+        protected bool isWorld = false;
+        /// <summary>
         /// Пометка первого такта
         /// </summary>
         protected bool startTick = true;
@@ -61,13 +65,19 @@ namespace VoxelEngine
         /// Таймер для фиксации времени одного кадра
         /// </summary>
         protected Stopwatch stopwatchFrame = new Stopwatch();
-
+        
         protected bool testStop = false;
+
+        /// <summary>
+        /// Объект звуков
+        /// </summary>
+        protected AudioBase audio = new AudioBase();
 
         public FormGame()
         {
             VES.Initialized();
             InitializeComponent();
+            Debug.Instance();
             openGLControl1.MouseWheel += openGLControl1_MouseWheel;
 
             counterFps.Tick += CounterFps_Tick;
@@ -89,6 +99,9 @@ namespace VoxelEngine
             guiControl1.Visible = false;
             threadFps.Start();
             new Thread(threadFps.Run).Start();
+            audio.Initialize();
+
+            GuiMenu();
         }
 
         /// <summary>
@@ -96,7 +109,10 @@ namespace VoxelEngine
         /// </summary>
         private void FormGame_FormClosing(object sender, FormClosingEventArgs e)
         {
-            World.TickStop();
+            if (isWorld)
+            {
+                WorldEnd(false);
+            }
 
             if (threadFps.IsRun)
             {
@@ -105,7 +121,6 @@ namespace VoxelEngine
                 return;
             }
 
-            World.RegionPr.RegionsWrite();
             WinApi.TimeEndPeriod(1);
         }
 
@@ -139,26 +154,28 @@ namespace VoxelEngine
 
         #endregion
 
-        #region OpenGL
+        #region World
 
         /// <summary>
-        /// Инициализация OpenGL
+        /// Запустить мир
         /// </summary>
-        private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
+        public void WorldBegin(string name, int seed)
         {
-            stopwatch.Start();
-            stopwatchFrame.Start();
+            OpenGLF.GetInstance().WorldBegin();
+
+            // Создаём мир
+            World = new WorldRender();
             Mouse.GetInstance().SetWorld(World);
-            OpenGLF.GetInstance().Initialized(openGLControl1.OpenGL);
-            OpenGLF.GetInstance().Cam = new Camera(new vec3(0, 70, 0), glm.radians(70.0f));
-            //OpenGLF.GetInstance().Cam = new Camera(new vec3(100000, 7, 24), glm.radians(70.0f));
-            OpenGLF.GetInstance().RemoveChunkMeshChanged += OpenGLFRemoveChunkMeshChanged;
-            // TODO::Load
-            WorldFile.Load(World);
-            
-            OpenGLF.GetInstance().Cam.PositionChunkChanged += Cam_PositionChunkChanged;
-            OpenGLF.GetInstance().Cam.PositionBlockChanged += Cam_PositionBlockChanged;
-            OpenGLF.GetInstance().Cam.WidgetChanged += Cam_WidgetChanged;
+            // Загружаем мир
+            bool isLoad = WorldFile.ReadFile(name, World);
+            if (!isLoad)
+            {
+                // Задаём сид для нового мира
+                World.SetSeed(seed);
+                // Анализ на позицию игрока если мир создался впервые
+                World.Entity.HitBox.SetPos(new vec3(0, 80, 0));
+            }
+            // Привязки мира
             OpenGLF.GetInstance().Cam.SetPosRotation(
                 World.Entity.HitBox.Position,
                 World.Entity.RotationYaw,
@@ -173,14 +190,75 @@ namespace VoxelEngine
             World.LoadCache += WorldLoadCache;
             World.NotLoadCache += WorldNotLoadCache;
 
-            Keyboard.GetInstance().MoveChanged += FormGame_MoveChanged;
-            Mouse.GetInstance().MoveChanged += FormGame_MoveChanged;
-
+            audio.SetWorld(World);
             Keyboard.GetInstance().SetWorld(World);
-            Debug.Instance(World);
-
+            Debug.InstanceWorld(World);
             Tick();
             World.RunPackings();
+            isWorld = true;
+        }
+
+        /// <summary>
+        /// Закрыть мир
+        /// </summary>
+        public void WorldEnd(bool isMenu)
+        {
+            World.TickStop();
+            World.RegionPr.RegionsWrite();
+            isWorld = false;
+            if (isMenu) GuiMenu();
+        }
+
+        #endregion
+
+        #region OpenGL
+
+        /// <summary>
+        /// Инициализация OpenGL
+        /// </summary>
+        private void openGLControl1_OpenGLInitialized(object sender, EventArgs e)
+        {
+            stopwatch.Start();
+            stopwatchFrame.Start();
+            
+            OpenGLF.GetInstance().Initialized(openGLControl1.OpenGL);
+            OpenGLF.GetInstance().Cam = new Camera(new vec3(0, 70, 0), glm.radians(70.0f));
+            OpenGLF.GetInstance().RemoveChunkMeshChanged += OpenGLFRemoveChunkMeshChanged;
+            OpenGLF.GetInstance().Cam.PositionChunkChanged += Cam_PositionChunkChanged;
+            OpenGLF.GetInstance().Cam.PositionBlockChanged += Cam_PositionBlockChanged;
+            OpenGLF.GetInstance().Cam.WidgetChanged += Cam_WidgetChanged;
+
+            // TODO::Load!!!
+            //WorldFile.Load(World);
+            //Mouse.GetInstance().SetWorld(World);
+            //WorldFile.ReadFile("1", World);
+
+
+            //OpenGLF.GetInstance().Cam.SetPosRotation(
+            //    World.Entity.HitBox.Position,
+            //    World.Entity.RotationYaw,
+            //    World.Entity.RotationPitch
+            //);
+            //World.UpdateModePlayer();
+            //World.Done += WorldRenderDone;
+            //World.Rendered += WorldRendered;
+            //World.Ticked += WorldTicked;
+            //World.HitBoxChanged += WorldHitBoxChanged;
+            //World.LookAtChanged += WorldLookAtChanged;
+            //World.LoadCache += WorldLoadCache;
+            //World.NotLoadCache += WorldNotLoadCache;
+
+            //Keyboard.GetInstance().MoveChanged += FormGame_MoveChanged;
+            //Mouse.GetInstance().MoveChanged += FormGame_MoveChanged;
+
+            //Keyboard.GetInstance().SetWorld(World);
+            //Debug.Instance(World);
+
+            //Tick();
+            //World.RunPackings();
+
+            Keyboard.GetInstance().MoveChanged += FormGame_MoveChanged;
+            Mouse.GetInstance().MoveChanged += FormGame_MoveChanged;
         }
 
         private void WorldNotLoadCache(object sender, EventArgs e)
@@ -320,7 +398,7 @@ namespace VoxelEngine
                 Mouse.GetInstance().Move(false);
                 GuiInventory();
             }
-            else if (e.KeyCode == Keys.I)
+            else if (e.KeyCode == Keys.I || e.KeyCode == Keys.Escape)
             {
                 // Опции
                 Mouse.GetInstance().Move(false);
@@ -364,6 +442,10 @@ namespace VoxelEngine
         /// Активация GUI инвентарь
         /// </summary>
         protected void GuiInventory() => guiControl1.OpenInventory();
+        /// <summary>
+        /// Активация Меню
+        /// </summary>
+        public void GuiMenu() => guiControl1.OpenMenu();
 
         #endregion
 

@@ -34,6 +34,10 @@ namespace VoxelEngine.Gui
         /// Открыть инвентарь
         /// </summary>
         public void OpenInventory() => WindowOpen(new InventoryControl(FGame));
+        /// <summary>
+        /// Открыть меню
+        /// </summary>
+        public void OpenMenu() => WindowOpen(new MenuControl(FGame));
 
         #endregion
 
@@ -47,6 +51,11 @@ namespace VoxelEngine.Gui
             OpenGLF.GetInstance().Widget.RefreshDraw();
         }
 
+        private void Control_Next(object sender, EventArgs e)
+        {
+            Controls.Clear();
+        }
+
         /// <summary>
         /// Открыть контрол
         /// </summary>
@@ -58,6 +67,7 @@ namespace VoxelEngine.Gui
             control.Open();
             Size = control.Size;
             control.Closed += Control_Closed;
+            control.Next += Control_Next;
             Controls.Add(control);
             Location = new Point(
                 (FGame.Width - Width) / 2,
@@ -66,5 +76,7 @@ namespace VoxelEngine.Gui
             Visible = true;
             Focus();
         }
+
+        
     }
 }

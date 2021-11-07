@@ -28,10 +28,6 @@ namespace VoxelEngine
         /// </summary>
         public static string Version { get; protected set; }
         /// <summary>
-        /// Версия ребилдинга
-        /// </summary>
-        public static string Revision { get; protected set; }
-        /// <summary>
         /// Кадры в секунду
         /// </summary>
         public static int Fps { get; set; } = 0;
@@ -70,7 +66,7 @@ namespace VoxelEngine
         /// <summary>
         /// Выводить ли на экран
         /// </summary>
-        public static bool IsDraw { get; set; } = true;
+        public static bool IsDraw { get; set; } = false;
         /// <summary>
         /// Выводить ли на экран колизию
         /// </summary>
@@ -161,15 +157,18 @@ namespace VoxelEngine
         }
 
         /// <summary>
-        /// Задать объект мира
+        /// Задать инфу
         /// </summary>
-        public static void Instance(WorldBase world)
+        public static void Instance()
         {
-            World = world;
             Version ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             Version = string.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
-            Revision = ver.Revision.ToString();
         }
+
+        /// <summary>
+        /// Задать объект мира
+        /// </summary>
+        public static void InstanceWorld(WorldBase world) => World = world;
 
         public static void RenderDebug()
         {
@@ -250,8 +249,8 @@ namespace VoxelEngine
             Camera cam = OpenGLF.GetInstance().Cam;
             
             string strHeader = string.Format(
-                "Voxel Engine v{3}\r\nRevision {5}\r\n{4}\r\n{0} tps {1} fps {2:0.00} mc",
-                Tps, Fps, SpeedFrame, Version, ToStringTime(), Revision
+                "Voxel Engine v{3}\r\n{4}\r\n{0} tps {1} fps {2:0.00} mc",
+                Tps, Fps, SpeedFrame, Version, ToStringTime()
             );
 
             vec2i posChunk = cam.ChunkPos;

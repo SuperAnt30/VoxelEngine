@@ -55,30 +55,42 @@ namespace VoxelEngine.Graphics
         /// пауза для волны
         /// </summary>
         protected int pauseWaterStill = 0;
+        protected int pauseWaterFlow = 0;
 
         public bool Render()
         {
             pauseWaterStill--;
-            if (pauseWaterStill <= 0)
+            pauseWaterFlow--;
+            if (pauseWaterStill <= 0 || pauseWaterFlow <= 0)
             {
-                pauseWaterStill = 3;
                 Bitmap bp = new Bitmap(AtlasBoxOriginal);
                 System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bp);
+                int w, wa;
 
-                int w = WaterStill.Width;
-                int wa = AtlasBoxOriginal.Width / 16;
+                w = WaterStill.Width;
+                wa = AtlasBoxOriginal.Width / 16;
                 g.DrawImage(WaterStill.Clone(new Rectangle(0, StepWaterStill * w, w, w), AtlasBoxOriginal.PixelFormat), wa * 15, 0);
 
-                w = WaterFlow.Width;
+                w = WaterFlow.Width / 2;
                 wa = AtlasBoxOriginal.Width / 16;
-                g.DrawImage(WaterFlow.Clone(new Rectangle(0, StepWaterFlow * w, w, w), AtlasBoxOriginal.PixelFormat), wa * 15, 16);
+                g.DrawImage(WaterFlow.Clone(new Rectangle(0, StepWaterFlow * w * 2, w, w), AtlasBoxOriginal.PixelFormat), wa * 15, wa);
 
                 if (AtlasBox != null) AtlasBox.Dispose();
                 AtlasBox = new Bitmap(bp);
-                StepWaterStill++;
-                if (StepWaterStill >= StepWaterStillMax) StepWaterStill = 0;
-                StepWaterFlow++;
-                if (StepWaterFlow >= StepWaterFlowMax) StepWaterFlow = 0;
+
+                if (pauseWaterStill <= 0)
+                {
+                    pauseWaterStill = 3;
+                    StepWaterStill++;
+                    if (StepWaterStill >= StepWaterStillMax) StepWaterStill = 0;
+                }
+                if (pauseWaterFlow <= 0)
+                {
+                    pauseWaterFlow = 1;
+                    StepWaterFlow++;
+                    if (StepWaterFlow >= StepWaterFlowMax) StepWaterFlow = 0;
+                }
+
                 return true;
             }
             return false;

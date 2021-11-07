@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormGame));
             this.openGLControl1 = new SharpGL.OpenGLControl();
             this.guiControl1 = new VoxelEngine.Gui.GuiControl();
             ((System.ComponentModel.ISupportInitialize)(this.openGLControl1)).BeginInit();
@@ -73,6 +74,7 @@
             this.ClientSize = new System.Drawing.Size(1264, 681);
             this.Controls.Add(this.guiControl1);
             this.Controls.Add(this.openGLControl1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormGame";
             this.Text = "Test by SuperAnt";
             this.Deactivate += new System.EventHandler(this.FormGame_Deactivate);

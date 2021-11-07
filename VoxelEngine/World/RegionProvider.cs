@@ -67,7 +67,8 @@ namespace VoxelEngine.World
                 {
                     chunk.Save();
                 }
-                WorldFile.Save(World);
+                WorldFile.WriteFile(World);
+                //WorldFile.Save(World);
                 foreach (RegionBinary region in regionMapping.Values)
                 {
                     region.WriteFile();

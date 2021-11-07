@@ -19,14 +19,32 @@ namespace VoxelEngine.World.Chk.Light
         /// Освещение
         /// </summary>
         public byte Light;
+        /// <summary>
+        /// Небесное освещение
+        /// </summary>
+        public bool Sky;
+
+        private bool isNotEmpty;
+        /// <summary>
+        /// Пустой ли объект
+        /// </summary>
+        public bool IsEmpty() => !isNotEmpty;
+
 
         public LightStruct(vec3i pos, vec3i vec, byte light)
         {
             Pos = pos;
             Vec = vec;
             Light = light;
+            Sky = true;
+            isNotEmpty = true;
         }
 
         public LightStruct(vec3i pos, byte light) : this(pos, new vec3i(0), light) { }
+
+        public LightStruct(vec3i pos, byte light, bool sky) : this(pos, light)
+        {
+            Sky = sky;
+        }
     }
 }
