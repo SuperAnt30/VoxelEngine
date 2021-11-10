@@ -1,4 +1,5 @@
-﻿namespace VoxelEngine
+﻿/*
+namespace VoxelEngine
 {
     partial class FormTest
     {
@@ -61,4 +62,4 @@
 
         private System.Windows.Forms.PictureBox pictureBox1;
     }
-}
+}*/

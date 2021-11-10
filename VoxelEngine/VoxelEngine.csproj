@@ -119,9 +119,7 @@
     <Compile Include="Entity\EntityLiving.cs" />
     <Compile Include="Entity\EnumEntity.cs" />
     <Compile Include="Entity\VisibleDraw.cs" />
-    <Compile Include="FormTest.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="FormTest.cs" />
     <Compile Include="FormTest.Designer.cs">
       <DependentUpon>FormTest.cs</DependentUpon>
     </Compile>
@@ -171,6 +169,34 @@
     <Compile Include="Models\TextureVertex.cs" />
     <Compile Include="Models\TexturedQuad.cs" />
     <Compile Include="Graphics\Frustum.cs" />
+    <Compile Include="Network\FormClient.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Network\FormClient.Designer.cs">
+      <DependentUpon>FormClient.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Network\FormNetwork.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Network\FormNetwork.Designer.cs">
+      <DependentUpon>FormNetwork.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Network\FormServer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Network\FormServer.Designer.cs">
+      <DependentUpon>FormServer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Network\ReceivingBytes.cs" />
+    <Compile Include="Network\ReceivingBytesCollection.cs" />
+    <Compile Include="Network\SocketClient.cs" />
+    <Compile Include="Network\SocketHeir.cs" />
+    <Compile Include="Network\ServerPacket.cs" />
+    <Compile Include="Network\ServerPacketEvent.cs" />
+    <Compile Include="Network\SocketBase.cs" />
+    <Compile Include="Network\SocketServer.cs" />
+    <Compile Include="Network\StateObject.cs" />
+    <Compile Include="Network\StatusNet.cs" />
     <Compile Include="Renderer\Entity\EntityMesh.cs" />
     <Compile Include="Renderer\Entity\EntityRender.cs" />
     <Compile Include="Test.cs" />
@@ -334,6 +360,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Gui\OptionsControl.resx">
       <DependentUpon>OptionsControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Network\FormClient.resx">
+      <DependentUpon>FormClient.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Network\FormNetwork.resx">
+      <DependentUpon>FormNetwork.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Network\FormServer.resx">
+      <DependentUpon>FormServer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
